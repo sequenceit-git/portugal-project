@@ -1,0 +1,31 @@
+import { Routes, Route, Navigate } from "react-router-dom";
+import Navbar from "./components/Navbar.jsx";
+import Home from "./pages/Home.jsx";
+import TourDetails from "./pages/TourDetails.jsx";
+import Tours from "./pages/Tours.jsx";
+import MeetYourGuide from "./pages/MeetYourGuide.jsx";
+import GuestStories from "./pages/GuestStories.jsx";
+import Booking from "./pages/Booking.jsx";
+import GuideMap from "./pages/GuideMap.jsx";
+
+const App = () => {
+  return (
+    <div className="min-h-screen text-slate-900">
+      <Navbar />
+      <main className="pt-24">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/tours" element={<Tours />} />
+          <Route path="/tour-details/:id" element={<TourDetails />} />
+          <Route path="/meet-your-guide" element={<MeetYourGuide />} />
+          <Route path="/guest-stories" element={<GuestStories />} />
+          <Route path="/booking" element={<Booking />} />
+          <Route path="/map" element={<GuideMap />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
+    </div>
+  );
+};
+
+export default App;
