@@ -7,6 +7,9 @@ import MeetYourGuide from "./pages/MeetYourGuide.jsx";
 import GuestStories from "./pages/GuestStories.jsx";
 import Booking from "./pages/Booking.jsx";
 import GuideMap from "./pages/GuideMap.jsx";
+import Gallery from "./pages/Gallery.jsx";
+import Contact from "./pages/Contact.jsx";
+import Feedback from "./pages/Feedback.jsx";
 
 const App = () => {
   return (
@@ -21,6 +24,9 @@ const App = () => {
           <Route path="/guest-stories" element={<GuestStories />} />
           <Route path="/booking" element={<Booking />} />
           <Route path="/map" element={<GuideMap />} />
+          <Route path="/gallery" element={<Gallery />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/feedback" element={<Feedback />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

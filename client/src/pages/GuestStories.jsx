@@ -1,3 +1,5 @@
+import Footer from "../components/Footer";
+
 const GuestStories = () => {
   const stories = [
     {
@@ -443,6 +445,8 @@ const GuestStories = () => {
           </p>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };

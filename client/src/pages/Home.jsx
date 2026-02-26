@@ -1,4 +1,5 @@
 import Footer from "../components/Footer";
+import { Link } from "react-router-dom";
 
 
 
@@ -273,7 +274,7 @@ const Home = () => {
           <div className="mt-8 text-center md:hidden">
             <a
               className="inline-flex items-center gap-2 text-primary font-bold hover:text-primary-dark transition-colors"
-              href="#"
+              href="/tours"
             >
               View All Tours
               <span className="material-icons text-sm">arrow_forward</span>
@@ -485,7 +486,7 @@ const Home = () => {
           </h2>
           <a
             className="inline-block bg-primary hover:bg-primary-dark text-white text-lg px-10 py-4 rounded-xl font-bold shadow-xl shadow-black/20 transition-transform hover:-translate-y-1"
-            href="#"
+            href="/tours"
           >
             Start Planning Your Trip
           </a>
