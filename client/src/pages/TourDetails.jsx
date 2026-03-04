@@ -79,9 +79,12 @@ const TourDetails = () => {
                   </p>
                 </div>
                 <div className="md:hidden w-full">
-                  <button className="w-full bg-primary text-white py-4 rounded-xl font-bold shadow-xl shadow-primary/30">
+                  <Link
+                    to={`/booking?tourId=${id}`}
+                    className="block w-full bg-primary text-white py-4 rounded-xl font-bold shadow-xl shadow-primary/30 text-center"
+                  >
                     Check Availability
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -510,7 +513,10 @@ const TourDetails = () => {
                       </div>
                     </div>
                     <div className="mt-8">
-                      <Link  className="w-full bg-primary text-white py-4 rounded-xl font-bold text-lg shadow-xl shadow-primary/30 hover:bg-orange-600 hover:shadow-2xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group" to="/booking">
+                      <Link
+                        className="w-full bg-primary text-white py-4 rounded-xl font-bold text-lg shadow-xl shadow-primary/30 hover:bg-orange-600 hover:shadow-2xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group"
+                        to={`/booking?tourId=${id}`}
+                      >
                         Check Availability
                         <span className="material-icons group-hover:translate-x-1 transition-transform">
                           calendar_month
@@ -576,13 +582,12 @@ const TourDetails = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <span className="material-icons text-primary text-2xl">
-                  explore
-                </span>
-                <span className="text-lg font-bold text-slate-900">
-                  Tukinlisbon
-                </span>
+              <div className="mb-4">
+                <img
+                  src="/logo.png"
+                  alt="Tukinlisbon"
+                  className="h-12 w-auto object-contain"
+                />
               </div>
               <p className="text-slate-500 text-sm">
                 Authentic, personal tours designed to show you the real Lisbon.
