@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
 import Home from "./pages/Home.jsx";
 import TourDetails from "./pages/TourDetails.jsx";
@@ -10,12 +10,16 @@ import GuideMap from "./pages/GuideMap.jsx";
 import Gallery from "./pages/Gallery.jsx";
 import Contact from "./pages/Contact.jsx";
 import Feedback from "./pages/Feedback.jsx";
+import AdminDashboard from "./pages/AdminDashboard.jsx";
 
 const App = () => {
+  const location = useLocation();
+  const isAdmin = location.pathname.startsWith("/admin");
+
   return (
     <div className="min-h-screen text-slate-900">
-      <Navbar />
-      <main className="pt-24">
+      {!isAdmin && <Navbar />}
+      <main className={isAdmin ? "" : "pt-24"}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/tours" element={<Tours />} />
@@ -27,6 +31,7 @@ const App = () => {
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/feedback" element={<Feedback />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

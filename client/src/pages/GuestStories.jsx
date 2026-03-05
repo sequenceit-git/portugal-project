@@ -1,6 +1,22 @@
+import { useState, useEffect } from "react";
 import Footer from "../components/Footer";
+import { supabase } from "../lib/supabaseClient";
 
 const GuestStories = () => {
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+
+  useEffect(() => {
+    supabase
+      .from("reviews")
+      .select("id,name,country,tour_name,rating,review_text,photo_url")
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        setReviews(data || []);
+        setReviewsLoading(false);
+      });
+  }, []);
+
   const stories = [
     {
       id: 1,
@@ -406,13 +422,88 @@ const GuestStories = () => {
           ))}
         </div>
 
-        {/* Load More */}
-        <div className="text-center mt-12">
-          <button className="inline-flex items-center gap-2 text-primary font-bold hover:text-primary-dark transition-colors border-b-2 border-transparent hover:border-primary pb-1">
-            Load more stories
-            <span className="material-icons text-sm">arrow_downward</span>
-          </button>
-        </div>
+        {/* Dynamic Reviews from Supabase */}
+        {reviewsLoading && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 animate-pulse"
+              >
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-14 h-14 rounded-full bg-gray-200 flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-1/2" />
+                    <div className="h-3 bg-gray-200 rounded w-1/3" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="h-3 bg-gray-200 rounded" />
+                  <div className="h-3 bg-gray-200 rounded" />
+                  <div className="h-3 bg-gray-200 rounded w-3/4" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!reviewsLoading && reviews.length > 0 && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Guest Reviews
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {reviews.map((review) => (
+                <div
+                  key={review.id}
+                  className="bg-white rounded-2xl p-6 shadow-md hover:shadow-lg transition-all border border-gray-100 flex flex-col"
+                >
+                  <div className="flex items-center gap-4 mb-4">
+                    {review.photo_url ? (
+                      <img
+                        alt={review.name}
+                        className="w-14 h-14 rounded-full object-cover border-2 border-orange-100 flex-shrink-0"
+                        src={review.photo_url}
+                      />
+                    ) : (
+                      <div className="w-14 h-14 rounded-full bg-primary/10 border-2 border-orange-100 flex items-center justify-center text-primary font-bold text-xl flex-shrink-0">
+                        {review.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <h4 className="font-bold text-gray-900">{review.name}</h4>
+                      <p className="text-xs text-gray-500">{review.country}</p>
+                    </div>
+                    <div className="flex">
+                      {Array.from({ length: 5 }, (_, i) => (
+                        <span
+                          key={i}
+                          className={`material-icons text-lg ${
+                            i < review.rating
+                              ? "text-yellow-400"
+                              : "text-gray-200"
+                          }`}
+                        >
+                          star
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-gray-600 italic mb-4 flex-grow">
+                    &ldquo;{review.review_text}&rdquo;
+                  </p>
+                  {review.tour_name && (
+                    <div className="pt-4 border-t border-gray-100 mt-auto">
+                      <span className="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded">
+                        Tour: {review.tour_name}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
 
       {/* CTA Section */}

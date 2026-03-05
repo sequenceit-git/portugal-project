@@ -6,7 +6,7 @@ import healthRouter from "./routes/health.js";
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = 1234;
 
 app.use(cors());
 app.use(express.json());

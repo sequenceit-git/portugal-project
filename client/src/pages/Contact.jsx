@@ -71,7 +71,7 @@ const Contact = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pt-32">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-extrabold text-slate-900 mb-4">
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 mb-4">
             Get in Touch
           </h1>
           <p className="text-xl text-slate-600 max-w-2xl mx-auto">
@@ -229,7 +229,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h4 className="font-bold text-slate-900 mb-1">Phone</h4>
-                    <p className="text-sm text-slate-600">+351 XXX XXX XXX</p>
+                    <p className="text-sm text-slate-600">+351 9203 377 914</p>
                   </div>
                 </div>
 
@@ -240,7 +240,7 @@ const Contact = () => {
                   <div>
                     <h4 className="font-bold text-slate-900 mb-1">Email</h4>
                     <p className="text-sm text-slate-600">
-                      info@tukinlisbon.com
+                      tukinlisbon2@gmail.com
                     </p>
                   </div>
                 </div>
@@ -256,7 +256,7 @@ const Contact = () => {
                       Working Hours
                     </h4>
                     <p className="text-sm text-slate-600">
-                      Mon - Sun: 9:00 AM - 8:00 PM
+                      Mon - Sun: 8:15 AM - 4:55 PM
                     </p>
                   </div>
                 </div>

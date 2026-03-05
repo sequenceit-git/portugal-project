@@ -1,94 +1,187 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Footer from "../components/Footer";
+import { supabase } from "../lib/supabaseClient";
+
+const BUCKET = "reviews";
 
 const Feedback = () => {
+  const [tours, setTours] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
+    country: "",
     email: "",
     tourExperience: "",
     rating: 0,
-    recommendation: "",
     feedback: "",
   });
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
+  const [submitError, setSubmitError] = useState("");
   const [hoveredStar, setHoveredStar] = useState(0);
+
+  useEffect(() => {
+    supabase
+      .from("tours")
+      .select("id, name")
+      .order("id", { ascending: true })
+      .then(({ data }) => setTours(data || []));
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleRatingClick = (rating) => {
-    setFormData((prev) => ({
-      ...prev,
-      rating: rating,
-    }));
+  const handlePhoto = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      setSubmitError("Photo must be under 2 MB.");
+      return;
+    }
+    setSubmitError("");
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.rating === 0) {
+      setSubmitError("Please select a star rating.");
+      return;
+    }
     setIsSubmitting(true);
+    setSubmitError("");
     setSubmitStatus(null);
 
-    // Simulate form submission
-    setTimeout(() => {
-      console.log("Feedback submitted:", formData);
+    try {
+      let photo_url = "";
+      if (photoFile) {
+        const ext = photoFile.name.split(".").pop();
+        const fileName = `${Date.now()}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from(BUCKET)
+          .upload(fileName, photoFile, { contentType: photoFile.type });
+        if (upErr) throw upErr;
+        const { data: urlData } = supabase.storage
+          .from(BUCKET)
+          .getPublicUrl(fileName);
+        photo_url = urlData.publicUrl;
+      }
+
+      const { error: dbErr } = await supabase.from("reviews").insert({
+        name: formData.name.trim(),
+        country: formData.country.trim(),
+        tour_name: formData.tourExperience,
+        rating: formData.rating,
+        review_text: formData.feedback.trim(),
+        photo_url,
+      });
+      if (dbErr) throw dbErr;
+
       setSubmitStatus("success");
-      setIsSubmitting(false);
       setFormData({
         name: "",
+        country: "",
         email: "",
         tourExperience: "",
         rating: 0,
-        recommendation: "",
         feedback: "",
       });
-    }, 1500);
+      setPhotoFile(null);
+      setPhotoPreview(null);
+    } catch (err) {
+      setSubmitError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-
-  const tourOptions = [
-    "Lisbon City Tour",
-    "Sintra & Cascais Day Trip",
-    "Food & Wine Tasting",
-    "Fado Night Experience",
-    "Porto Day Trip",
-    "Other",
-  ];
 
   return (
     <div className="min-h-screen bg-background-light text-slate-900 font-display antialiased">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pt-32">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-extrabold text-slate-900 mb-4">
-            Share Your Feedback
+          <span className="text-primary font-bold tracking-wider uppercase text-sm">
+            Share Your Story
+          </span>
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 mt-3 mb-4">
+            Share Your Experience
           </h1>
           <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-            Your opinion matters! Help us improve our tours and services by
-            sharing your experience with us.
+            Your review helps future travelers — and your photo might appear on
+            our homepage!
           </p>
         </div>
 
         {/* Feedback Form */}
         <div className="bg-white rounded-2xl shadow-xl p-8 lg:p-12 border border-slate-100">
           {submitStatus === "success" && (
-            <div className="mb-8 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <div className="flex items-center">
-                <span className="material-icons text-green-600 mr-2">
-                  check_circle
-                </span>
-                <p className="text-green-800 font-semibold">
-                  Thank you! Your feedback has been submitted successfully.
-                </p>
-              </div>
+            <div className="mb-8 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+              <span className="material-icons text-green-600">
+                check_circle
+              </span>
+              <p className="text-green-800 font-semibold">
+                Thank you! Your review has been submitted and will appear on our
+                homepage.
+              </p>
+            </div>
+          )}
+
+          {submitError && (
+            <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+              <span className="material-icons text-red-500">error</span>
+              <p className="text-red-700">{submitError}</p>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Profile Photo Upload */}
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-3">
+                Your Photo{" "}
+                <span className="text-slate-400 font-normal">
+                  (optional — shown on homepage)
+                </span>
+              </label>
+              <div className="flex items-center gap-5">
+                <div className="w-20 h-20 rounded-full bg-primary/10 border-2 border-dashed border-primary/30 overflow-hidden flex items-center justify-center flex-shrink-0">
+                  {photoPreview ? (
+                    <img
+                      src={photoPreview}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="material-icons text-primary/40 text-3xl">
+                      person
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <label
+                    htmlFor="photo-upload"
+                    className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary font-semibold rounded-lg hover:bg-primary/20 transition-colors text-sm"
+                  >
+                    <span className="material-icons text-sm">upload</span>
+                    {photoFile ? "Change Photo" : "Upload Photo"}
+                  </label>
+                  <input
+                    id="photo-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handlePhoto}
+                  />
+                  <p className="mt-1 text-xs text-slate-500">
+                    JPG, PNG, WEBP · Max 2 MB
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Personal Information */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
@@ -105,29 +198,49 @@ const Feedback = () => {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-accent-primary focus:border-transparent transition-all duration-200 outline-none"
-                  placeholder="John Doe"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
+                  placeholder="Jane Doe"
                 />
               </div>
 
               <div>
                 <label
-                  htmlFor="email"
+                  htmlFor="country"
                   className="block text-sm font-bold text-slate-700 mb-2"
                 >
-                  Email Address *
+                  Country *
                 </label>
                 <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
+                  type="text"
+                  id="country"
+                  name="country"
+                  value={formData.country}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-accent-primary focus:border-transparent transition-all duration-200 outline-none"
-                  placeholder="john@example.com"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
+                  placeholder="United Kingdom"
                 />
               </div>
+            </div>
+
+            {/* Email (optional) */}
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-bold text-slate-700 mb-2"
+              >
+                Email Address{" "}
+                <span className="text-slate-400 font-normal">(optional)</span>
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
+                placeholder="jane@example.com"
+              />
             </div>
 
             {/* Tour Experience */}
@@ -136,7 +249,7 @@ const Feedback = () => {
                 htmlFor="tourExperience"
                 className="block text-sm font-bold text-slate-700 mb-2"
               >
-                Which tour did you experience? *
+                Which tour did you take? *
               </label>
               <select
                 id="tourExperience"
@@ -144,12 +257,12 @@ const Feedback = () => {
                 value={formData.tourExperience}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-accent-primary focus:border-transparent transition-all duration-200 outline-none bg-white"
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none bg-white"
               >
-                <option value="">Select a tour</option>
-                {tourOptions.map((tour) => (
-                  <option key={tour} value={tour}>
-                    {tour}
+                <option value="">Select your tour</option>
+                {tours.map((t) => (
+                  <option key={t.id} value={t.name}>
+                    {t.name}
                   </option>
                 ))}
               </select>
@@ -165,10 +278,10 @@ const Feedback = () => {
                   <button
                     key={star}
                     type="button"
-                    onClick={() => handleRatingClick(star)}
+                    onClick={() => setFormData((p) => ({ ...p, rating: star }))}
                     onMouseEnter={() => setHoveredStar(star)}
                     onMouseLeave={() => setHoveredStar(0)}
-                    className="focus:outline-none transition-transform duration-150 hover:scale-110"
+                    className="focus:outline-none transition-transform hover:scale-110"
                   >
                     <span
                       className={`material-icons text-4xl ${
@@ -189,45 +302,13 @@ const Feedback = () => {
               </div>
             </div>
 
-            {/* Recommendation */}
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-3">
-                Would you recommend us to others? *
-              </label>
-              <div className="flex flex-wrap gap-4">
-                {[
-                  "Definitely",
-                  "Probably",
-                  "Not Sure",
-                  "Probably Not",
-                  "No",
-                ].map((option) => (
-                  <label
-                    key={option}
-                    className="flex items-center cursor-pointer"
-                  >
-                    <input
-                      type="radio"
-                      name="recommendation"
-                      value={option}
-                      checked={formData.recommendation === option}
-                      onChange={handleChange}
-                      required
-                      className="w-4 h-4 text-accent-primary focus:ring-accent-primary"
-                    />
-                    <span className="ml-2 text-slate-700">{option}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Feedback */}
+            {/* Review */}
             <div>
               <label
                 htmlFor="feedback"
                 className="block text-sm font-bold text-slate-700 mb-2"
               >
-                Your Feedback *
+                Your Review *
               </label>
               <textarea
                 id="feedback"
@@ -235,33 +316,28 @@ const Feedback = () => {
                 value={formData.feedback}
                 onChange={handleChange}
                 required
-                rows="6"
-                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-accent-primary focus:border-transparent transition-all duration-200 outline-none resize-none"
-                placeholder="Tell us about your experience... What did you enjoy? What could be improved?"
+                rows="5"
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none resize-none"
+                placeholder="Tell us about your experience… What did you enjoy most?"
               ></textarea>
-              <p className="mt-2 text-sm text-slate-500">
-                Please share your honest thoughts to help us improve
-              </p>
             </div>
 
             {/* Submit Button */}
             <div className="flex justify-center pt-4">
               <button
                 type="submit"
-                disabled={isSubmitting || formData.rating === 0}
-                className="px-8 py-4 bg-accent-primary text-white font-bold rounded-lg hover:bg-accent-dark transition-all duration-300 disabled:bg-slate-300 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                disabled={isSubmitting}
+                className="px-8 py-4 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/25 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
-                  <span className="flex items-center">
-                    <span className="material-icons animate-spin mr-2">
-                      refresh
-                    </span>
-                    Submitting...
+                  <span className="flex items-center gap-2">
+                    <span className="material-icons animate-spin">refresh</span>
+                    Submitting…
                   </span>
                 ) : (
-                  <span className="flex items-center">
-                    <span className="material-icons mr-2">send</span>
-                    Submit Feedback
+                  <span className="flex items-center gap-2">
+                    <span className="material-icons">send</span>
+                    Submit Review
                   </span>
                 )}
               </button>
@@ -269,44 +345,38 @@ const Feedback = () => {
           </form>
         </div>
 
-        {/* Why Feedback Matters Section */}
+        {/* Why section */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="text-center p-6 bg-white rounded-xl shadow-md border border-slate-100">
-            <span className="material-icons text-5xl text-accent-primary mb-4">
-              insights
-            </span>
-            <h3 className="text-lg font-bold text-slate-900 mb-2">
-              Improve Our Services
-            </h3>
-            <p className="text-slate-600">
-              Your feedback helps us enhance our tours and deliver better
-              experiences
-            </p>
-          </div>
-
-          <div className="text-center p-6 bg-white rounded-xl shadow-md border border-slate-100">
-            <span className="material-icons text-5xl text-accent-primary mb-4">
-              groups
-            </span>
-            <h3 className="text-lg font-bold text-slate-900 mb-2">
-              Help Future Guests
-            </h3>
-            <p className="text-slate-600">
-              Share your insights to help others make informed decisions
-            </p>
-          </div>
-
-          <div className="text-center p-6 bg-white rounded-xl shadow-md border border-slate-100">
-            <span className="material-icons text-5xl text-accent-primary mb-4">
-              favorite
-            </span>
-            <h3 className="text-lg font-bold text-slate-900 mb-2">
-              We Value You
-            </h3>
-            <p className="text-slate-600">
-              Every opinion matters and is carefully reviewed by our team
-            </p>
-          </div>
+          {[
+            {
+              icon: "insights",
+              title: "Help Us Improve",
+              body: "Your feedback helps us make every tour better and more memorable.",
+            },
+            {
+              icon: "groups",
+              title: "Help Future Guests",
+              body: "Share your experience so others can choose with confidence.",
+            },
+            {
+              icon: "favorite",
+              title: "We Value You",
+              body: "Every review is read personally by our guide.",
+            },
+          ].map((c) => (
+            <div
+              key={c.title}
+              className="text-center p-6 bg-white rounded-xl shadow-md border border-slate-100"
+            >
+              <span className="material-icons text-5xl text-primary mb-4">
+                {c.icon}
+              </span>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">
+                {c.title}
+              </h3>
+              <p className="text-slate-600">{c.body}</p>
+            </div>
+          ))}
         </div>
       </div>
 

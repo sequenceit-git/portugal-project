@@ -4,17 +4,11 @@ const GuideMap = () => {
       <aside className="w-full md:w-[400px] lg:w-[450px] flex-shrink-0 flex flex-col h-full bg-white border-r border-slate-200 shadow-xl z-20">
         <div className="p-6 border-b border-slate-100 bg-white">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30">
-              <span className="material-icons">tram</span>
-            </div>
-            <div>
-              <h1 className="font-bold text-xl tracking-tight text-slate-900">
-                Tukinlisbon
-              </h1>
-              <p className="text-xs font-medium text-primary uppercase tracking-wider">
-                Premium Solo Guide
-              </p>
-            </div>
+            <img
+              src="/logo.png"
+              alt="Tukinlisbon"
+              className="h-12 w-auto object-contain"
+            />
           </div>
           <div className="space-y-4">
             <h2 className="text-2xl font-bold leading-tight">
