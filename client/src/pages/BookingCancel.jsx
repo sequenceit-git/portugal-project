@@ -1,9 +1,37 @@
 import { useSearchParams, Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import supabase from "../lib/supabaseClient";
 import Footer from "../components/Footer";
 
 const BookingCancel = () => {
   const [searchParams] = useSearchParams();
   const bookingId = searchParams.get("booking_id");
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelled, setCancelled] = useState(false);
+
+  // Auto-cancel the abandoned booking so it frees up capacity
+  useEffect(() => {
+    if (!bookingId) return;
+
+    const cancelBooking = async () => {
+      setCancelling(true);
+      try {
+        // Cancel via RPC (SECURITY DEFINER — only cancels pending/unpaid)
+        const { data, error } = await supabase.rpc(
+          "fn_cancel_abandoned_booking",
+          { p_booking_id: parseInt(bookingId) },
+        );
+
+        if (!error && data === true) setCancelled(true);
+      } catch (err) {
+        console.error("Could not cancel booking:", err);
+      } finally {
+        setCancelling(false);
+      }
+    };
+
+    cancelBooking();
+  }, [bookingId]);
 
   return (
     <div className="min-h-screen bg-background-light flex flex-col">
@@ -19,9 +47,11 @@ const BookingCancel = () => {
         </h1>
 
         <p className="text-gray-500 max-w-md">
-          Your payment was not completed. Don't worry — your booking
-          {bookingId && <> (#{bookingId})</>} has been saved as pending. You can
-          try again or contact us for help.
+          {cancelling
+            ? "Releasing your booking..."
+            : cancelled
+              ? "Your booking has been cancelled and the spot has been freed up. You can rebook anytime."
+              : "Your payment was not completed. No charges were made."}
         </p>
 
         <div className="flex gap-3 mt-2">

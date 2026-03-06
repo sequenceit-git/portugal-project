@@ -139,10 +139,14 @@ Deno.serve(async (req: Request) => {
       : SITE_URL;
 
     // Create Stripe Checkout Session
+    // Expire after 30 minutes so abandoned bookings free up capacity quickly
+    const expiresAt = Math.floor(Date.now() / 1000) + 30 * 60; // 30 minutes from now
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
       customer_email: customerEmail,
+      expires_at: expiresAt,
       line_items: [
         {
           price_data: {
@@ -162,7 +166,7 @@ Deno.serve(async (req: Request) => {
         tour_name: tourName,
       },
       success_url: `${redirectBase}/booking/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${redirectBase}/booking/cancel`,
+      cancel_url: `${redirectBase}/booking/cancel?booking_id=${bookingId}`,
     });
 
     // Insert payment record (pending)
