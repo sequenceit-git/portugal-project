@@ -122,15 +122,20 @@ Deno.serve(async (req: Request) => {
     if (event.type === "checkout.session.expired") {
       const session = event.data.object as Stripe.Checkout.Session;
       const bookingId = session.metadata?.booking_id;
+      const sessionId = session.id;
 
+      console.log(`Checkout expired for booking ${bookingId}, session ${sessionId}`);
+
+      // Update payment record (if it exists)
       await supabase
         .from("payments")
         .update({
           status: "failed",
           updated_at: new Date().toISOString(),
         })
-        .eq("stripe_session_id", session.id);
+        .eq("stripe_session_id", sessionId);
 
+      // Update booking — cancel it and free the capacity
       if (bookingId) {
         await supabase
           .from("bookings")
@@ -138,11 +143,12 @@ Deno.serve(async (req: Request) => {
             status: "cancelled",
             payment_status: "failed",
           })
-          .eq("id", parseInt(bookingId));
+          .eq("id", parseInt(bookingId))
+          .in("status", ["pending"]); // Don't cancel if already confirmed
       }
     }
 
-    // Handle charge.refunded
+    // Handle charge.refunded — sync to both payments AND bookings
     if (event.type === "charge.refunded") {
       const charge = event.data.object as Stripe.Charge;
       const piId =
@@ -151,6 +157,7 @@ Deno.serve(async (req: Request) => {
           : charge.payment_intent?.id;
 
       if (piId) {
+        // Update payment record
         await supabase
           .from("payments")
           .update({
@@ -158,6 +165,55 @@ Deno.serve(async (req: Request) => {
             updated_at: new Date().toISOString(),
           })
           .eq("stripe_payment_intent", piId);
+
+        // Also update the booking status via the payment's booking_id
+        const { data: payment } = await supabase
+          .from("payments")
+          .select("booking_id")
+          .eq("stripe_payment_intent", piId)
+          .single();
+
+        if (payment?.booking_id) {
+          await supabase
+            .from("bookings")
+            .update({
+              status: "cancelled",
+              payment_status: "refunded",
+            })
+            .eq("id", payment.booking_id);
+        }
+      }
+    }
+
+    // Handle payment_intent.payment_failed — mark booking as failed
+    if (event.type === "payment_intent.payment_failed") {
+      const pi = event.data.object as Stripe.PaymentIntent;
+
+      // Find the payment by payment_intent
+      const { data: payment } = await supabase
+        .from("payments")
+        .select("id, booking_id")
+        .eq("stripe_payment_intent", pi.id)
+        .single();
+
+      if (payment) {
+        await supabase
+          .from("payments")
+          .update({
+            status: "failed",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", payment.id);
+
+        if (payment.booking_id) {
+          await supabase
+            .from("bookings")
+            .update({
+              status: "cancelled",
+              payment_status: "failed",
+            })
+            .eq("id", payment.booking_id);
+        }
       }
     }
 
