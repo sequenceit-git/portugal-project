@@ -1,5 +1,5 @@
 import { useSearchParams, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "../lib/supabaseClient";
 import Footer from "../components/Footer";
 
@@ -8,10 +8,12 @@ const BookingCancel = () => {
   const bookingId = searchParams.get("booking_id");
   const [cancelling, setCancelling] = useState(false);
   const [cancelled, setCancelled] = useState(false);
+  const cancelledRef = useRef(false); // prevent double-cancel
 
   // Auto-cancel the abandoned booking so it frees up capacity
   useEffect(() => {
-    if (!bookingId) return;
+    if (!bookingId || cancelledRef.current) return;
+    cancelledRef.current = true;
 
     const cancelBooking = async () => {
       setCancelling(true);

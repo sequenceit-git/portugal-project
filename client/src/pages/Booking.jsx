@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import Footer from "../components/Footer";
@@ -109,6 +109,7 @@ const Booking = () => {
   // Step 3 – payment
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const lastSubmitRef = useRef(0); // throttle: min 5s between submissions
 
   /* fetch tour */
   useEffect(() => {
@@ -175,6 +176,15 @@ const Booking = () => {
   const handleConfirm = async (e) => {
     e.preventDefault();
     if (!selDate || !selTime || !form.firstName || !form.email) return;
+
+    // Throttle: reject if less than 5 seconds since last submit
+    const now = Date.now();
+    if (now - lastSubmitRef.current < 5000) {
+      alert("Please wait a moment before trying again.");
+      return;
+    }
+    lastSubmitRef.current = now;
+
     setSubmitting(true);
     try {
       // 0. Check available spots before booking

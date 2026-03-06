@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import healthRouter from "./routes/health.js";
 
 const app = express();
@@ -8,6 +9,17 @@ const port = 5173;
 
 // Security headers
 app.use(helmet());
+
+// ── Global rate limiter ──────────────────────────────────────
+// 100 requests per 15 minutes per IP across all routes
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests, please try again later." },
+});
+app.use(globalLimiter);
 
 // CORS — restrict to known origins
 const allowedOrigins = [
