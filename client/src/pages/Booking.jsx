@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import Footer from "../components/Footer";
@@ -107,9 +107,9 @@ const Booking = () => {
     setForm((p) => ({ ...p, [f]: e.target.value }));
 
   // Step 3 – payment
-  const [payment, setPayment] = useState("credit-card");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const lastSubmitRef = useRef(0); // throttle: min 5s between submissions
 
   /* fetch tour */
   useEffect(() => {
@@ -176,35 +176,113 @@ const Booking = () => {
   const handleConfirm = async (e) => {
     e.preventDefault();
     if (!selDate || !selTime || !form.firstName || !form.email) return;
+
+    // Throttle: reject if less than 5 seconds since last submit
+    const now = Date.now();
+    if (now - lastSubmitRef.current < 5000) {
+      alert("Please wait a moment before trying again.");
+      return;
+    }
+    lastSubmitRef.current = now;
+
     setSubmitting(true);
     try {
-      const { error } = await supabase.from("bookings").insert({
-        tour_id: tourId ? Number(tourId) : null,
-        tour_name: tour?.name ?? null,
-        booking_date: selDate,
-        booking_time: selTime,
-        language: language,
-        adults: passengers.adult,
-        youth: passengers.youth,
-        infants: passengers.infant,
-        seniors: passengers.senior,
-        total_guests: totalGuests,
-        first_name: form.firstName,
-        last_name: form.lastName || null,
-        email: form.email,
-        phone: form.phone || null,
-        special_requests: form.specialReq || null,
-        payment_method: payment,
-        subtotal: parseFloat(subtotal.toFixed(2)),
-        service_fee: serviceFee,
-        total_amount: parseFloat(total.toFixed(2)),
-        status: "pending",
-      });
-      if (error) throw error;
-      setSubmitted(true);
+      // 0. Check available spots before booking
+      if (tourId) {
+        const { data: spots, error: spotsErr } = await supabase.rpc(
+          "fn_available_spots",
+          {
+            p_tour_id: Number(tourId),
+            p_date: selDate,
+            p_time: selTime,
+          },
+        );
+        if (!spotsErr && spots !== null && spots < totalGuests) {
+          alert(
+            spots === 0
+              ? "Sorry, this time slot is fully booked. Please choose another time."
+              : `Only ${spots} spot${spots === 1 ? "" : "s"} remaining for this time slot. Please reduce your party size or choose another time.`,
+          );
+          setSubmitting(false);
+          return;
+        }
+      }
+
+      // 1. Save booking to Supabase (pending)
+      const { data: bookingData, error } = await supabase
+        .from("bookings")
+        .insert({
+          tour_id: tourId ? Number(tourId) : null,
+          tour_name: tour?.name ?? null,
+          booking_date: selDate,
+          booking_time: selTime,
+          language: language,
+          adults: passengers.adult,
+          youth: passengers.youth,
+          infants: passengers.infant,
+          seniors: passengers.senior,
+          total_guests: totalGuests,
+          first_name: form.firstName,
+          last_name: form.lastName || null,
+          email: form.email,
+          phone: form.phone || null,
+          special_requests: form.specialReq || null,
+          payment_method: "stripe",
+          subtotal: parseFloat(subtotal.toFixed(2)),
+          service_fee: serviceFee,
+          total_amount: parseFloat(total.toFixed(2)),
+          status: "pending",
+          payment_status: "unpaid",
+        })
+        .select("id")
+        .single();
+
+      if (error) {
+        // Handle duplicate booking (unique index violation)
+        if (error.code === "23505") {
+          alert(
+            "You already have an active booking for this tour at this date and time. Please check your email for the existing booking details.",
+          );
+          setSubmitting(false);
+          return;
+        }
+        // Handle capacity exceeded (trigger exception)
+        if (
+          error.message &&
+          error.message.includes("fully booked")
+        ) {
+          alert(error.message);
+          setSubmitting(false);
+          return;
+        }
+        throw error;
+      }
+
+      // 2. Create Stripe Checkout Session via Supabase Edge Function
+      const { data: fnData, error: fnError } = await supabase.functions.invoke(
+        "create-checkout",
+        {
+          body: {
+            bookingId: bookingData.id,
+            tourName: tour?.name || "Tour Booking",
+            totalAmount: parseFloat(total.toFixed(2)),
+            customerEmail: form.email,
+            customerName: `${form.firstName} ${form.lastName || ""}`.trim(),
+            passengers: totalGuests,
+            bookingDate: selDate,
+            bookingTime: selTime,
+          },
+        },
+      );
+
+      if (fnError) throw fnError;
+      if (!fnData?.url) throw new Error("Could not create checkout session");
+
+      // 3. Redirect to Stripe Checkout
+      window.location.href = fnData.url;
     } catch (err) {
-      console.error("Booking save failed:", err);
-      alert("Could not save your booking. Please try again.");
+      console.error("Booking/payment failed:", err);
+      alert("Could not process payment. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -651,97 +729,31 @@ const Booking = () => {
                 </h2>
               </div>
               <div className="p-6 space-y-4">
-                {[
-                  {
-                    id: "credit-card",
-                    label: "Credit / Debit Card",
-                    icon: "credit_card",
-                  },
-                  { id: "apple-pay", label: "Apple Pay", icon: "phone_iphone" },
-                  {
-                    id: "paypal",
-                    label: "PayPal",
-                    icon: "account_balance_wallet",
-                  },
-                ].map(({ id, label, icon }) => (
-                  <label key={id} className="cursor-pointer block">
-                    <input
-                      type="radio"
-                      name="payment"
-                      value={id}
-                      checked={payment === id}
-                      onChange={() => setPayment(id)}
-                      className="sr-only"
-                    />
-                    <div
-                      className={`flex items-center justify-between px-5 py-4 rounded-xl border-2 transition-all ${payment === id ? "border-primary bg-primary/5" : "border-gray-200 hover:border-primary/30"}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${payment === id ? "border-primary bg-primary" : "border-gray-300"}`}
-                        >
-                          {payment === id && (
-                            <div className="w-2 h-2 bg-white rounded-full" />
-                          )}
-                        </div>
-                        <span className="font-semibold text-gray-900">
-                          {label}
-                        </span>
-                      </div>
-                      <span className="material-icons text-gray-400">
-                        {icon}
-                      </span>
-                    </div>
-                  </label>
-                ))}
-
-                {payment === "credit-card" && (
-                  <div className="bg-gray-50 rounded-xl border border-gray-200 p-5 space-y-4 mt-2">
-                    <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-                        Card Number
-                      </label>
-                      <div className="relative">
-                        <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base">
-                          lock
-                        </span>
-                        <input
-                          type="text"
-                          placeholder="0000 0000 0000 0000"
-                          className="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-                          Expiry
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="MM / YY"
-                          className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-                          CVC
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="123"
-                          className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white"
-                        />
-                      </div>
-                    </div>
+                <div className="flex items-center gap-4 px-5 py-4 rounded-xl border-2 border-primary bg-primary/5">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                    <span className="material-icons text-primary text-2xl">credit_card</span>
                   </div>
-                )}
+                  <div>
+                    <p className="font-bold text-gray-900">Pay with Stripe</p>
+                    <p className="text-sm text-gray-500">
+                      You'll be redirected to Stripe's secure checkout to complete payment with credit card, Apple Pay, Google Pay, or more.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 pt-1">
+                  {["Visa", "Mastercard", "Amex", "Apple Pay", "Google Pay"].map((m) => (
+                    <span key={m} className="bg-gray-100 text-gray-600 text-xs font-semibold px-3 py-1.5 rounded-lg">
+                      {m}
+                    </span>
+                  ))}
+                </div>
 
                 <div className="flex items-center gap-2 text-xs text-gray-400 pt-1">
                   <span className="material-icons text-green-500 text-sm">
                     lock
                   </span>
-                  Payments are SSL encrypted and 100% secure.
+                  Payments are SSL encrypted, PCI-compliant, and 100% secure via Stripe.
                 </div>
               </div>
             </div>
@@ -761,8 +773,8 @@ const Booking = () => {
                 </>
               ) : (
                 <>
-                  <span className="material-icons">check_circle</span>Confirm
-                  &amp; Pay — €{total.toFixed(2)}
+                  <span className="material-icons">lock</span>Proceed to Payment
+                  — €{total.toFixed(2)}
                 </>
               )}
             </button>

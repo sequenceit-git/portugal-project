@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Footer from "../components/Footer";
 import { supabase } from "../lib/supabaseClient";
 
@@ -20,6 +20,7 @@ const Feedback = () => {
   const [submitStatus, setSubmitStatus] = useState(null);
   const [submitError, setSubmitError] = useState("");
   const [hoveredStar, setHoveredStar] = useState(0);
+  const lastSubmitRef = useRef(0); // throttle: min 10s between submissions
 
   useEffect(() => {
     supabase
@@ -52,6 +53,15 @@ const Feedback = () => {
       setSubmitError("Please select a star rating.");
       return;
     }
+
+    // Throttle: reject if less than 10 seconds since last submit
+    const now = Date.now();
+    if (now - lastSubmitRef.current < 10000) {
+      setSubmitError("Please wait a moment before submitting again.");
+      return;
+    }
+    lastSubmitRef.current = now;
+
     setIsSubmitting(true);
     setSubmitError("");
     setSubmitStatus(null);
