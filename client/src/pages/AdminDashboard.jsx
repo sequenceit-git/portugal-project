@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "../lib/supabaseClient";
 
 /* ─────────────────────────────────────────────────────────────
@@ -765,8 +765,8 @@ const BookingsManager = () => {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {visible.map((b) => (
-                    <>
-                      <tr key={b.id} className="hover:bg-gray-50/60 transition">
+                    <React.Fragment key={b.id}>
+                      <tr className="hover:bg-gray-50/60 transition">
                         <td className="px-4 py-3">
                           <p className="font-bold text-gray-900">
                             {b.first_name} {b.last_name}
@@ -927,7 +927,7 @@ const BookingsManager = () => {
                           </td>
                         </tr>
                       )}
-                    </>
+                    </React.Fragment>
                   ))}
                 </tbody>
               </table>
@@ -2284,8 +2284,8 @@ const TransactionsManager = () => {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {visible.map((p) => (
-                    <>
-                      <tr key={p.id} className="hover:bg-gray-50/60 transition">
+                    <React.Fragment key={p.id}>
+                      <tr className="hover:bg-gray-50/60 transition">
                         <td className="px-4 py-3">
                           <p className="font-bold text-gray-900">
                             {p.customer_name || "—"}
@@ -2433,7 +2433,7 @@ const TransactionsManager = () => {
                           </td>
                         </tr>
                       )}
-                    </>
+                    </React.Fragment>
                   ))}
                 </tbody>
               </table>

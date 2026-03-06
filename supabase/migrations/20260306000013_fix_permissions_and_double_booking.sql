@@ -54,6 +54,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_no_duplicates
 CREATE OR REPLACE FUNCTION public.fn_check_booking_capacity()
 RETURNS trigger
 LANGUAGE plpgsql
+SECURITY DEFINER
 AS $$
 DECLARE
   v_max_people  int;

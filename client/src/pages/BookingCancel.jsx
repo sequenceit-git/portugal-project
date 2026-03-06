@@ -1,6 +1,6 @@
 import { useSearchParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import supabase from "../lib/supabaseClient";
+import { supabase } from "../lib/supabaseClient";
 import Footer from "../components/Footer";
 
 const BookingCancel = () => {
