@@ -4,7 +4,7 @@ import helmet from "helmet";
 import healthRouter from "./routes/health.js";
 
 const app = express();
-const port = 1234;
+const port = 5173;
 
 // Security headers
 app.use(helmet());
