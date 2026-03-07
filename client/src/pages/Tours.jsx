@@ -1,21 +1,20 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
-import TourPreviewPopup from "../components/TourPreviewPopup";
 import Footer from "../components/Footer";
 
 /* ── Badge colour mapping ──────────────────────────────────── */
 const badgeClass = {
-  amber: "bg-amber-400 text-gray-900",
+  amber: "bg-primary text-white",
   primary: "bg-primary text-white",
-  dark: "bg-gray-900 text-white",
+  dark: "bg-primary text-white",
 };
 
 /* ── Skeleton card while loading ───────────────────────────── */
 const SkeletonCard = () => (
   <div className="rounded-2xl overflow-hidden shadow-lg bg-white border border-gray-100 animate-pulse">
-    <div className="h-64 bg-gray-200" />
-    <div className="p-6 space-y-3">
+    <div className="h-56 bg-gray-200" />
+    <div className="p-5 space-y-2.5">
       <div className="h-3 bg-gray-200 rounded w-3/4" />
       <div className="h-5 bg-gray-200 rounded w-full" />
       <div className="h-3 bg-gray-200 rounded w-1/2" />
@@ -50,10 +49,10 @@ const Stars = ({ rating }) => {
 };
 
 /* ── Beautiful Tour Card ────────────────────────────────────── */
-const TourCard = ({ tour, onPreviewClick }) => (
+const TourCard = ({ tour }) => (
   <div className="group relative rounded-2xl overflow-hidden shadow-lg cursor-pointer flex flex-col bg-white border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
     {/* Image */}
-    <div className="relative h-64 overflow-hidden">
+    <div className="relative h-56 overflow-hidden">
       <img
         src={tour.title_image}
         alt={tour.name}
@@ -64,17 +63,17 @@ const TourCard = ({ tour, onPreviewClick }) => (
       {/* Badge */}
       {tour.badge && (
         <div
-          className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wide shadow ${badgeClass[tour.badge_color] || badgeClass.primary}`}
+          className={`absolute top-3.5 left-3.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wide shadow ${badgeClass[tour.badge_color] || badgeClass.primary}`}
         >
           {tour.badge}
         </div>
       )}
-      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide text-gray-900">
+      <div className="absolute top-3.5 right-3.5 bg-white/90 backdrop-blur-sm px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide text-gray-900">
         {tour.category || "Tuk-Tuk"}
       </div>
 
       {/* Rating pill on image */}
-      <div className="absolute bottom-4 left-4 flex items-center gap-1.5 bg-black/50 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-semibold">
+      <div className="absolute bottom-3.5 left-3.5 flex items-center gap-1 bg-black/50 backdrop-blur-sm text-white px-2.5 py-1 rounded-full text-[11px] font-semibold">
         <span className="material-icons text-yellow-400 text-sm">star</span>
         {Number(tour.rating).toFixed(1)}
         <span className="text-white/70">({tour.review_count})</span>
@@ -82,16 +81,16 @@ const TourCard = ({ tour, onPreviewClick }) => (
 
       {/* Price pill on image */}
       {tour.price && (
-        <div className="absolute bottom-4 right-4 bg-primary text-white px-3 py-1.5 rounded-full text-xs font-extrabold">
+        <div className="absolute bottom-3.5 right-3.5 bg-primary text-white px-2.5 py-1 rounded-full text-[11px] font-extrabold">
           From €{Number(tour.price).toFixed(0)}/person
         </div>
       )}
     </div>
 
     {/* Body */}
-    <div className="flex flex-col flex-1 p-6">
+    <div className="flex flex-col flex-1 p-5">
       {/* Meta row */}
-      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-3">
+      <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-gray-500 mb-2.5">
         <span className="flex items-center gap-1">
           <span className="material-icons text-primary text-base">
             schedule
@@ -117,27 +116,27 @@ const TourCard = ({ tour, onPreviewClick }) => (
       </div>
 
       {/* Title */}
-      <h3 className="text-xl font-extrabold text-gray-900 mb-1 leading-snug">
+      <h3 className="text-lg sm:text-xl font-extrabold text-gray-900 mb-1 leading-snug">
         {tour.name}
         {tour.subtitle && (
-          <span className="block text-primary text-base font-semibold mt-0.5">
+          <span className="block text-primary text-sm sm:text-base font-semibold mt-0.5">
             {tour.subtitle}
           </span>
         )}
       </h3>
 
       {/* Description */}
-      <p className="text-gray-600 text-sm leading-relaxed flex-1 mb-4 line-clamp-3">
+      <p className="text-gray-600 text-xs sm:text-sm leading-relaxed flex-1 mb-3.5 line-clamp-3">
         {tour.details}
       </p>
 
       {/* Highlights */}
       {tour.highlights && tour.highlights.length > 0 && (
-        <ul className="flex flex-wrap gap-1.5 mb-4">
+        <ul className="flex flex-wrap gap-1.5 mb-3.5">
           {tour.highlights.slice(0, 4).map((h) => (
             <li
               key={h}
-              className="text-[11px] font-medium bg-primary/10 text-primary border border-primary/20 px-2.5 py-1 rounded-full"
+              className="text-[10px] sm:text-[11px] font-medium bg-gray-100 text-gray-700 border border-gray-200 px-2 py-0.5 rounded-full"
             >
               {h}
             </li>
@@ -147,7 +146,7 @@ const TourCard = ({ tour, onPreviewClick }) => (
 
       {/* Meeting point */}
       {tour.meeting_point && (
-        <div className="flex items-start gap-2 text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2 mb-4">
+        <div className="flex items-start gap-2 text-[11px] sm:text-xs text-gray-500 bg-gray-50 rounded-lg px-2.5 py-1.5 mb-3.5">
           <span className="material-icons text-primary text-sm mt-0.5">
             location_on
           </span>
@@ -156,24 +155,17 @@ const TourCard = ({ tour, onPreviewClick }) => (
       )}
 
       {!tour.meeting_point && (
-        <div className="flex items-center gap-2 text-xs text-gray-500 mb-4">
+        <div className="flex items-center gap-2 text-[11px] sm:text-xs text-gray-500 mb-3.5">
           <span className="material-icons text-primary text-sm">near_me</span>
           <span>Flexible pickup area — details on booking</span>
         </div>
       )}
 
-      {/* CTA Buttons */}
-      <div className="flex gap-3 mt-auto">
-        <button
-          onClick={() => onPreviewClick(tour)}
-          className="flex-1 border-2 border-primary/30 text-primary font-bold text-sm px-4 py-2.5 rounded-xl hover:bg-primary/5 transition-all flex items-center justify-center gap-1.5"
-        >
-          <span className="material-icons text-base">visibility</span>
-          Preview
-        </button>
+      {/* CTA Button */}
+      <div className="mt-auto">
         <Link
           to={`/tour-details/${tour.id}`}
-          className="flex-1 bg-primary hover:bg-primary-dark text-white font-bold text-sm px-4 py-2.5 rounded-xl transition-all hover:-translate-y-0.5 shadow-lg shadow-primary/20 flex items-center justify-center gap-1.5"
+          className="w-full bg-primary hover:bg-primary-dark text-white font-bold text-xs sm:text-sm px-3.5 py-2.5 rounded-xl transition-all hover:-translate-y-0.5 shadow-lg shadow-primary/20 flex items-center justify-center gap-1.5"
         >
           Book Now
           <span className="material-icons text-base">arrow_forward</span>
@@ -188,8 +180,6 @@ const Tours = () => {
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("all");
-  const [selectedTour, setSelectedTour] = useState(null);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   useEffect(() => {
     const loadTours = async () => {
@@ -225,15 +215,6 @@ const Tours = () => {
     return true;
   });
 
-  const handlePreviewClick = (tour) => {
-    setSelectedTour(tour);
-    setIsPreviewOpen(true);
-  };
-  const handleClosePreview = () => {
-    setIsPreviewOpen(false);
-    setSelectedTour(null);
-  };
-
   return (
     <div className="bg-background-light text-gray-800 font-display antialiased">
       {/* ── Hero Banner ───────────────────────────── */}
@@ -261,18 +242,18 @@ const Tours = () => {
       </section> */}
 
       {/* ── Tour Cards ────────────────────────────── */}
-      <section className="py-16">
+      <section className="py-12 sm:py-14 lg:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section header + filters */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-9 sm:mb-10">
             <div>
               <span className="text-primary font-bold tracking-wider uppercase text-sm">
                 Tuk-Tuk Experiences
               </span>
-              <h2 className="mt-2 text-3xl md:text-4xl font-bold text-gray-900">
+              <h2 className="mt-2 text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
                 Choose Your Adventure
               </h2>
-              <p className="mt-2 text-gray-500 max-w-lg">
+              <p className="mt-2 text-sm sm:text-base text-gray-500 max-w-lg">
                 Every route is private, customisable, and fully led by a
                 licensed English-speaking Lisbon insider.
               </p>
@@ -284,7 +265,7 @@ const Tours = () => {
                 <button
                   key={f.key}
                   onClick={() => setActiveFilter(f.key)}
-                  className={`px-4 py-2 rounded-full text-sm font-semibold border transition-all ${
+                  className={`px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-semibold border transition-all ${
                     activeFilter === f.key
                       ? "bg-primary text-white border-primary shadow-md shadow-primary/25"
                       : "bg-white text-gray-600 border-gray-200 hover:border-primary/40 hover:text-primary"
@@ -321,23 +302,12 @@ const Tours = () => {
           ) : (
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {filtered.map((tour) => (
-                <TourCard
-                  key={tour.id}
-                  tour={tour}
-                  onPreviewClick={handlePreviewClick}
-                />
+                <TourCard key={tour.id} tour={tour} />
               ))}
             </div>
           )}
         </div>
       </section>
-
-      {/* ── Preview Popup ───────────────────────────── */}
-      <TourPreviewPopup
-        tour={selectedTour}
-        isOpen={isPreviewOpen}
-        onClose={handleClosePreview}
-      />
 
       <Footer />
     </div>

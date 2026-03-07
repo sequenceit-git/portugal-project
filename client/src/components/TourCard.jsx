@@ -46,13 +46,13 @@ const TourCard = ({ tour, onPreviewClick }) => {
         </p>
       </div>
       <div className="flex gap-2 px-4 pb-4">
-        <button
+        {/* <button
           onClick={() => onPreviewClick(tour)}
           className="flex-1 bg-slate-100 text-slate-900 font-semibold py-3 rounded-lg hover:bg-slate-200 transition flex items-center justify-center gap-2 whitespace-nowrap"
         >
           <span className="material-icons text-base">visibility</span>
           Preview
-        </button>
+        </button> */}
         <Link
           to={`/tour-details/${tour.id}`}
           className="flex-1 bg-primary text-white font-semibold py-3 rounded-lg shadow-lg shadow-primary/30 hover:bg-orange-600 transition flex items-center justify-center whitespace-nowrap"
