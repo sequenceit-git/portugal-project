@@ -2,6 +2,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "../lib/supabaseClient";
 import Footer from "../components/Footer";
+import SEO from "../components/SEO";
 
 const BookingCancel = () => {
   const [searchParams] = useSearchParams();
@@ -37,6 +38,7 @@ const BookingCancel = () => {
 
   return (
     <div className="min-h-screen bg-background-light flex flex-col">
+      <SEO title="Booking Cancelled" description="Your booking has been cancelled." noIndex={true} />
       <div className="flex-1 flex flex-col items-center justify-center px-4 text-center gap-6 py-16">
         <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center">
           <span className="material-icons text-amber-500 text-4xl">

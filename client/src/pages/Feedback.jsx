@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import Footer from "../components/Footer";
 import { supabase } from "../lib/supabaseClient";
+import SEO from "../components/SEO";
 
 const BUCKET = "reviews";
 
@@ -111,6 +112,12 @@ const Feedback = () => {
 
   return (
     <div className="min-h-screen bg-background-light text-slate-900 font-display antialiased">
+      <SEO
+        title="Leave a Review"
+        description="Enjoyed your Tukinlisbon tour? Share your experience and help other travellers discover the best private tours in Lisbon."
+        canonical="/feedback"
+        noIndex={true}
+      />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pt-32">
         {/* Header */}
         <div className="text-center mb-16">

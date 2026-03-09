@@ -50,6 +50,11 @@ app.get("/", (req, res) => {
   res.json({ status: "ok" });
 });
 
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
+// Export app for testing; only listen when run directly
+export default app;
+
+if (process.env.NODE_ENV !== "test") {
+  app.listen(port, () => {
+    console.log(`Server listening on port ${port}`);
+  });
+}

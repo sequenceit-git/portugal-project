@@ -23,11 +23,16 @@ const Navbar = () => {
             className="flex items-center"
             onClick={() => setIsOpen(false)}
           >
-            <img
-              src="/logo.png"
-              alt="Tukinlisbon"
-              className="h-12 sm:h-14 md:h-16 lg:h-20 w-auto object-contain"
-            />
+            <picture>
+              <source srcSet="/logo.webp" type="image/webp" />
+              <img
+                src="/logo-small.png"
+                alt="Tukinlisbon"
+                width="80"
+                height="80"
+                className="h-12 sm:h-14 md:h-16 lg:h-20 w-auto object-contain"
+              />
+            </picture>
           </NavLink>
 
           {/* Desktop Nav */}

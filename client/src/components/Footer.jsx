@@ -5,11 +5,18 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 md:gap-12 mb-10 sm:mb-12">
           <div>
             <a href="/" className="flex items-center mb-6">
-              <img
-                src="/logo.png"
-                alt="Tukinlisbon"
-                className="h-10 sm:h-14 w-auto object-contain"
-              />
+              <picture>
+                <source srcSet="/logo.webp" type="image/webp" />
+                <img
+                  src="/logo-small.png"
+                  alt="Tukinlisbon"
+                  className="h-10 sm:h-14 w-auto object-contain"
+                  width="56"
+                  height="56"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </picture>
             </a>
             <p className="text-gray-500 text-xs sm:text-sm mb-4 sm:mb-6">
               Personalized tours in Lisbon tailored to create unforgettable

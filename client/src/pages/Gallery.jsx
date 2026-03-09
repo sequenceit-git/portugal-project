@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 import Footer from "../components/Footer";
+import SEO from "../components/SEO";
 
 const Gallery = () => {
   const [galleryItems, setGalleryItems] = useState([]);
@@ -95,6 +96,11 @@ const Gallery = () => {
 
   return (
     <div className="min-h-screen bg-background-light text-slate-900 font-display antialiased">
+      <SEO
+        title="Photo Gallery — Lisbon Tour Highlights"
+        description="Browse photos from Tukinlisbon tours — Alfama streets, Sintra palaces, Belém monuments and the hidden corners of Lisbon captured on our guided tours."
+        canonical="/gallery"
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-14 lg:py-16">
         {/* Header */}
         <div className="mb-16">
@@ -121,6 +127,10 @@ const Gallery = () => {
                   src={item.image_url}
                   alt={item.description || item.tour_name}
                   className="w-full h-auto object-cover group-hover:scale-110 transition-transform duration-500 block"
+                  loading="lazy"
+                  decoding="async"
+                  width="400"
+                  height="300"
                   onError={() => handleImageError(item.id)}
                 />
 
@@ -185,6 +195,9 @@ const Gallery = () => {
                 alt={selectedImage.description || selectedImage.tour_name}
                 className="max-w-full max-h-full object-contain"
                 draggable="false"
+                decoding="async"
+                width="900"
+                height="600"
                 onError={() => {
                   handleImageError(selectedImage.id);
                   closeModal();

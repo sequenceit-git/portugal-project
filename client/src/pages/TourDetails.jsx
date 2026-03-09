@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabaseClient";
 import GalleryScroller from "../components/GalleryScroller";
 import Footer from "../components/Footer";
 import { Link } from "react-router-dom";
+import SEO from "../components/SEO";
 
 const TourDetails = () => {
   const { id } = useParams();
@@ -92,6 +93,9 @@ const TourDetails = () => {
           <img
             alt={tour.name}
             className="w-full h-full object-cover object-center"
+            fetchpriority="high"
+            width="1200"
+            height="600"
             src={heroImage}
           />
           <div className="absolute bottom-0 left-0 w-full z-20 pb-8 sm:pb-10 pt-20 sm:pt-24 bg-gradient-to-t from-background-dark/90 to-transparent">
@@ -257,6 +261,10 @@ const TourDetails = () => {
                       alt="Portrait of a smiling man with a beard"
                       className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-primary p-0.5"
                       data-alt="Portrait of a smiling man with a beard"
+                      loading="lazy"
+                      decoding="async"
+                      width="56"
+                      height="56"
                       src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqCNAv-dhb4J-nE-vMuzmbSzYc1TJw3fvkBrm-F3x2hnpkNajUP2I5khETCKk_J0GxxRWkq9EKne_FRNDykVYw9BvqTFWe22tl2mrlmKUxdszTshx-Cl7AVnEENEvNJVcSAi1WDBV2SdAh95jnBaSRYL2qOEJ_dwOYlhznq8fmsRkaCooAbqA2JdRmbIledWq0z4VkXFDi_5TruOPHN7Ov5bt77JuD2i3gE9WvIBl8PogqF6_4Yhkj-v2R8qgHQvBCGOZgU1pp1A"
                     />
                   </div>
@@ -467,6 +475,10 @@ const TourDetails = () => {
                       <img
                         alt="Review photo thumbnail"
                         className="w-16 h-16 rounded-lg object-cover border border-white shadow-sm"
+                        loading="lazy"
+                        decoding="async"
+                        width="64"
+                        height="64"
                         src="https://lh3.googleusercontent.com/aida-public/AB6AXuBF04WMttcxjV33MoxrLc6K1y0z72j0ZgWqomm-GrKM7iK4xRYUk8z7kqSptFm8sA5SOXFeMFDO0zsStcp-kOCzHT0xW21bNLPxyi-HwbNIDxSoCgKT9vUOEI2NzR8fEo_xCf5uzbpdcz-BaVupB0FmBq8-YuRcV0880NXFQl7PvEIKvN4te_13qk_E7L8uE7diN_p-khkTBTHzh9KGcrQ4Hbp5aVN24JqeZjmaFWB53hr_QLhvagxKdnEstLF6nWM1HjgHe6K1ww"
                       />
                     </div>
@@ -645,6 +657,10 @@ const TourDetails = () => {
                       className="w-full h-full object-cover opacity-80"
                       data-alt="Map of Lisbon showing tour route"
                       data-location="Lisbon"
+                      loading="lazy"
+                      decoding="async"
+                      width="600"
+                      height="192"
                       src="https://lh3.googleusercontent.com/aida-public/AB6AXuAP6NTVQWkjpYAWfFX4ZwcAB33l9UzTuTq3rwuG_JJmjK2rMba7ZxdpWlxWQv8YYfOOrjOOnOc9CCgQYqSDKJteCYVrXnu7izYjYVAf86hq1pVZpaIZ3tdfHWrY2Og7RYcfF4KO1rV_Kg6iMnnYUS1kd81BnFlWEWwGGlP4wHFEU0vPbPh6G2lDV8z70jm03E79pI5Iy-piH73-jUKL4HQn9k6P3ZHv8y1VkrryW3AG8uaY9lh90yKmfQONFBmuq0lx0yspywV8ew"
                     />
                     <div className="absolute inset-0 flex items-center justify-center">

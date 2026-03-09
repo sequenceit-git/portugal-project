@@ -16,6 +16,10 @@ const TourCard = ({ tour, onPreviewClick }) => {
             src={tour.title_image}
             alt={tour.name}
             className="h-full w-full object-cover"
+            loading="lazy"
+            decoding="async"
+            width="400"
+            height="192"
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center text-gray-400">

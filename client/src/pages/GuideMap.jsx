@@ -4,11 +4,18 @@ const GuideMap = () => {
       <aside className="w-full md:w-[400px] lg:w-[450px] flex-shrink-0 flex flex-col h-full bg-white border-r border-slate-200 shadow-xl z-20">
         <div className="p-6 border-b border-slate-100 bg-white">
           <div className="flex items-center gap-3 mb-6">
-            <img
-              src="/logo.png"
-              alt="Tukinlisbon"
-              className="h-12 w-auto object-contain"
-            />
+            <picture>
+              <source srcSet="/logo.webp" type="image/webp" />
+              <img
+                src="/logo-small.png"
+                alt="Tukinlisbon"
+                className="h-12 w-auto object-contain"
+                width="48"
+                height="48"
+                loading="lazy"
+                decoding="async"
+              />
+            </picture>
           </div>
           <div className="space-y-4">
             <h2 className="text-2xl font-bold leading-tight">

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Footer from "../components/Footer";
+import SEO from "../components/SEO";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -68,6 +69,11 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-background-light text-slate-900 font-display antialiased">
+      <SEO
+        title="Contact Us"
+        description="Get in touch with Tukinlisbon. Have a question about a Lisbon tour? We're here to help — contact us by email or through the form below."
+        canonical="/contact"
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pt-32">
         {/* Header */}
         <div className="text-center mb-16">

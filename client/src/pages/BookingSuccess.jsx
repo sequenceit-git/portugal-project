@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import Footer from "../components/Footer";
+import SEO from "../components/SEO";
 
 const BookingSuccess = () => {
   const [searchParams] = useSearchParams();
@@ -118,6 +119,7 @@ const BookingSuccess = () => {
 
   return (
     <div className="min-h-screen bg-background-light flex flex-col">
+      <SEO title="Booking Confirmed" description="Your Lisbon tour booking is confirmed with Tukinlisbon." noIndex={true} />
       <div className="flex-1 flex flex-col items-center justify-center px-4 text-center gap-6 py-16">
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
           <span className="material-icons text-green-500 text-4xl">

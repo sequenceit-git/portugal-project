@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Footer from "../components/Footer";
 import { supabase } from "../lib/supabaseClient";
+import SEO from "../components/SEO";
 
 const GuestStories = () => {
   const [reviews, setReviews] = useState([]);
@@ -159,6 +160,11 @@ const GuestStories = () => {
 
   return (
     <div className="bg-background-light text-gray-800 font-display antialiased">
+      <SEO
+        title="Guest Stories — Real Reviews from Our Travellers"
+        description="Read verified reviews from Tukinlisbon guests. Hundreds of 5-star stories from travellers who explored Lisbon on our private and small-group tours."
+        canonical="/guest-stories"
+      />
       {/* Hero Section */}
       <header className="relative pt-24 pb-12 lg:pt-32 lg:pb-16 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none"></div>
@@ -265,6 +271,10 @@ const GuestStories = () => {
                       alt="Guest story"
                       className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
                       src={story.image}
+                      loading="lazy"
+                      decoding="async"
+                      width="480"
+                      height="256"
                     />
                     <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/80 to-transparent">
                       <span className="text-white text-xs font-bold bg-primary px-2 py-1 rounded mb-2 inline-block">
@@ -549,6 +559,10 @@ const GuestStories = () => {
                             alt={review.name}
                             className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-orange-100 flex-shrink-0"
                             src={review.photo_url}
+                            loading="lazy"
+                            decoding="async"
+                            width="48"
+                            height="48"
                           />
                         ) : (
                           <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 border-2 border-orange-100 flex items-center justify-center text-primary font-bold text-sm sm:text-lg flex-shrink-0">

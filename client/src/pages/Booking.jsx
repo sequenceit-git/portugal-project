@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import Footer from "../components/Footer";
+import SEO from "../components/SEO";
 
 /* ── helpers ─────────────────────────────────────────────── */
 const MONTHS = [
@@ -352,6 +353,12 @@ const Booking = () => {
 
   return (
     <div className="bg-background-light min-h-screen font-display antialiased">
+      <SEO
+        title={tour ? `Book ${tour.name}` : "Book a Tour"}
+        description={tour ? `Reserve your spot on the ${tour.name} with Tukinlisbon. Secure online booking — instant confirmation.` : "Book a private guided tour in Lisbon with Tukinlisbon."}
+        canonical="/booking"
+        noIndex={true}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-gray-400 mb-8">
