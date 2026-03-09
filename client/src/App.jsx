@@ -17,11 +17,13 @@ import AdminDashboard from "./pages/AdminDashboard.jsx";
 const App = () => {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith("/admin");
+  const isHome = location.pathname === "/";
+  const isTourDetails = location.pathname.startsWith("/tour-details/");
 
   return (
     <div className="min-h-screen text-slate-900">
       {!isAdmin && <Navbar />}
-      <main className={isAdmin ? "" : "pt-24"}>
+      <main className={isAdmin || isHome || isTourDetails ? "" : "pt-24"}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/tours" element={<Tours />} />

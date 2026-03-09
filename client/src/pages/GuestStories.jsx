@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import Footer from "../components/Footer";
 import { supabase } from "../lib/supabaseClient";
 
 const GuestStories = () => {
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState("all");
 
   useEffect(() => {
     supabase
@@ -114,34 +116,77 @@ const GuestStories = () => {
     ));
   };
 
+  const storyMatchesFilter = (story) => {
+    if (activeFilter === "all") return true;
+
+    const content = [
+      story.type,
+      story.category,
+      story.title,
+      story.review,
+      story.location,
+      story.badge,
+      story.author,
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    if (activeFilter === "couples") {
+      return (
+        content.includes("couple") ||
+        content.includes("honeymoon") ||
+        (story.author || "").includes("&")
+      );
+    }
+
+    if (activeFilter === "families") {
+      return (
+        story.type === "family" ||
+        content.includes("family") ||
+        content.includes("kids") ||
+        content.includes("grandparents")
+      );
+    }
+
+    if (activeFilter === "solo") {
+      return content.includes("solo") || content.includes("traveler");
+    }
+
+    return true;
+  };
+
+  const filteredStories = stories.filter(storyMatchesFilter);
+
   return (
     <div className="bg-background-light text-gray-800 font-display antialiased">
       {/* Hero Section */}
-      <header className="relative pt-32 pb-16 lg:pt-40 lg:pb-24 overflow-hidden">
+      <header className="relative pt-24 pb-12 lg:pt-32 lg:pb-16 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <span className="inline-block py-1 px-3 rounded-full bg-primary/10 text-primary text-sm font-bold tracking-wider uppercase mb-4">
+          <span className="inline-block py-1 px-3 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-bold tracking-wider uppercase mb-3 sm:mb-4">
             Guest Book
           </span>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight mb-6">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight mb-4 sm:mb-6">
             Memories Made in{" "}
             <span className="text-primary underline decoration-4 decoration-primary/30 underline-offset-4">
               Lisbon
             </span>
           </h1>
-          <p className="max-w-2xl mx-auto text-xl text-gray-600 mb-10 leading-relaxed">
+          <p className="max-w-2xl mx-auto text-base sm:text-lg text-gray-600 mb-7 sm:mb-10 leading-relaxed">
             Join hundreds of happy travelers who explored the hidden gems,
             tasted the best pastéis, and felt the soul of the city with me.
           </p>
 
           {/* Rating Summary */}
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-6 sm:gap-12">
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-5 sm:gap-10">
             <div className="flex flex-col items-center">
               <div className="flex items-center gap-1 mb-1">
-                <span className="text-3xl font-bold text-gray-900">4.9</span>
+                <span className="text-2xl sm:text-3xl font-bold text-gray-900">
+                  4.9
+                </span>
                 <div className="flex text-primary">{renderStars(5)}</div>
               </div>
-              <span className="text-sm font-medium text-gray-500">
+              <span className="text-xs sm:text-sm font-medium text-gray-500">
                 Based on 500+ reviews
               </span>
             </div>
@@ -163,52 +208,80 @@ const GuestStories = () => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 sm:pb-20">
         {/* Filter Tabs */}
-        <div className="flex justify-center mb-12 gap-2 overflow-x-auto py-2">
-          <button className="bg-primary text-white px-5 py-2 rounded-full text-sm font-semibold shadow-md whitespace-nowrap">
+        <div className="flex justify-center mb-8 sm:mb-10 gap-1 sm:gap-1.5 overflow-x-auto py-2">
+          <button
+            onClick={() => setActiveFilter("all")}
+            className={`${
+              activeFilter === "all"
+                ? "bg-primary text-white shadow-md"
+                : "bg-white text-gray-600 border border-gray-200 hover:border-primary hover:text-primary"
+            } px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold whitespace-nowrap transition-colors`}
+          >
             All Stories
           </button>
-          <button className="bg-white text-gray-600 border border-gray-200 px-5 py-2 rounded-full text-sm font-medium hover:border-primary hover:text-primary transition-colors whitespace-nowrap">
+          <button
+            onClick={() => setActiveFilter("couples")}
+            className={`${
+              activeFilter === "couples"
+                ? "bg-primary text-white shadow-md"
+                : "bg-white text-gray-600 border border-gray-200 hover:border-primary hover:text-primary"
+            } px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-medium whitespace-nowrap transition-colors`}
+          >
             Couples
           </button>
-          <button className="bg-white text-gray-600 border border-gray-200 px-5 py-2 rounded-full text-sm font-medium hover:border-primary hover:text-primary transition-colors whitespace-nowrap">
+          <button
+            onClick={() => setActiveFilter("families")}
+            className={`${
+              activeFilter === "families"
+                ? "bg-primary text-white shadow-md"
+                : "bg-white text-gray-600 border border-gray-200 hover:border-primary hover:text-primary"
+            } px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-medium whitespace-nowrap transition-colors`}
+          >
             Families
           </button>
-          <button className="bg-white text-gray-600 border border-gray-200 px-5 py-2 rounded-full text-sm font-medium hover:border-primary hover:text-primary transition-colors whitespace-nowrap">
+          <button
+            onClick={() => setActiveFilter("solo")}
+            className={`${
+              activeFilter === "solo"
+                ? "bg-primary text-white shadow-md"
+                : "bg-white text-gray-600 border border-gray-200 hover:border-primary hover:text-primary"
+            } px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-medium whitespace-nowrap transition-colors`}
+          >
             Solo Travelers
           </button>
         </div>
 
         {/* Masonry Grid */}
-        <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
-          {stories.map((story) => (
+        <div className="columns-2 gap-3 sm:gap-4 space-y-3 sm:space-y-4">
+          {filteredStories.map((story) => (
             <div key={story.id} className="break-inside-avoid">
               {/* Featured Card */}
               {story.type === "featured" && (
                 <div className="group relative bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
-                  <div className="relative h-96 overflow-hidden">
+                  <div className="relative h-56 sm:h-64 overflow-hidden">
                     <img
                       alt="Guest story"
                       className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
                       src={story.image}
                     />
-                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                    <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/80 to-transparent">
                       <span className="text-white text-xs font-bold bg-primary px-2 py-1 rounded mb-2 inline-block">
                         {story.category}
                       </span>
-                      <h3 className="text-white font-bold text-lg">
+                      <h3 className="text-white font-bold text-sm sm:text-base">
                         {story.quote}
                       </h3>
                     </div>
                   </div>
-                  <div className="p-6">
-                    <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                  <div className="p-3 sm:p-4">
+                    <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-3">
                       {story.review}
                     </p>
-                    <div className="flex items-center justify-between border-t border-gray-100 pt-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">
+                    <div className="flex items-center justify-between border-t border-gray-100 pt-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-[10px]">
                           {story.author
                             .split(" ")
                             .map((n) => n[0])
@@ -231,21 +304,21 @@ const GuestStories = () => {
 
               {/* Quote Card */}
               {story.type === "quote" && (
-                <div className="bg-primary/5 rounded-xl p-8 border border-primary/10 relative">
-                  <span className="material-icons text-6xl text-primary/10 absolute top-4 left-4">
+                <div className="bg-primary/5 rounded-xl p-3.5 sm:p-5 border border-primary/10 relative">
+                  <span className="material-icons text-5xl sm:text-6xl text-primary/10 absolute top-3 left-3 sm:top-4 sm:left-4">
                     format_quote
                   </span>
-                  <p className="relative z-10 text-lg font-medium text-gray-800 italic mb-6">
+                  <p className="relative z-10 text-sm sm:text-base font-medium text-gray-800 italic mb-4 sm:mb-5">
                     {story.quote}
                   </p>
-                  <div className="flex items-center gap-4 relative z-10">
+                  <div className="flex items-center gap-2.5 sm:gap-3 relative z-10">
                     <img
-                      className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
+                      className="w-9 h-9 sm:w-11 sm:h-11 rounded-full object-cover border-2 border-white shadow-sm"
                       src={story.image}
                       alt={story.author}
                     />
                     <div>
-                      <p className="text-sm font-bold text-gray-900">
+                      <p className="text-xs sm:text-sm font-bold text-gray-900">
                         {story.author}
                       </p>
                       <p className="text-xs text-gray-500">{story.location}</p>
@@ -257,7 +330,7 @@ const GuestStories = () => {
               {/* Landscape Card */}
               {story.type === "landscape" && (
                 <div className="group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 overflow-hidden">
-                  <div className="relative h-56 overflow-hidden">
+                  <div className="relative h-36 sm:h-44 overflow-hidden">
                     <img
                       className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
                       src={story.image}
@@ -270,9 +343,9 @@ const GuestStories = () => {
                       {story.location}
                     </div>
                   </div>
-                  <div className="p-5">
+                  <div className="p-3 sm:p-4">
                     <div className="flex mb-2">{renderStars(story.rating)}</div>
-                    <h4 className="font-bold text-gray-900 mb-2">
+                    <h4 className="font-bold text-sm sm:text-base text-gray-900 mb-1.5">
                       {story.title}
                     </h4>
                     <p className="text-xs text-gray-500">{story.review}</p>
@@ -283,19 +356,19 @@ const GuestStories = () => {
               {/* Family Card */}
               {story.type === "family" && (
                 <div className="group relative bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
-                  <div className="relative h-80 overflow-hidden">
+                  <div className="relative h-48 sm:h-56 overflow-hidden">
                     <img
                       className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
                       src={story.image}
                       alt="Family tour"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-6">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-3 sm:p-4">
                       <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                        <p className="text-white/90 italic mb-4 line-clamp-3">
+                        <p className="text-white/90 text-xs sm:text-sm italic mb-3 line-clamp-3">
                           {story.review}
                         </p>
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-white text-primary flex items-center justify-center font-bold text-xs">
+                          <div className="w-7 h-7 rounded-full bg-white text-primary flex items-center justify-center font-bold text-[10px]">
                             JF
                           </div>
                           <div className="text-white">
@@ -314,23 +387,25 @@ const GuestStories = () => {
               {/* Food Card */}
               {story.type === "food" && (
                 <div className="group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 overflow-hidden">
-                  <div className="h-48 overflow-hidden">
+                  <div className="h-36 sm:h-40 overflow-hidden">
                     <img
                       className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
                       src={story.image}
                       alt="Food experience"
                     />
                   </div>
-                  <div className="p-6">
-                    <h4 className="font-bold text-gray-900 mb-2 text-lg">
+                  <div className="p-3 sm:p-4">
+                    <h4 className="font-bold text-gray-900 mb-1.5 text-sm sm:text-base">
                       {story.title}
                     </h4>
-                    <p className="text-gray-600 text-sm mb-4">{story.review}</p>
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
+                    <p className="text-gray-600 text-xs sm:text-sm mb-3">
+                      {story.review}
+                    </p>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[10px]">
                         MD
                       </div>
-                      <span className="text-sm font-medium text-gray-700">
+                      <span className="text-xs sm:text-sm font-medium text-gray-700">
                         {story.author}
                       </span>
                       <span className="text-xs text-gray-400">
@@ -344,18 +419,18 @@ const GuestStories = () => {
               {/* Sunset Card */}
               {story.type === "sunset" && (
                 <div className="group relative bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
-                  <div className="relative h-80 overflow-hidden">
+                  <div className="relative h-48 sm:h-56 overflow-hidden">
                     <img
                       className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
                       src={story.image}
                       alt="Sunset view"
                     />
-                    <div className="absolute top-4 left-4 bg-primary/90 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                    <div className="absolute top-3 left-3 bg-primary/90 text-white px-2 py-1 rounded-full text-[10px] sm:text-xs font-bold shadow-lg">
                       {story.title}
                     </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-background-dark to-transparent">
-                      <div className="bg-white/10 backdrop-blur-md rounded-lg p-4 border border-white/10">
-                        <p className="text-white text-sm font-medium italic">
+                    <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-background-dark to-transparent">
+                      <div className="bg-white/10 backdrop-blur-md rounded-lg p-2.5 sm:p-3 border border-white/10">
+                        <p className="text-white text-xs sm:text-sm font-medium italic">
                           {story.review}
                         </p>
                         <div className="mt-3 flex items-center justify-between">
@@ -374,19 +449,19 @@ const GuestStories = () => {
 
               {/* Short Card */}
               {story.type === "short" && (
-                <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-1 mb-3">
                     {renderStars(story.rating)}
                   </div>
-                  <h4 className="font-bold text-gray-900 mb-2">
+                  <h4 className="font-bold text-sm sm:text-base text-gray-900 mb-1.5">
                     {story.title}
                   </h4>
                   <p className="text-xs text-gray-500 mb-4">{story.review}</p>
                   <div className="flex items-center gap-3 border-t border-gray-100 pt-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
+                    <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[10px]">
                       A
                     </div>
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="text-xs sm:text-sm font-medium text-gray-700">
                       {story.author}
                     </span>
                   </div>
@@ -396,15 +471,15 @@ const GuestStories = () => {
               {/* Tuk Tuk Card */}
               {story.type === "tuktuk" && (
                 <div className="group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 overflow-hidden">
-                  <div className="relative h-64 overflow-hidden">
+                  <div className="relative h-40 sm:h-48 overflow-hidden">
                     <img
                       className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 grayscale group-hover:grayscale-0 transition-all"
                       src={story.image}
                       alt="Tuk tuk tour"
                     />
                   </div>
-                  <div className="p-5">
-                    <p className="text-gray-600 text-sm leading-relaxed italic mb-4">
+                  <div className="p-3 sm:p-4">
+                    <p className="text-gray-600 text-xs sm:text-sm leading-relaxed italic mb-3">
                       {story.review}
                     </p>
                     <div className="flex justify-between items-center">
@@ -422,13 +497,21 @@ const GuestStories = () => {
           ))}
         </div>
 
+        {filteredStories.length === 0 && (
+          <div className="text-center py-10">
+            <p className="text-gray-500 text-sm">
+              No stories found for this filter.
+            </p>
+          </div>
+        )}
+
         {/* Dynamic Reviews from Supabase */}
         {reviewsLoading && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-8">
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 animate-pulse"
+                className="bg-white rounded-2xl p-3 sm:p-4 shadow-md border border-gray-100 animate-pulse"
               >
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-14 h-14 rounded-full bg-gray-200 flex-shrink-0" />
@@ -448,57 +531,65 @@ const GuestStories = () => {
         )}
 
         {!reviewsLoading && reviews.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          <div className="mt-10">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-5">
               Guest Reviews
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="columns-2 gap-3 sm:gap-4">
               {reviews.map((review) => (
                 <div
                   key={review.id}
-                  className="bg-white rounded-2xl p-6 shadow-md hover:shadow-lg transition-all border border-gray-100 flex flex-col"
+                  className="break-inside-avoid mb-3 sm:mb-4"
                 >
-                  <div className="flex items-center gap-4 mb-4">
-                    {review.photo_url ? (
-                      <img
-                        alt={review.name}
-                        className="w-14 h-14 rounded-full object-cover border-2 border-orange-100 flex-shrink-0"
-                        src={review.photo_url}
-                      />
-                    ) : (
-                      <div className="w-14 h-14 rounded-full bg-primary/10 border-2 border-orange-100 flex items-center justify-center text-primary font-bold text-xl flex-shrink-0">
-                        {review.name.charAt(0).toUpperCase()}
+                  <div className="bg-white rounded-2xl p-3 sm:p-4 shadow-md hover:shadow-lg transition-all border border-gray-100 flex flex-col">
+                    <div className="mb-3 sm:mb-4">
+                      <div className="flex items-center gap-2.5 sm:gap-3">
+                        {review.photo_url ? (
+                          <img
+                            alt={review.name}
+                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-orange-100 flex-shrink-0"
+                            src={review.photo_url}
+                          />
+                        ) : (
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 border-2 border-orange-100 flex items-center justify-center text-primary font-bold text-sm sm:text-lg flex-shrink-0">
+                            {review.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-xs sm:text-sm text-gray-900 truncate">
+                            {review.name}
+                          </h4>
+                          <p className="text-[11px] text-gray-500 truncate">
+                            {review.country}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex mt-2">
+                        {Array.from({ length: 5 }, (_, i) => (
+                          <span
+                            key={i}
+                            className={`material-icons text-sm sm:text-base ${
+                              i < review.rating
+                                ? "text-yellow-400"
+                                : "text-gray-200"
+                            }`}
+                          >
+                            star
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-xs sm:text-sm text-gray-600 italic mb-3 sm:mb-4 flex-grow leading-relaxed">
+                      &ldquo;{review.review_text}&rdquo;
+                    </p>
+                    {review.tour_name && (
+                      <div className="pt-4 border-t border-gray-100 mt-auto">
+                        <span className="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded">
+                          Tour: {review.tour_name}
+                        </span>
                       </div>
                     )}
-                    <div className="flex-1">
-                      <h4 className="font-bold text-gray-900">{review.name}</h4>
-                      <p className="text-xs text-gray-500">{review.country}</p>
-                    </div>
-                    <div className="flex">
-                      {Array.from({ length: 5 }, (_, i) => (
-                        <span
-                          key={i}
-                          className={`material-icons text-lg ${
-                            i < review.rating
-                              ? "text-yellow-400"
-                              : "text-gray-200"
-                          }`}
-                        >
-                          star
-                        </span>
-                      ))}
-                    </div>
                   </div>
-                  <p className="text-gray-600 italic mb-4 flex-grow">
-                    &ldquo;{review.review_text}&rdquo;
-                  </p>
-                  {review.tour_name && (
-                    <div className="pt-4 border-t border-gray-100 mt-auto">
-                      <span className="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded">
-                        Tour: {review.tour_name}
-                      </span>
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
@@ -508,24 +599,29 @@ const GuestStories = () => {
 
       {/* CTA Section */}
       <section className="bg-white border-t border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-          <div className="mb-8">
-            <span className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-6">
-              <span className="material-icons text-3xl">calendar_today</span>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-16 text-center">
+          <div className="mb-6 sm:mb-8">
+            <span className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-primary/10 text-primary mb-5 sm:mb-6">
+              <span className="material-icons text-2xl sm:text-3xl">
+                calendar_today
+              </span>
             </span>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 mb-3 sm:mb-4">
               Ready to create your own story?
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
               Dates fill up quickly, especially during summer. Check
               availability now to secure your personal tour of Lisbon.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <button className="w-full sm:w-auto bg-primary hover:bg-orange-600 text-white text-lg font-bold py-4 px-10 rounded-xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] flex items-center justify-center gap-2">
+            <Link
+              to="/tours"
+              className="w-full sm:w-auto bg-primary hover:bg-orange-600 text-white text-base sm:text-lg font-bold py-3.5 sm:py-4 px-8 sm:px-10 rounded-xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
+            >
               Join the next tour
               <span className="material-icons">arrow_forward</span>
-            </button>
+            </Link>
             <button className="w-full sm:w-auto bg-transparent border-2 border-gray-200 hover:border-primary text-gray-700 hover:text-primary font-bold py-3.5 px-8 rounded-xl transition-colors">
               Contact me
             </button>

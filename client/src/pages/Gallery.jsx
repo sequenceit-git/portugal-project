@@ -6,6 +6,7 @@ const Gallery = () => {
   const [galleryItems, setGalleryItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [brokenImages, setBrokenImages] = useState(new Set());
 
   useEffect(() => {
     const loadGallery = async () => {
@@ -18,7 +19,11 @@ const Gallery = () => {
         if (error) {
           console.error("Error loading gallery:", error);
         } else {
-          setGalleryItems(data || []);
+          // Filter out items with missing or empty image URLs
+          const validItems = (data || []).filter(
+            (item) => item.image_url && item.image_url.trim() !== "",
+          );
+          setGalleryItems(validItems);
         }
       } catch (err) {
         console.error("Failed to load gallery:", err);
@@ -40,21 +45,30 @@ const Gallery = () => {
     document.body.style.overflow = "hidden";
   };
 
+  const handleImageError = (itemId) => {
+    setBrokenImages((prev) => new Set([...prev, itemId]));
+  };
+
+  // Filter out broken images from display
+  const validGalleryItems = galleryItems.filter(
+    (item) => !brokenImages.has(item.id),
+  );
+
   const navigateImage = (direction) => {
-    const currentIndex = galleryItems.findIndex(
+    const currentIndex = validGalleryItems.findIndex(
       (item) => item.id === selectedImage.id,
     );
     let newIndex;
 
     if (direction === "next") {
       newIndex =
-        currentIndex === galleryItems.length - 1 ? 0 : currentIndex + 1;
+        currentIndex === validGalleryItems.length - 1 ? 0 : currentIndex + 1;
     } else {
       newIndex =
-        currentIndex === 0 ? galleryItems.length - 1 : currentIndex - 1;
+        currentIndex === 0 ? validGalleryItems.length - 1 : currentIndex - 1;
     }
 
-    setSelectedImage(galleryItems[newIndex]);
+    setSelectedImage(validGalleryItems[newIndex]);
   };
 
   // Keyboard navigation
@@ -69,7 +83,7 @@ const Gallery = () => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedImage, galleryItems]);
+  }, [selectedImage, validGalleryItems]);
 
   if (loading) {
     return (
@@ -81,7 +95,7 @@ const Gallery = () => {
 
   return (
     <div className="min-h-screen bg-background-light text-slate-900 font-display antialiased">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pt-32">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-14 lg:py-16">
         {/* Header */}
         <div className="mb-16">
           <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 mb-4">
@@ -94,24 +108,25 @@ const Gallery = () => {
         </div>
 
         {/* Masonry Grid */}
-        {galleryItems.length > 0 ? (
-          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
-            {galleryItems.map((item) => (
+        {validGalleryItems.length > 0 ? (
+          <div className="columns-2 sm:columns-3 lg:columns-4 gap-3 sm:gap-4">
+            {validGalleryItems.map((item) => (
               <div
                 key={item.id}
-                className="relative group cursor-pointer rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 break-inside-avoid mb-4"
+                className="relative group cursor-pointer rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 mb-3 sm:mb-4 break-inside-avoid"
                 onClick={() => handleImageClick(item)}
               >
                 {/* Image */}
                 <img
                   src={item.image_url}
                   alt={item.description || item.tour_name}
-                  className="w-full h-auto object-cover group-hover:scale-110 transition-transform duration-500"
+                  className="w-full h-auto object-cover group-hover:scale-110 transition-transform duration-500 block"
+                  onError={() => handleImageError(item.id)}
                 />
 
                 {/* Tag Badge */}
                 <div className="absolute top-3 left-3 z-10">
-                  <span className="inline-block bg-primary text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wide shadow-md">
+                  <span className="inline-block bg-orange-100 text-orange-700 border border-orange-200 text-[9px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full uppercase tracking-wide shadow-md">
                     {item.tour_name}
                   </span>
                 </div>
@@ -170,6 +185,10 @@ const Gallery = () => {
                 alt={selectedImage.description || selectedImage.tour_name}
                 className="max-w-full max-h-full object-contain"
                 draggable="false"
+                onError={() => {
+                  handleImageError(selectedImage.id);
+                  closeModal();
+                }}
               />
             </div>
 
@@ -194,7 +213,7 @@ const Gallery = () => {
             {/* Bottom Info */}
             <div className="absolute bottom-6 left-4 right-4 bg-black/60 backdrop-blur-sm rounded-xl p-6 text-white max-w-2xl mx-auto z-40">
               <div className="mb-3">
-                <span className="inline-block bg-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide mb-2">
+                <span className="inline-block bg-orange-100 text-orange-700 border border-orange-200 text-[9px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full uppercase tracking-wide mb-2">
                   {selectedImage.tour_name}
                 </span>
               </div>
@@ -204,10 +223,10 @@ const Gallery = () => {
                 </p>
               )}
               <p className="text-xs text-white/70">
-                {galleryItems.findIndex(
+                {validGalleryItems.findIndex(
                   (item) => item.id === selectedImage.id,
                 ) + 1}{" "}
-                / {galleryItems.length}
+                / {validGalleryItems.length}
               </p>
             </div>
           </div>

@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 
 const navItems = [
   { to: "/", label: "Home" },
-  { to: "/tours", label: "Tours" },
+  // { to: "/tours", label: "Tours" },
   { to: "/gallery", label: "Gallery" },
   { to: "/guest-stories", label: "Guest Stories" },
   { to: "/contact", label: "Contact" },
@@ -16,7 +16,7 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 z-50 w-full bg-white/95 backdrop-blur border-b border-primary/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 md:h-20">
+        <div className="flex items-center justify-between h-14 sm:h-16 md:h-20 lg:h-24">
           {/* Logo */}
           <NavLink
             to="/"
@@ -26,7 +26,7 @@ const Navbar = () => {
             <img
               src="/logo.png"
               alt="Tukinlisbon"
-              className="h-12 md:h-14 w-auto object-contain"
+              className="h-12 sm:h-14 md:h-16 lg:h-20 w-auto object-contain"
             />
           </NavLink>
 
@@ -38,7 +38,7 @@ const Navbar = () => {
                 to={item.to}
                 end={item.to === "/"}
                 className={({ isActive }) =>
-                  `text-base font-medium transition-colors ${
+                  `text-lg font-medium transition-colors ${
                     isActive
                       ? "text-primary"
                       : "text-slate-900 hover:text-primary"
@@ -50,7 +50,7 @@ const Navbar = () => {
             ))}
             <NavLink
               to="/tours"
-              className="bg-primary text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg shadow-primary/20 hover:bg-orange-600 transition-colors"
+              className="bg-primary text-white px-4 py-2 rounded-full text-md font-semibold shadow-lg shadow-primary/20 hover:bg-orange-600 transition-colors"
             >
               Book a Tour
             </NavLink>
@@ -71,7 +71,7 @@ const Navbar = () => {
 
       {/* Mobile Drawer */}
       <div
-        className={`md:hidden bg-white border-t border-slate-100 overflow-hidden transition-all duration-300 ease-in-out ${
+        className={`md:hidden bg-white overflow-hidden transition-all duration-300 ease-in-out ${
           isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
         }`}
       >
@@ -83,7 +83,7 @@ const Navbar = () => {
               end={item.to === "/"}
               onClick={() => setIsOpen(false)}
               className={({ isActive }) =>
-                `block px-4 py-3 rounded-xl text-base font-medium transition-colors ${
+                `block px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-colors ${
                   isActive
                     ? "bg-primary/10 text-primary"
                     : "text-slate-800 hover:bg-slate-50 hover:text-primary"
@@ -96,7 +96,7 @@ const Navbar = () => {
           <NavLink
             to="/tours"
             onClick={() => setIsOpen(false)}
-            className="block mt-3 px-4 py-3 bg-primary text-white rounded-xl text-base font-bold text-center shadow-lg shadow-primary/20 hover:bg-orange-600 transition-colors"
+            className="block mt-2.5 sm:mt-3 px-3 sm:px-4 py-2 sm:py-2.5 bg-primary text-white rounded-lg sm:rounded-xl text-sm sm:text-base font-semibold text-center shadow-lg shadow-primary/20 hover:bg-orange-600 transition-colors"
           >
             Book a Tour
           </NavLink>
