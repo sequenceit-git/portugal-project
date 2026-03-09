@@ -10,11 +10,19 @@ module.exports = {
         "background-dark": "#221610",
         azulejo: "#2c4c6e",
         "azulejo-light": "#eef4fa",
-        // "surface-light": "#ffffff",
-        // "surface-dark": "#2d1e17",
+        // shadcn/ui CSS variable colours (used by mapcn map component)
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        border: "hsl(var(--border))",
+        ring: "hsl(var(--ring))",
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
       },
       fontFamily: {
         display: ["Plus Jakarta Sans", "sans-serif"],
+        sans: ["Plus Jakarta Sans", "system-ui", "sans-serif"],
       },
     },
   },

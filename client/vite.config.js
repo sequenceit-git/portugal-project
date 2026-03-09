@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import compression from "vite-plugin-compression";
+import path from "path";
 
 export default defineConfig({
   plugins: [
@@ -10,6 +11,11 @@ export default defineConfig({
     // Also gzip for older servers
     compression({ algorithm: "gzip", ext: ".gz", threshold: 1024 }),
   ],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
   server: {
     port: 3000,
   },
@@ -28,6 +34,8 @@ export default defineConfig({
           "vendor-supabase": ["@supabase/supabase-js"],
           // Helmet
           "vendor-helmet": ["react-helmet-async"],
+          // MapLibre GL — only loaded on the /map route
+          "vendor-maplibre": ["maplibre-gl"],
         },
       },
     },

@@ -5,11 +5,13 @@ import GalleryScroller from "../components/GalleryScroller";
 import Footer from "../components/Footer";
 import { Link } from "react-router-dom";
 import SEO from "../components/SEO";
+import RouteMapModal from "../components/RouteMapModal";
 
 const TourDetails = () => {
   const { id } = useParams();
   const [tour, setTour] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showRouteMap, setShowRouteMap] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -664,7 +666,11 @@ const TourDetails = () => {
                       src="https://lh3.googleusercontent.com/aida-public/AB6AXuAP6NTVQWkjpYAWfFX4ZwcAB33l9UzTuTq3rwuG_JJmjK2rMba7ZxdpWlxWQv8YYfOOrjOOnOc9CCgQYqSDKJteCYVrXnu7izYjYVAf86hq1pVZpaIZ3tdfHWrY2Og7RYcfF4KO1rV_Kg6iMnnYUS1kd81BnFlWEWwGGlP4wHFEU0vPbPh6G2lDV8z70jm03E79pI5Iy-piH73-jUKL4HQn9k6P3ZHv8y1VkrryW3AG8uaY9lh90yKmfQONFBmuq0lx0yspywV8ew"
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <button className="bg-white text-slate-900 px-4 py-2 rounded-full shadow-lg text-sm font-bold hover:scale-105 transition-transform">
+                      <button
+                        onClick={() => setShowRouteMap(true)}
+                        className="bg-white text-slate-900 px-4 py-2 rounded-full shadow-lg text-sm font-bold hover:scale-105 transition-transform flex items-center gap-1.5"
+                      >
+                        <span className="material-icons text-base text-primary">map</span>
                         View Route Map
                       </button>
                     </div>
@@ -701,6 +707,13 @@ const TourDetails = () => {
       </main>
 
       <Footer />
+
+      {showRouteMap && (
+        <RouteMapModal
+          tourName={tour.name}
+          onClose={() => setShowRouteMap(false)}
+        />
+      )}
     </div>
   );
 };
