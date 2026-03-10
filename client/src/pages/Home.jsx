@@ -733,7 +733,7 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="h-[300px] sm:h-[360px] md:h-[400px] relative flex items-center justify-center bg-gray-900">
+      {/* <section className="h-[300px] sm:h-[360px] md:h-[400px] relative flex items-center justify-center bg-gray-900">
         <img
           alt="Map of Lisbon streets"
           className="absolute inset-0 w-full h-full object-cover opacity-60"
@@ -753,7 +753,7 @@ const Home = () => {
             Start Planning Your Trip
           </a>
         </div>
-      </section>
+      </section> */}
 
       <Footer />
       <TourPreviewPopup
@@ -761,6 +761,30 @@ const Home = () => {
         isOpen={isPreviewOpen}
         onClose={handleClosePreview}
       />
+
+      {/* ── WhatsApp floating button ── */}
+      <a
+        href="https://wa.me/+351920377914"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Chat with us on WhatsApp"
+        className="fixed bottom-6 right-6 z-50 group flex items-center gap-3"
+      >
+        {/* Tooltip */}
+        <span className="opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-200 bg-gray-900 text-white text-sm font-semibold px-3 py-1.5 rounded-lg shadow-lg whitespace-nowrap pointer-events-none">
+          Chat with us
+        </span>
+        {/* Button */}
+        <div className="w-14 h-14 rounded-full bg-[#25D366] shadow-xl shadow-green-500/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-transform duration-200">
+          <svg
+            viewBox="0 0 32 32"
+            className="w-7 h-7 fill-white"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M16 .5C7.44.5.5 7.44.5 16c0 2.75.72 5.37 2.08 7.67L.5 31.5l8.08-2.06A15.44 15.44 0 0016 31.5C24.56 31.5 31.5 24.56 31.5 16S24.56.5 16 .5zm0 28.2a13.2 13.2 0 01-6.73-1.84l-.48-.29-4.8 1.22 1.26-4.67-.32-.5A13.2 13.2 0 1116 28.7zm7.24-9.87c-.4-.2-2.34-1.15-2.7-1.28-.36-.13-.63-.2-.89.2s-1.02 1.28-1.25 1.55c-.23.26-.46.29-.86.1a10.83 10.83 0 01-3.19-1.97 11.97 11.97 0 01-2.21-2.75c-.23-.4-.02-.61.17-.81.18-.18.4-.46.6-.69.2-.23.26-.4.4-.66.13-.26.06-.49-.03-.69-.1-.2-.89-2.14-1.22-2.93-.32-.77-.65-.66-.89-.67h-.76c-.26 0-.69.1-1.05.49s-1.38 1.35-1.38 3.29 1.41 3.82 1.61 4.08c.2.26 2.78 4.25 6.73 5.96.94.41 1.67.65 2.24.83.94.3 1.8.26 2.47.16.75-.11 2.34-.96 2.67-1.88.33-.92.33-1.71.23-1.88-.1-.16-.36-.26-.76-.46z" />
+          </svg>
+        </div>
+      </a>
     </div>
   );
 };

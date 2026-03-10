@@ -23,7 +23,7 @@ const Footer = () => {
               memories. Experience the city like a local.
             </p>
             <div className="flex gap-4">
-              <a
+              {/* <a
                 className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-primary hover:text-white transition-colors"
                 href="#"
               >
@@ -34,7 +34,7 @@ const Footer = () => {
                 href="#"
               >
                 <span className="material-icons text-sm">camera_alt</span>
-              </a>
+              </a> */}
             </div>
           </div>
           <div>
@@ -43,22 +43,27 @@ const Footer = () => {
             </h4>
             <ul className="space-y-2.5 sm:space-y-4 text-xs sm:text-sm text-gray-600">
               <li>
-                <a className="hover:text-primary transition-colors" href="#">
+                <a
+                  className="hover:text-primary transition-colors"
+                  href="/tours"
+                >
                   Walking Tours
                 </a>
               </li>
+
               <li>
-                <a className="hover:text-primary transition-colors" href="#">
-                  Food &amp; Wine Tasting
-                </a>
-              </li>
-              <li>
-                <a className="hover:text-primary transition-colors" href="#">
+                <a
+                  className="hover:text-primary transition-colors"
+                  href="/tours"
+                >
                   TukTuk Adventure
                 </a>
               </li>
               <li>
-                <a className="hover:text-primary transition-colors" href="#">
+                <a
+                  className="hover:text-primary transition-colors"
+                  href="/tours"
+                >
                   Sintra Day Trip
                 </a>
               </li>
@@ -71,21 +76,15 @@ const Footer = () => {
             <ul className="space-y-2.5 sm:space-y-4 text-xs sm:text-sm text-gray-600">
               <li>
                 <a className="hover:text-primary transition-colors" href="#">
-                  About Ricardo
+                  About Us
                 </a>
               </li>
+
               <li>
-                <a className="hover:text-primary transition-colors" href="#">
-                  Testimonials
-                </a>
-              </li>
-              <li>
-                <a className="hover:text-primary transition-colors" href="#">
-                  Blog
-                </a>
-              </li>
-              <li>
-                <a className="hover:text-primary transition-colors" href="#">
+                <a
+                  className="hover:text-primary transition-colors"
+                  href="/contact"
+                >
                   Contact
                 </a>
               </li>
@@ -100,13 +99,13 @@ const Footer = () => {
                 <span className="material-icons text-primary text-sm mt-1">
                   email
                 </span>
-                <span>ola@tukinlisbon.com</span>
+                <span>tukinlisbon2@gmail.com</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="material-icons text-primary text-sm mt-1">
                   phone
                 </span>
-                <span>+351 912 345 678</span>
+                <span>+351 9203 377 914</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="material-icons text-primary text-sm mt-1">

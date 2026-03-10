@@ -38,12 +38,18 @@ const TIME_SLOTS = (() => {
   return slots;
 })();
 
-// Passenger type definitions
-const PTYPE = [
-  { key: "adult", label: "Adult", sub: "Age 13+", rate: 1.0 },
-  { key: "youth", label: "Youth", sub: "Age 3–12", rate: 0.7 },
-  { key: "senior", label: "Senior", sub: "Age 60+", rate: 0.9 },
-  { key: "infant", label: "Infant", sub: "Age 0–2", rate: 0 },
+// Supported guide languages
+const ALL_LANGUAGES = [
+  "English",
+  "Albanian",
+  "Arabic",
+  "Armenian",
+  "Azerbaijani",
+  "Bulgarian",
+  "Chinese",
+  "Croatian",
+  "Czech",
+  "Danish",
 ];
 
 // Build full calendar grid for a given year/month
@@ -82,19 +88,15 @@ const Booking = () => {
   const [calMonth, setCalMonth] = useState(today.getMonth());
   const [selDate, setSelDate] = useState(null); // "YYYY-MM-DD"
   const [selTime, setSelTime] = useState(TIME_SLOTS[0]);
-  const [passengers, setPassengers] = useState({
-    adult: 1,
-    youth: 0,
-    infant: 0,
-    senior: 0,
-  });
-  const adjPax = (key, delta) =>
-    setPassengers((p) => ({
-      ...p,
-      [key]: Math.max(key === "adult" ? 1 : 0, p[key] + delta),
-    }));
-  const [language, setLanguage] = useState("English");
-  const [languages, setLanguages] = useState(["English"]);
+  const [travelerCount, setTravelerCount] = useState(1);
+  const [dateOpen, setDateOpen] = useState(false);
+  const [timeOpen, setTimeOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const [selectedLanguages, setSelectedLanguages] = useState(["English"]);
+  const toggleLanguage = (lang) =>
+    setSelectedLanguages((prev) =>
+      prev.includes(lang) ? prev.filter((l) => l !== lang) : [...prev, lang],
+    );
 
   // Step 2 – contact
   const [form, setForm] = useState({
@@ -128,15 +130,8 @@ const Booking = () => {
         .single();
       if (!error && data) {
         setTour(data);
-        setPassengers({ adult: 1, youth: 0, infant: 0, senior: 0 });
-        const langs = data.guide_language
-          ? data.guide_language
-              .split(/[,/]/)
-              .map((l) => l.trim())
-              .filter(Boolean)
-          : ["English"];
-        setLanguages(langs);
-        setLanguage(langs[0]);
+        setTravelerCount(1);
+        setSelectedLanguages(["English"]);
       }
       setLoading(false);
     };
@@ -144,14 +139,9 @@ const Booking = () => {
   }, [tourId]);
 
   const price = tour?.price ? Number(tour.price) : 0;
-  const totalGuests =
-    passengers.adult + passengers.youth + passengers.infant + passengers.senior;
-  const subtotal =
-    passengers.adult * price * 1.0 +
-    passengers.youth * price * 0.7 +
-    passengers.senior * price * 0.9 +
-    passengers.infant * 0; // infants free
-  const serviceFee = totalGuests > 0 ? 2.5 : 0;
+  const totalGuests = travelerCount;
+  const subtotal = travelerCount * price;
+  const serviceFee = travelerCount > 0 ? 2.5 : 0;
   const total = subtotal + serviceFee;
 
   const prevMonth = () => {
@@ -217,12 +207,12 @@ const Booking = () => {
           tour_name: tour?.name ?? null,
           booking_date: selDate,
           booking_time: selTime,
-          language: language,
-          adults: passengers.adult,
-          youth: passengers.youth,
-          infants: passengers.infant,
-          seniors: passengers.senior,
-          total_guests: totalGuests,
+          language: selectedLanguages.join(", "),
+          adults: travelerCount,
+          youth: 0,
+          infants: 0,
+          seniors: 0,
+          total_guests: travelerCount,
           first_name: form.firstName,
           last_name: form.lastName || null,
           email: form.email,
@@ -248,10 +238,7 @@ const Booking = () => {
           return;
         }
         // Handle capacity exceeded (trigger exception)
-        if (
-          error.message &&
-          error.message.includes("fully booked")
-        ) {
+        if (error.message && error.message.includes("fully booked")) {
           alert(error.message);
           setSubmitting(false);
           return;
@@ -355,13 +342,17 @@ const Booking = () => {
     <div className="bg-background-light min-h-screen font-display antialiased">
       <SEO
         title={tour ? `Book ${tour.name}` : "Book a Tour"}
-        description={tour ? `Reserve your spot on the ${tour.name} with Tukinlisbon. Secure online booking — instant confirmation.` : "Book a private guided tour in Lisbon with Tukinlisbon."}
+        description={
+          tour
+            ? `Reserve your spot on the ${tour.name} with Tukinlisbon. Secure online booking — instant confirmation.`
+            : "Book a private guided tour in Lisbon with Tukinlisbon."
+        }
         canonical="/booking"
         noIndex={true}
       />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-gray-400 mb-8">
+        <nav className="flex flex-wrap items-center gap-2 text-sm text-gray-400 mb-5 sm:mb-8">
           <Link to="/tours" className="hover:text-primary transition">
             Tours
           </Link>
@@ -382,7 +373,7 @@ const Booking = () => {
           {/* ── LEFT: steps ──────────────────────────────── */}
           <form onSubmit={handleConfirm} className="lg:col-span-7 space-y-8">
             <div>
-              <h1 className="text-3xl font-extrabold text-gray-900 mb-1">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-1">
                 Complete Your Booking
               </h1>
               <p className="text-gray-500">
@@ -392,231 +383,340 @@ const Booking = () => {
 
             {/* ── STEP 1: Options ── */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="flex items-center gap-3 px-6 pt-6 pb-4 border-b border-gray-100">
-                <div className="w-8 h-8 rounded-full bg-primary text-white font-bold text-sm flex items-center justify-center">
+              <div className="flex items-center gap-3 px-4 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-gray-100">
+                <div className="w-8 h-8 rounded-full bg-primary text-white font-bold text-sm flex items-center justify-center shrink-0">
                   1
                 </div>
-                <h2 className="text-lg font-bold text-gray-900">
+                <h2 className="text-base sm:text-lg font-bold text-gray-900">
                   Choose Your Options
                 </h2>
               </div>
-              <div className="p-6 space-y-6">
-                {/* Passenger types */}
-                <div>
-                  <p className="font-semibold text-gray-900 mb-1">Passengers</p>
-                  <p className="text-xs text-gray-400 mb-4">
-                    At least 1 adult required · infants travel free
-                  </p>
-                  <div className="space-y-3">
-                    {PTYPE.map(({ key, label, sub, rate }) => (
-                      <div
-                        key={key}
-                        className="flex items-center justify-between"
-                      >
-                        <div>
-                          <p className="font-medium text-gray-900 text-sm">
-                            {label}
-                          </p>
-                          <p className="text-xs text-gray-400">
-                            {sub}
-                            {rate > 0
-                              ? ` · €${(price * rate).toFixed(2)}/person`
-                              : " · Free"}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl p-1">
-                          <button
-                            type="button"
-                            onClick={() => adjPax(key, -1)}
-                            disabled={
-                              passengers[key] <= (key === "adult" ? 1 : 0)
-                            }
-                            className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-gray-600 hover:text-primary disabled:opacity-30 transition"
-                          >
-                            <span className="material-icons text-sm">
-                              remove
-                            </span>
-                          </button>
-                          <span className="w-5 text-center font-extrabold text-gray-900 text-sm">
-                            {passengers[key]}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => adjPax(key, 1)}
-                            className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-gray-600 hover:text-primary transition"
-                          >
-                            <span className="material-icons text-sm">add</span>
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {totalGuests > 0 && (
-                    <p className="text-xs text-primary font-semibold mt-3 flex items-center gap-1">
-                      <span className="material-icons text-sm">group</span>
-                      {totalGuests} guest{totalGuests > 1 ? "s" : ""} selected
-                    </p>
-                  )}
-                </div>
-
-                {/* Language */}
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="font-semibold text-gray-900">
-                      Guide Language
-                    </p>
-                    <p className="text-sm text-gray-400">
-                      Select your preferred language
-                    </p>
-                  </div>
-                  <div className="relative">
-                    <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-primary text-base pointer-events-none">
-                      language
+              <div className="p-4 sm:p-6 space-y-3">
+                {/* ── Traveler ── */}
+                <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 bg-gray-100 rounded-full">
+                  <div className="flex items-center gap-3">
+                    <span className="material-icons text-gray-500">group</span>
+                    <span className="font-semibold text-gray-800">
+                      Traveler
                     </span>
-                    <select
-                      value={language}
-                      onChange={(e) => setLanguage(e.target.value)}
-                      className="pl-9 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 bg-white outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary appearance-none cursor-pointer"
-                    >
-                      {languages.map((l) => (
-                        <option key={l}>{l}</option>
-                      ))}
-                    </select>
-                    <span className="material-icons absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-base pointer-events-none">
-                      expand_more
+                    <span className="text-xs text-gray-400">
+                      €{price.toFixed(2)} / person
                     </span>
                   </div>
-                </div>
-              </div>
-            </div>
-
-            {/* ── STEP 2: Date & Time ── */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="flex items-center gap-3 px-6 pt-6 pb-4 border-b border-gray-100">
-                <div className="w-8 h-8 rounded-full bg-primary text-white font-bold text-sm flex items-center justify-center">
-                  2
-                </div>
-                <h2 className="text-lg font-bold text-gray-900">
-                  Pick a Date &amp; Time
-                </h2>
-              </div>
-              <div className="p-6 space-y-6">
-                {/* Calendar */}
-                <div>
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={prevMonth}
-                      className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:border-primary hover:text-primary transition"
+                      onClick={() =>
+                        setTravelerCount((c) => Math.max(1, c - 1))
+                      }
+                      disabled={travelerCount <= 1}
+                      className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:text-primary disabled:opacity-30 transition shadow-sm"
                     >
-                      <span className="material-icons text-base">
-                        chevron_left
-                      </span>
+                      <span className="material-icons text-sm">remove</span>
                     </button>
-                    <span className="font-bold text-gray-900">
-                      {MONTHS[calMonth]} {calYear}
+                    <span className="w-6 text-center font-extrabold text-gray-900">
+                      {travelerCount}
                     </span>
                     <button
                       type="button"
-                      onClick={nextMonth}
-                      className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:border-primary hover:text-primary transition"
+                      onClick={() => setTravelerCount((c) => c + 1)}
+                      className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:text-primary transition shadow-sm"
                     >
-                      <span className="material-icons text-base">
-                        chevron_right
-                      </span>
+                      <span className="material-icons text-sm">add</span>
                     </button>
                   </div>
+                </div>
 
-                  {/* Day headers */}
-                  <div className="grid grid-cols-7 mb-1">
-                    {DAYS.map((d) => (
-                      <div
-                        key={d}
-                        className="text-center text-[11px] font-bold text-gray-400 uppercase py-1"
-                      >
-                        {d}
-                      </div>
-                    ))}
-                  </div>
+                {/* ── Date Picker ── */}
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDateOpen(true);
+                      setTimeOpen(false);
+                      setLangOpen(false);
+                    }}
+                    className="w-full flex items-center justify-between px-5 py-3.5 bg-gray-100 rounded-full text-gray-800 font-semibold hover:bg-gray-200 transition"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="material-icons text-gray-500">
+                        calendar_today
+                      </span>
+                      <span>
+                        {selDate
+                          ? new Date(selDate + "T00:00:00").toLocaleDateString(
+                              "en-GB",
+                              {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              },
+                            )
+                          : "Select date"}
+                      </span>
+                    </div>
+                    <span className="material-icons text-gray-400">
+                      chevron_right
+                    </span>
+                  </button>
+                </div>
 
-                  {/* Day cells */}
-                  <div className="grid grid-cols-7 gap-1">
-                    {grid.map((d, i) => {
-                      if (!d) return <div key={`e-${i}`} />;
-                      const ds = toDateStr(calYear, calMonth, d);
-                      const past = isPast(d);
-                      const sel = selDate === ds;
-                      return (
+                {/* ── Date Modal ── */}
+                {dateOpen && (
+                  <div
+                    className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+                    onClick={() => setDateOpen(false)}
+                  >
+                    <div
+                      className="bg-white rounded-3xl p-4 sm:p-6 shadow-2xl w-full max-w-sm"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-base sm:text-lg font-extrabold text-gray-900">
+                          Select Date
+                        </h3>
                         <button
-                          key={ds}
                           type="button"
-                          disabled={past}
-                          onClick={() => setSelDate(ds)}
-                          className={`aspect-square flex items-center justify-center rounded-xl text-sm font-semibold transition-all
-                            ${
-                              past
-                                ? "text-gray-300 cursor-not-allowed"
-                                : sel
-                                  ? "bg-primary text-white shadow-md shadow-primary/30"
-                                  : "hover:bg-primary/10 hover:text-primary text-gray-700"
-                            }`}
+                          onClick={() => setDateOpen(false)}
+                          className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition"
                         >
-                          {d}
+                          <span className="material-icons text-base">
+                            close
+                          </span>
                         </button>
-                      );
-                    })}
-                  </div>
-
-                  {!selDate && (
-                    <p className="text-xs text-amber-600 mt-3 flex items-center gap-1">
-                      <span className="material-icons text-sm">info</span>
-                      Please select a date to continue.
-                    </p>
-                  )}
-                  {selDate && (
-                    <p className="text-xs text-primary mt-3 flex items-center gap-1 font-semibold">
-                      <span className="material-icons text-sm">
-                        event_available
-                      </span>
-                      Selected:{" "}
-                      {new Date(selDate + "T00:00:00").toLocaleDateString(
-                        "en-GB",
-                        {
-                          weekday: "long",
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        },
+                      </div>
+                      {/* Month navigation */}
+                      <div className="flex items-center justify-between mb-4">
+                        <button
+                          type="button"
+                          onClick={prevMonth}
+                          className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:border-primary hover:text-primary transition"
+                        >
+                          <span className="material-icons text-base">
+                            chevron_left
+                          </span>
+                        </button>
+                        <span className="font-bold text-gray-900">
+                          {MONTHS[calMonth]} {calYear}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={nextMonth}
+                          className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:border-primary hover:text-primary transition"
+                        >
+                          <span className="material-icons text-base">
+                            chevron_right
+                          </span>
+                        </button>
+                      </div>
+                      {/* Day headers */}
+                      <div className="grid grid-cols-7 mb-1">
+                        {DAYS.map((d) => (
+                          <div
+                            key={d}
+                            className="text-center text-[11px] font-bold text-gray-400 uppercase py-1"
+                          >
+                            {d}
+                          </div>
+                        ))}
+                      </div>
+                      {/* Day cells */}
+                      <div className="grid grid-cols-7 gap-1">
+                        {grid.map((d, i) => {
+                          if (!d) return <div key={`e-${i}`} />;
+                          const ds = toDateStr(calYear, calMonth, d);
+                          const past = isPast(d);
+                          const sel = selDate === ds;
+                          return (
+                            <button
+                              key={ds}
+                              type="button"
+                              disabled={past}
+                              onClick={() => {
+                                setSelDate(ds);
+                                setDateOpen(false);
+                              }}
+                              className={`aspect-square flex items-center justify-center rounded-xl text-sm font-semibold transition-all ${
+                                past
+                                  ? "text-gray-300 cursor-not-allowed"
+                                  : sel
+                                    ? "bg-primary text-white shadow-md shadow-primary/30"
+                                    : "hover:bg-primary/10 hover:text-primary text-gray-700"
+                              }`}
+                            >
+                              {d}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {!selDate && (
+                        <p className="text-xs text-amber-600 mt-4 flex items-center gap-1">
+                          <span className="material-icons text-sm">info</span>
+                          Please select a date to continue.
+                        </p>
                       )}
-                    </p>
-                  )}
-                </div>
-
-                {/* Time slots */}
-                <div>
-                  <p className="font-semibold text-gray-900 mb-3">
-                    Select a Starting Time
-                  </p>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                    {TIME_SLOTS.map((t) => (
-                      <button
-                        key={t}
-                        type="button"
-                        onClick={() => setSelTime(t)}
-                        className={`py-2.5 rounded-xl border text-sm font-semibold transition-all ${
-                          selTime === t
-                            ? "bg-primary text-white border-primary shadow-md shadow-primary/25"
-                            : "border-gray-200 text-gray-700 hover:border-primary/50 hover:text-primary"
-                        }`}
-                      >
-                        {t}
-                      </button>
-                    ))}
+                    </div>
                   </div>
+                )}
+
+                {/* ── Time Picker ── */}
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTimeOpen(true);
+                      setDateOpen(false);
+                      setLangOpen(false);
+                    }}
+                    className="w-full flex items-center justify-between px-5 py-3.5 bg-gray-100 rounded-full text-gray-800 font-semibold hover:bg-gray-200 transition"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="material-icons text-gray-500">
+                        schedule
+                      </span>
+                      <span>{selTime}</span>
+                    </div>
+                    <span className="material-icons text-gray-400">
+                      chevron_right
+                    </span>
+                  </button>
                 </div>
 
-                {tour?.meeting_point && (
-                  <div className="flex items-start gap-3 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-600">
+                {/* ── Time Modal ── */}
+                {timeOpen && (
+                  <div
+                    className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+                    onClick={() => setTimeOpen(false)}
+                  >
+                    <div
+                      className="bg-white rounded-3xl p-4 sm:p-6 shadow-2xl w-full max-w-sm max-h-[85vh] flex flex-col"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="flex items-center justify-between mb-4 shrink-0">
+                        <h3 className="text-base sm:text-lg font-extrabold text-gray-900">
+                          Select Time
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => setTimeOpen(false)}
+                          className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition"
+                        >
+                          <span className="material-icons text-base">
+                            close
+                          </span>
+                        </button>
+                      </div>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 shrink-0">
+                        Starting time
+                      </p>
+                      <div className="grid grid-cols-3 gap-2 overflow-y-auto pr-1">
+                        {TIME_SLOTS.map((t) => (
+                          <button
+                            key={t}
+                            type="button"
+                            onClick={() => {
+                              setSelTime(t);
+                              setTimeOpen(false);
+                            }}
+                            className={`py-2.5 rounded-xl border text-sm font-semibold transition-all ${
+                              selTime === t
+                                ? "bg-primary text-white border-primary shadow-md shadow-primary/25"
+                                : "border-gray-200 text-gray-700 hover:border-primary/50 hover:text-primary"
+                            }`}
+                          >
+                            {t}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Guide Language Multi-select Picker ── */}
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLangOpen(true);
+                      setDateOpen(false);
+                      setTimeOpen(false);
+                    }}
+                    className="w-full flex items-center justify-between px-5 py-3.5 bg-gray-100 rounded-full text-gray-800 font-semibold hover:bg-gray-200 transition"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="material-icons text-gray-500 shrink-0">
+                        language
+                      </span>
+                      <span className="truncate">
+                        {selectedLanguages.length > 0
+                          ? selectedLanguages.join(", ")
+                          : "Select language"}
+                      </span>
+                    </div>
+                    <span className="material-icons text-gray-400 shrink-0">
+                      chevron_right
+                    </span>
+                  </button>
+                </div>
+
+                {/* ── Language Modal ── */}
+                {langOpen && (
+                  <div
+                    className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+                    onClick={() => setLangOpen(false)}
+                  >
+                    <div
+                      className="bg-white rounded-3xl p-4 sm:p-6 shadow-2xl w-full max-w-sm max-h-[85vh] flex flex-col"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="flex items-center justify-between mb-4 shrink-0">
+                        <h3 className="text-base sm:text-lg font-extrabold text-gray-900">
+                          Select Language
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => setLangOpen(false)}
+                          className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition"
+                        >
+                          <span className="material-icons text-base">
+                            close
+                          </span>
+                        </button>
+                      </div>
+                      <div className="overflow-y-auto space-y-1 pr-1">
+                        {ALL_LANGUAGES.map((lang) => (
+                          <label
+                            key={lang}
+                            className="flex items-center gap-3 py-3 px-3 rounded-xl cursor-pointer hover:bg-gray-50 transition"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedLanguages.includes(lang)}
+                              onChange={() => toggleLanguage(lang)}
+                              className="w-4 h-4 accent-primary rounded"
+                            />
+                            <span className="text-sm font-medium text-gray-900">
+                              {lang}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                      <div className="pt-4 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setLangOpen(false)}
+                          className="w-full bg-primary text-white font-bold py-3 rounded-2xl hover:bg-primary-dark transition"
+                        >
+                          Done
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Meeting point */}
+                {tour?.meeting_point ? (
+                  <div className="flex items-start gap-3 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-600 mt-2">
                     <span className="material-icons text-primary text-base mt-0.5">
                       location_on
                     </span>
@@ -627,9 +727,8 @@ const Booking = () => {
                       <p>{tour.meeting_point}</p>
                     </div>
                   </div>
-                )}
-                {!tour?.meeting_point && (
-                  <div className="flex items-start gap-3 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-600">
+                ) : (
+                  <div className="flex items-start gap-3 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-600 mt-2">
                     <span className="material-icons text-primary text-base mt-0.5">
                       near_me
                     </span>
@@ -646,17 +745,17 @@ const Booking = () => {
               </div>
             </div>
 
-            {/* ── STEP 3: Contact details ── */}
+            {/* ── STEP 2: Contact details ── */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="flex items-center gap-3 px-6 pt-6 pb-4 border-b border-gray-100">
-                <div className="w-8 h-8 rounded-full bg-primary text-white font-bold text-sm flex items-center justify-center">
-                  3
+              <div className="flex items-center gap-3 px-4 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-gray-100">
+                <div className="w-8 h-8 rounded-full bg-primary text-white font-bold text-sm flex items-center justify-center shrink-0">
+                  2
                 </div>
-                <h2 className="text-lg font-bold text-gray-900">
+                <h2 className="text-base sm:text-lg font-bold text-gray-900">
                   Your Details
                 </h2>
               </div>
-              <div className="p-6 grid sm:grid-cols-2 gap-5">
+              <div className="p-4 sm:p-6 grid sm:grid-cols-2 gap-4 sm:gap-5">
                 {[
                   {
                     f: "firstName",
@@ -725,32 +824,45 @@ const Booking = () => {
               </div>
             </div>
 
-            {/* ── STEP 4: Payment ── */}
+            {/* ── STEP 3: Payment ── */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="flex items-center gap-3 px-6 pt-6 pb-4 border-b border-gray-100">
-                <div className="w-8 h-8 rounded-full bg-primary text-white font-bold text-sm flex items-center justify-center">
-                  4
+              <div className="flex items-center gap-3 px-4 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-gray-100">
+                <div className="w-8 h-8 rounded-full bg-primary text-white font-bold text-sm flex items-center justify-center shrink-0">
+                  3
                 </div>
-                <h2 className="text-lg font-bold text-gray-900">
+                <h2 className="text-base sm:text-lg font-bold text-gray-900">
                   Secure Payment
                 </h2>
               </div>
-              <div className="p-6 space-y-4">
+              <div className="p-4 sm:p-6 space-y-4">
                 <div className="flex items-center gap-4 px-5 py-4 rounded-xl border-2 border-primary bg-primary/5">
                   <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
-                    <span className="material-icons text-primary text-2xl">credit_card</span>
+                    <span className="material-icons text-primary text-2xl">
+                      credit_card
+                    </span>
                   </div>
                   <div>
                     <p className="font-bold text-gray-900">Pay with Stripe</p>
                     <p className="text-sm text-gray-500">
-                      You'll be redirected to Stripe's secure checkout to complete payment with credit card, Apple Pay, Google Pay, or more.
+                      You'll be redirected to Stripe's secure checkout to
+                      complete payment with credit card, Apple Pay, Google Pay,
+                      or more.
                     </p>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3 pt-1">
-                  {["Visa", "Mastercard", "Amex", "Apple Pay", "Google Pay"].map((m) => (
-                    <span key={m} className="bg-gray-100 text-gray-600 text-xs font-semibold px-3 py-1.5 rounded-lg">
+                  {[
+                    "Visa",
+                    "Mastercard",
+                    "Amex",
+                    "Apple Pay",
+                    "Google Pay",
+                  ].map((m) => (
+                    <span
+                      key={m}
+                      className="bg-gray-100 text-gray-600 text-xs font-semibold px-3 py-1.5 rounded-lg"
+                    >
                       {m}
                     </span>
                   ))}
@@ -760,7 +872,8 @@ const Booking = () => {
                   <span className="material-icons text-green-500 text-sm">
                     lock
                   </span>
-                  Payments are SSL encrypted, PCI-compliant, and 100% secure via Stripe.
+                  Payments are SSL encrypted, PCI-compliant, and 100% secure via
+                  Stripe.
                 </div>
               </div>
             </div>
@@ -768,8 +881,8 @@ const Booking = () => {
             {/* Submit */}
             <button
               type="submit"
-              disabled={!selDate || totalGuests === 0 || submitting}
-              className="w-full bg-primary hover:bg-primary-dark disabled:opacity-50 text-white font-bold text-lg py-4 rounded-2xl shadow-xl shadow-primary/25 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
+              disabled={!selDate || !selTime || travelerCount < 1 || submitting}
+              className="w-full bg-primary hover:bg-primary-dark disabled:opacity-50 text-white font-bold text-base sm:text-lg py-3.5 sm:py-4 rounded-2xl shadow-xl shadow-primary/25 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
             >
               {submitting ? (
                 <>
@@ -863,7 +976,11 @@ const Booking = () => {
                           <span className="material-icons text-primary text-base">
                             language
                           </span>
-                          <span>{language}</span>
+                          <span>
+                            {selectedLanguages.length > 0
+                              ? selectedLanguages.join(", ")
+                              : "—"}
+                          </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="material-icons text-primary text-base">
@@ -877,26 +994,17 @@ const Booking = () => {
 
                       {/* Price breakdown */}
                       <div className="space-y-1.5 text-sm">
-                        {PTYPE.filter(({ key }) => passengers[key] > 0).map(
-                          ({ key, label, rate }) => (
-                            <div
-                              key={key}
-                              className="flex justify-between text-gray-600"
-                            >
-                              <span>
-                                {passengers[key]} {label}
-                                {passengers[key] > 1 ? "s" : ""}
-                                {rate > 0
-                                  ? ` × €${(price * rate).toFixed(2)}`
-                                  : " (free)"}
-                              </span>
-                              <span className="font-semibold text-gray-900">
-                                {rate > 0
-                                  ? `€${(passengers[key] * price * rate).toFixed(2)}`
-                                  : "€0.00"}
-                              </span>
-                            </div>
-                          ),
+                        {travelerCount > 0 && (
+                          <div className="flex justify-between text-gray-600">
+                            <span>
+                              {travelerCount} Traveler
+                              {travelerCount > 1 ? "s" : ""} × €
+                              {price.toFixed(2)}
+                            </span>
+                            <span className="font-semibold text-gray-900">
+                              €{subtotal.toFixed(2)}
+                            </span>
+                          </div>
                         )}
                         <div className="flex justify-between text-gray-500">
                           <span>Service Fee</span>

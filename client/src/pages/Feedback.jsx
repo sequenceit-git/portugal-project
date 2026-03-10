@@ -3,8 +3,6 @@ import Footer from "../components/Footer";
 import { supabase } from "../lib/supabaseClient";
 import SEO from "../components/SEO";
 
-const BUCKET = "reviews";
-
 const Feedback = () => {
   const [tours, setTours] = useState([]);
   const [formData, setFormData] = useState({
@@ -15,8 +13,6 @@ const Feedback = () => {
     rating: 0,
     feedback: "",
   });
-  const [photoFile, setPhotoFile] = useState(null);
-  const [photoPreview, setPhotoPreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
   const [submitError, setSubmitError] = useState("");
@@ -34,18 +30,6 @@ const Feedback = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handlePhoto = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      setSubmitError("Photo must be under 2 MB.");
-      return;
-    }
-    setSubmitError("");
-    setPhotoFile(file);
-    setPhotoPreview(URL.createObjectURL(file));
   };
 
   const handleSubmit = async (e) => {
@@ -68,27 +52,13 @@ const Feedback = () => {
     setSubmitStatus(null);
 
     try {
-      let photo_url = "";
-      if (photoFile) {
-        const ext = photoFile.name.split(".").pop();
-        const fileName = `${Date.now()}.${ext}`;
-        const { error: upErr } = await supabase.storage
-          .from(BUCKET)
-          .upload(fileName, photoFile, { contentType: photoFile.type });
-        if (upErr) throw upErr;
-        const { data: urlData } = supabase.storage
-          .from(BUCKET)
-          .getPublicUrl(fileName);
-        photo_url = urlData.publicUrl;
-      }
-
       const { error: dbErr } = await supabase.from("reviews").insert({
         name: formData.name.trim(),
         country: formData.country.trim(),
         tour_name: formData.tourExperience,
         rating: formData.rating,
         review_text: formData.feedback.trim(),
-        photo_url,
+        photo_url: "",
       });
       if (dbErr) throw dbErr;
 
@@ -101,8 +71,6 @@ const Feedback = () => {
         rating: 0,
         feedback: "",
       });
-      setPhotoFile(null);
-      setPhotoPreview(null);
     } catch (err) {
       setSubmitError(err.message || "Something went wrong. Please try again.");
     } finally {
@@ -128,8 +96,7 @@ const Feedback = () => {
             Share Your Experience
           </h1>
           <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-            Your review helps future travelers — and your photo might appear on
-            our homepage!
+            Your review helps future travelers discover the best of Lisbon.
           </p>
         </div>
 
@@ -155,49 +122,50 @@ const Feedback = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Profile Photo Upload */}
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-3">
-                Your Photo{" "}
-                <span className="text-slate-400 font-normal">
-                  (optional — shown on homepage)
-                </span>
-              </label>
-              <div className="flex items-center gap-5">
-                <div className="w-20 h-20 rounded-full bg-primary/10 border-2 border-dashed border-primary/30 overflow-hidden flex items-center justify-center flex-shrink-0">
-                  {photoPreview ? (
-                    <img
-                      src={photoPreview}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="material-icons text-primary/40 text-3xl">
-                      person
-                    </span>
-                  )}
-                </div>
-                <div>
-                  <label
-                    htmlFor="photo-upload"
-                    className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary font-semibold rounded-lg hover:bg-primary/20 transition-colors text-sm"
+            {/* Avatar preview */}
+            {(() => {
+              const raw = formData.name.trim();
+              const initials = raw
+                ? raw
+                    .split(/\s+/)
+                    .map((w) => w[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase()
+                : "?";
+              const palette = [
+                "bg-rose-400",
+                "bg-orange-400",
+                "bg-amber-500",
+                "bg-teal-500",
+                "bg-cyan-500",
+                "bg-blue-500",
+                "bg-violet-500",
+                "bg-pink-500",
+              ];
+              const color = raw
+                ? palette[raw.charCodeAt(0) % palette.length]
+                : "bg-slate-300";
+              return (
+                <div className="flex items-center gap-4">
+                  {/* <div
+                    className={`w-16 h-16 rounded-full ${color} flex items-center justify-center shrink-0 shadow-md`}
                   >
-                    <span className="material-icons text-sm">upload</span>
-                    {photoFile ? "Change Photo" : "Upload Photo"}
-                  </label>
-                  <input
-                    id="photo-upload"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handlePhoto}
-                  />
-                  <p className="mt-1 text-xs text-slate-500">
-                    JPG, PNG, WEBP · Max 2 MB
-                  </p>
+                    <span className="text-white text-xl font-extrabold select-none">
+                      {initials}
+                    </span>
+                  </div> */}
+                  {/* <div>
+                    <p className="font-bold text-slate-900">
+                      {raw || "Your Name"}
+                    </p>
+                    <p className="text-sm text-slate-400">
+                      {formData.country || "Country"}
+                    </p>
+                  </div> */}
                 </div>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Personal Information */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
