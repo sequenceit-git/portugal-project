@@ -371,7 +371,10 @@ const Booking = () => {
 
         <div className="grid lg:grid-cols-12 gap-8 lg:gap-12">
           {/* ── LEFT: steps ──────────────────────────────── */}
-          <form onSubmit={handleConfirm} className="lg:col-span-7 space-y-8">
+          <form
+            onSubmit={handleConfirm}
+            className="order-2 lg:order-1 lg:col-span-7 space-y-5 sm:space-y-8"
+          >
             <div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-1">
                 Complete Your Booking
@@ -907,15 +910,15 @@ const Booking = () => {
           </form>
 
           {/* ── RIGHT: sticky summary ──────────────────── */}
-          <div className="lg:col-span-5">
-            <div className="sticky top-28 space-y-5">
+          <div className="order-1 lg:order-2 lg:col-span-5">
+            <div className="lg:sticky lg:top-28 space-y-4 sm:space-y-5">
               {loading ? (
                 <Skeleton />
               ) : tour ? (
                 <>
                   {/* Tour card */}
                   <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                    <div className="relative h-48">
+                    <div className="relative h-36 sm:h-48">
                       <img
                         src={tour.title_image}
                         alt={tour.name}
@@ -938,7 +941,7 @@ const Booking = () => {
                         )}
                       </div>
                     </div>
-                    <div className="p-5 space-y-4">
+                    <div className="p-4 sm:p-5 space-y-3 sm:space-y-4">
                       {/* Quick info */}
                       <div className="grid grid-cols-2 gap-3 text-sm text-gray-600">
                         <div className="flex items-center gap-2">
@@ -1023,7 +1026,7 @@ const Booking = () => {
                   </div>
 
                   {/* Perks */}
-                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
+                  <div className="hidden sm:block bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
                     {[
                       {
                         icon: "event_available",
@@ -1056,7 +1059,7 @@ const Booking = () => {
                   {/* Need help */}
                   <a
                     href="/contact"
-                    className="flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-primary transition font-medium"
+                    className="hidden sm:flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-primary transition font-medium"
                   >
                     <span className="material-icons text-base">
                       chat_bubble_outline
