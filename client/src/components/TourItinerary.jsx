@@ -21,7 +21,9 @@ const TourItinerary = ({
   };
 
   const itineraryColumns = 3;
-  const itineraryXPositions = [120, 500, 880];
+  // Independent desktop controls: move icons/cards and path separately.
+  const itineraryIconXPositions = [120, 400, 800];
+  const itineraryLineXPositions = [120, 400, 950];
   const itineraryStartY = 56;
   const itineraryRowGap = 172;
   const itineraryIconRadius = 32;
@@ -33,7 +35,7 @@ const TourItinerary = ({
     const col = isReverseRow
       ? itineraryColumns - 1 - positionInRow
       : positionInRow;
-    const x = itineraryXPositions[col];
+    const x = itineraryIconXPositions[col];
     const y = itineraryStartY + row * itineraryRowGap;
 
     return {
@@ -42,6 +44,19 @@ const TourItinerary = ({
       x,
       y,
     };
+  });
+
+  const itineraryLinePoints = steps.map((_, idx) => {
+    const row = Math.floor(idx / itineraryColumns);
+    const positionInRow = idx % itineraryColumns;
+    const isReverseRow = row % 2 === 1;
+    const col = isReverseRow
+      ? itineraryColumns - 1 - positionInRow
+      : positionInRow;
+    const x = itineraryLineXPositions[col];
+    const y = itineraryStartY + row * itineraryRowGap;
+
+    return { x, y };
   });
 
   const itineraryLastY =
@@ -86,7 +101,7 @@ const TourItinerary = ({
     return d;
   };
 
-  const itineraryPathD = buildRoundedPath(itineraryDesktopPositions);
+  const itineraryPathD = buildRoundedPath(itineraryLinePoints);
 
   return (
     <section className="relative">

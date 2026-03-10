@@ -24,13 +24,13 @@ const Navbar = () => {
             onClick={() => setIsOpen(false)}
           >
             <picture>
-              <source srcSet="/logo.webp" type="image/webp" />
+              <source srcSet="/New_logo.png" type="image/png" />
               <img
-                src="/logo-small.png"
+                src="/New_logo.png"
                 alt="Tukinlisbon"
-                width="80"
-                height="80"
-                className="h-12 sm:h-14 md:h-16 lg:h-20 w-auto object-contain"
+                width="200"
+                height="200"
+                className="h-20 sm:h-24 md:h-28 lg:h-32 w-auto object-contain"
               />
             </picture>
           </NavLink>
