@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "outputDirectory": "client/dist",
+  "buildCommand": "npm run build && mkdir -p public && cp -r client/dist/* public/",
+  "public": "public",
   "installCommand": "npm install",
   "regions": ["iad1"],
   "functions": {
