@@ -24,11 +24,11 @@ const Navbar = () => {
             onClick={() => setIsOpen(false)}
           >
             <img
-              src="/assets/logo/logo.png"
+              src="/assets/logo/lisbonlogo.png"
               alt="Tukinlisbon"
-              width="80"
-              height="80"
-              className="h-12 sm:h-14 md:h-16 lg:h-20 w-auto object-contain"
+              width="170"
+              height="110"
+              className="h-10 sm:h-12 md:h-14 lg:h-20 w-auto object-contain"
             />
           </NavLink>
 
