@@ -5,7 +5,7 @@ import rateLimit from "express-rate-limit";
 import healthRouter from "./routes/health.js";
 
 const app = express();
-const port = 5173;
+const port = process.env.PORT || 5173;
 
 // Security headers
 app.use(helmet());

@@ -346,7 +346,7 @@ const GuideMap = () => {
               </span>
             </div>
           </div>
-        )}
+        </div>
       </main>
     </section>
   );
