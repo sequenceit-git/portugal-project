@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Block transactional / admin pages
+Disallow: /admin
+Disallow: /booking
+Disallow: /booking/success
+Disallow: /booking/cancel
+Disallow: /feedback
+Disallow: /map
+
+Sitemap: https://tukinlisbon.com/sitemap.xml
