@@ -6,8 +6,8 @@ const navItems = [
   // { to: "/tours", label: "Tours" },
   { to: "/gallery", label: "Gallery" },
   { to: "/guest-stories", label: "Guest Stories" },
-  { to: "/contact", label: "Contact" },
-  { to: "/feedback", label: "Feedback" },
+  // { to: "/contact", label: "Contact" },
+  { to: "/feedback", label: "Review" },
 ];
 
 const Navbar = () => {
@@ -23,16 +23,13 @@ const Navbar = () => {
             className="flex items-center"
             onClick={() => setIsOpen(false)}
           >
-            <picture>
-              <source srcSet="/New_logo.png" type="image/png" />
-              <img
-                src="/New_logo.png"
-                alt="Tukinlisbon"
-                width="200"
-                height="200"
-                className="h-20 sm:h-24 md:h-28 lg:h-32 w-auto object-contain"
-              />
-            </picture>
+            <img
+              src="/assets/logo/logo.png"
+              alt="Tukinlisbon"
+              width="80"
+              height="80"
+              className="h-12 sm:h-14 md:h-16 lg:h-20 w-auto object-contain"
+            />
           </NavLink>
 
           {/* Desktop Nav */}
