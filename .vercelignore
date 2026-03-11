@@ -7,3 +7,5 @@ yarn-error.log
 .env.*.local
 supabase/
 database/
+server/api/
+assets/
