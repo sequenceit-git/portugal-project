@@ -65,6 +65,52 @@ const buildCalendar = (year, month) => {
 const toDateStr = (y, m, d) =>
   `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
+/* ── Group discount pricing ───────────────────────────────── */
+// basePrice = tour.price (€ per person for 1 traveler)
+// Returns the discounted per-person rate based on group size
+const GROUP_DISCOUNTS = [
+  { min: 6, pct: 0.30 },  // 6+ → 30% off
+  { min: 5, pct: 0.25 },  // 5   → 25% off
+  { min: 4, pct: 0.20 },  // 4   → 20% off
+  { min: 3, pct: 0.15 },  // 3   → 15% off
+  { min: 2, pct: 0.10 },  // 2   → 10% off
+];
+
+const getPerPersonRate = (count, basePrice) => {
+  const base = Number(basePrice) || 0;
+  const tier = GROUP_DISCOUNTS.find((t) => count >= t.min);
+  if (!tier) return base; // 1 person → full price
+  return Math.round(base * (1 - tier.pct) * 100) / 100;
+};
+
+// EUR/USD conversion rate (approximate)
+const EUR_USD_RATE = 0.92;
+
+/* ── Meeting Points ──────────────────────────────────────── */
+const MEETING_POINTS = [
+  {
+    id: 1,
+    name: "Vinhos de Lisboa Wine Shop",
+    note: "Please stay next to Vinhos de Lisboa wine shop. Our tour guide will contact you 5–10 min before the tour start.",
+    url: "https://maps.app.goo.gl/zLty5GXPme8Lk5Gn7?g_st=awb",
+    icon: "wine_bar",
+  },
+  {
+    id: 2,
+    name: "Fado Museum",
+    note: "Please stay in front of Fado Museum.",
+    url: "https://maps.app.goo.gl/Z5KGaJVLcYYdvqDm9?g_st=awb",
+    icon: "museum",
+  },
+  {
+    id: 3,
+    name: "Train Station",
+    note: "Stay in front of the train station.",
+    url: "https://maps.app.goo.gl/jxk9ztDvuZBMwRVdA?g_st=awb",
+    icon: "train",
+  },
+];
+
 /* ── Skeleton ────────────────────────────────────────────── */
 const Skeleton = () => (
   <div className="animate-pulse space-y-4">
@@ -82,6 +128,9 @@ const Booking = () => {
   const [tour, setTour] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Currency toggle: "USD" or "EUR"
+  const [currency, setCurrency] = useState("USD");
+
   // Step selections
   const today = new Date();
   const [calYear, setCalYear] = useState(today.getFullYear());
@@ -97,6 +146,12 @@ const Booking = () => {
     setSelectedLanguages((prev) =>
       prev.includes(lang) ? prev.filter((l) => l !== lang) : [...prev, lang],
     );
+
+  // Meeting point selection
+  const [meetingPointId, setMeetingPointId] = useState(MEETING_POINTS[0].id);
+
+  // Payment mode: "pay_now" or "reserve"
+  const [paymentMode, setPaymentMode] = useState("pay_now");
 
   // Step 2 – contact
   const [form, setForm] = useState({
@@ -138,11 +193,34 @@ const Booking = () => {
     load();
   }, [tourId]);
 
-  const price = tour?.price ? Number(tour.price) : 0;
+  // Group discount pricing — per person rate based on tour price & traveler count
+  const basePrice = Number(tour?.price) || 0;
+  const perPersonRate = getPerPersonRate(travelerCount, basePrice);
   const totalGuests = travelerCount;
-  const subtotal = travelerCount * price;
-  const serviceFee = travelerCount > 0 ? 2.5 : 0;
-  const total = subtotal + serviceFee;
+  const subtotal = travelerCount * perPersonRate;
+  const total = subtotal; // no service fee
+
+  // Currency display helpers
+  const sym = currency === "EUR" ? "€" : "$";
+  const toDisplay = (usd) =>
+    currency === "EUR" ? (usd * EUR_USD_RATE).toFixed(2) : usd.toFixed(2);
+
+  // Cancellation date/time helper
+  const getCancelDeadline = () => {
+    if (!selDate || !selTime) return null;
+    // Parse selected time
+    const match = selTime.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
+    if (!match) return null;
+    let h = parseInt(match[1]);
+    const m = parseInt(match[2]);
+    const ampm = match[3].toUpperCase();
+    if (ampm === "PM" && h !== 12) h += 12;
+    if (ampm === "AM" && h === 12) h = 0;
+    const dt = new Date(selDate + "T00:00:00");
+    dt.setHours(h, m, 0, 0);
+    dt.setHours(dt.getHours() - 24);
+    return dt;
+  };
 
   const prevMonth = () => {
     if (calMonth === 0) {
@@ -178,28 +256,10 @@ const Booking = () => {
 
     setSubmitting(true);
     try {
-      // 0. Check available spots before booking
-      if (tourId) {
-        const { data: spots, error: spotsErr } = await supabase.rpc(
-          "fn_available_spots",
-          {
-            p_tour_id: Number(tourId),
-            p_date: selDate,
-            p_time: selTime,
-          },
-        );
-        if (!spotsErr && spots !== null && spots < totalGuests) {
-          alert(
-            spots === 0
-              ? "Sorry, this time slot is fully booked. Please choose another time."
-              : `Only ${spots} spot${spots === 1 ? "" : "s"} remaining for this time slot. Please reduce your party size or choose another time.`,
-          );
-          setSubmitting(false);
-          return;
-        }
-      }
+      // 1. Save booking to Supabase (pending or reserved)
+      const bookingStatus = paymentMode === "reserve" ? "reserved" : "pending";
+      const paymentStatus = paymentMode === "reserve" ? "reserved" : "unpaid";
 
-      // 1. Save booking to Supabase (pending)
       const { data: bookingData, error } = await supabase
         .from("bookings")
         .insert({
@@ -218,12 +278,14 @@ const Booking = () => {
           email: form.email,
           phone: form.phone || null,
           special_requests: form.specialReq || null,
-          payment_method: "stripe",
+          meeting_point: (MEETING_POINTS.find((m) => m.id === meetingPointId) || MEETING_POINTS[0]).name,
+          payment_method: paymentMode === "reserve" ? "pay_later" : "stripe",
           subtotal: parseFloat(subtotal.toFixed(2)),
-          service_fee: serviceFee,
+          service_fee: 0,
           total_amount: parseFloat(total.toFixed(2)),
-          status: "pending",
-          payment_status: "unpaid",
+          per_person_rate: perPersonRate,
+          status: bookingStatus,
+          payment_status: paymentStatus,
         })
         .select("id")
         .single();
@@ -237,13 +299,14 @@ const Booking = () => {
           setSubmitting(false);
           return;
         }
-        // Handle capacity exceeded (trigger exception)
-        if (error.message && error.message.includes("fully booked")) {
-          alert(error.message);
-          setSubmitting(false);
-          return;
-        }
         throw error;
+      }
+
+      // Reserve now & pay later — show confirmation without payment
+      if (paymentMode === "reserve") {
+        setSubmitted(true);
+        setSubmitting(false);
+        return;
       }
 
       // 2. Create Stripe Checkout Session via Supabase Edge Function
@@ -254,6 +317,7 @@ const Booking = () => {
             bookingId: bookingData.id,
             tourName: tour?.name || "Tour Booking",
             totalAmount: parseFloat(total.toFixed(2)),
+            perPersonRate: perPersonRate,
             customerEmail: form.email,
             customerName: `${form.firstName} ${form.lastName || ""}`.trim(),
             passengers: totalGuests,
@@ -282,14 +346,14 @@ const Booking = () => {
       <div className="min-h-screen bg-background-light flex flex-col items-center justify-center px-4 text-center gap-6">
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
           <span className="material-icons text-green-500 text-4xl">
-            check_circle
+            {paymentMode === "reserve" ? "event_available" : "check_circle"}
           </span>
         </div>
         <h1 className="text-3xl font-extrabold text-gray-900">
-          Booking Confirmed!
+          {paymentMode === "reserve" ? "Reservation Confirmed!" : "Booking Confirmed!"}
         </h1>
         <p className="text-gray-500 max-w-md">
-          Thank you, <strong>{form.firstName}</strong>! Your booking for{" "}
+          Thank you, <strong>{form.firstName}</strong>! Your {paymentMode === "reserve" ? "reservation" : "booking"} for{" "}
           <strong>{tour?.name}</strong> on{" "}
           <strong>
             {selDate &&
@@ -309,6 +373,12 @@ const Booking = () => {
             </>
           )}
           Confirmation sent to <strong>{form.email}</strong>.
+          {paymentMode === "reserve" && (
+            <span className="block mt-2 text-sm text-amber-600">
+              💡 Your spot is reserved — no payment needed today. You can pay closer to the tour date.
+              Free cancellation up to 24 hours before the tour.
+            </span>
+          )}
         </p>
         <Link
           to="/tours"
@@ -403,7 +473,7 @@ const Booking = () => {
                       Traveler
                     </span>
                     <span className="text-xs text-gray-400">
-                      €{price.toFixed(2)} / person
+                      {sym}{toDisplay(perPersonRate)} / person
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -717,34 +787,56 @@ const Booking = () => {
                   </div>
                 )}
 
-                {/* Meeting point */}
-                {tour?.meeting_point ? (
-                  <div className="flex items-start gap-3 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-600 mt-2">
-                    <span className="material-icons text-primary text-base mt-0.5">
-                      location_on
+                {/* Meeting point dropdown */}
+                <div className="mt-3 space-y-2">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider px-1">
+                    Meeting Point
+                  </p>
+                  <div className="relative">
+                    <select
+                      value={meetingPointId}
+                      onChange={(e) => setMeetingPointId(Number(e.target.value))}
+                      className="w-full appearance-none bg-gray-100 rounded-full px-5 py-3.5 pr-10 text-sm font-semibold text-gray-800 outline-none transition focus:ring-2 focus:ring-primary/30 cursor-pointer"
+                    >
+                      {MEETING_POINTS.map((mp) => (
+                        <option key={mp.id} value={mp.id}>
+                          {mp.name}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="material-icons absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                      expand_more
                     </span>
-                    <div>
-                      <p className="font-semibold text-gray-800 mb-0.5">
-                        Meeting Point
-                      </p>
-                      <p>{tour.meeting_point}</p>
-                    </div>
                   </div>
-                ) : (
-                  <div className="flex items-start gap-3 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-600 mt-2">
-                    <span className="material-icons text-primary text-base mt-0.5">
-                      near_me
-                    </span>
-                    <div>
-                      <p className="font-semibold text-gray-800 mb-0.5">
-                        Pickup Area
-                      </p>
-                      <p>
-                        Flexible — exact pickup point confirmed after booking.
-                      </p>
-                    </div>
-                  </div>
-                )}
+                  {/* Selected meeting point note + Maps link */}
+                  {(() => {
+                    const mp = MEETING_POINTS.find((m) => m.id === meetingPointId) || MEETING_POINTS[0];
+                    return (
+                      <div className="bg-gray-50 rounded-xl px-4 py-3 flex items-start gap-3 text-sm text-gray-600">
+                        <span className="material-icons text-primary text-base mt-0.5">
+                          {mp.icon}
+                        </span>
+                        <div className="flex-1">
+                          <p className="text-xs text-gray-500">{mp.note}</p>
+                          <a
+                            href={mp.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 mt-2 text-xs font-bold text-primary hover:text-primary-dark transition"
+                          >
+                            <span className="material-icons text-sm">location_on</span>
+                            View on Google Maps
+                            <span className="material-icons text-xs">open_in_new</span>
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  <p className="text-xs text-gray-400 px-1 mt-1">
+                    <span className="material-icons text-xs align-middle mr-0.5">info</span>
+                    For hotel pickup, please mention your address within 2 km of any meeting point.
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -834,41 +926,112 @@ const Booking = () => {
                   3
                 </div>
                 <h2 className="text-base sm:text-lg font-bold text-gray-900">
-                  Secure Payment
+                  Choose Payment Option
                 </h2>
               </div>
               <div className="p-4 sm:p-6 space-y-4">
-                <div className="flex items-center gap-4 px-5 py-4 rounded-xl border-2 border-primary bg-primary/5">
+                {/* Pay now option */}
+                <button
+                  type="button"
+                  onClick={() => setPaymentMode("pay_now")}
+                  className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl border-2 transition-all ${
+                    paymentMode === "pay_now"
+                      ? "border-primary bg-primary/5"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                >
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                    paymentMode === "pay_now" ? "border-primary" : "border-gray-300"
+                  }`}>
+                    {paymentMode === "pay_now" && (
+                      <div className="w-3 h-3 rounded-full bg-primary" />
+                    )}
+                  </div>
                   <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
                     <span className="material-icons text-primary text-2xl">
                       credit_card
                     </span>
                   </div>
-                  <div>
+                  <div className="text-left">
                     <p className="font-bold text-gray-900">Pay with Stripe</p>
                     <p className="text-sm text-gray-500">
-                      You'll be redirected to Stripe's secure checkout to
-                      complete payment with credit card, Apple Pay, Google Pay,
-                      or more.
+                      Pay now with credit card, Apple Pay, Google Pay, or more via Stripe's secure checkout.
                     </p>
                   </div>
-                </div>
+                </button>
 
-                <div className="flex flex-wrap items-center gap-3 pt-1">
-                  {[
-                    "Visa",
-                    "Mastercard",
-                    "Amex",
-                    "Apple Pay",
-                    "Google Pay",
-                  ].map((m) => (
-                    <span
-                      key={m}
-                      className="bg-gray-100 text-gray-600 text-xs font-semibold px-3 py-1.5 rounded-lg"
-                    >
-                      {m}
+                {/* Reserve now & pay later option */}
+                <button
+                  type="button"
+                  onClick={() => setPaymentMode("reserve")}
+                  className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl border-2 transition-all ${
+                    paymentMode === "reserve"
+                      ? "border-green-500 bg-green-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                >
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                    paymentMode === "reserve" ? "border-green-500" : "border-gray-300"
+                  }`}>
+                    {paymentMode === "reserve" && (
+                      <div className="w-3 h-3 rounded-full bg-green-500" />
+                    )}
+                  </div>
+                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center shrink-0">
+                    <span className="material-icons text-green-600 text-2xl">
+                      event_available
                     </span>
-                  ))}
+                  </div>
+                  <div className="text-left">
+                    <p className="font-bold text-gray-900">Reserve now & pay later</p>
+                    <p className="text-sm text-gray-500">
+                      Keep your travel plans flexible — book your spot and pay nothing today.
+                    </p>
+                  </div>
+                </button>
+
+                {paymentMode === "pay_now" && (
+                  <div className="flex flex-wrap items-center gap-3 pt-1">
+                    {[
+                      "Visa",
+                      "Mastercard",
+                      "Amex",
+                      "Apple Pay",
+                      "Google Pay",
+                    ].map((m) => (
+                      <span
+                        key={m}
+                        className="bg-gray-100 text-gray-600 text-xs font-semibold px-3 py-1.5 rounded-lg"
+                      >
+                        {m}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Free cancellation notice */}
+                <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+                  <span className="material-icons text-green-500 text-lg mt-0.5">
+                    verified
+                  </span>
+                  <div>
+                    <p className="font-bold text-green-800 text-sm">Free cancellation</p>
+                    <p className="text-xs text-green-700">
+                      Cancel up to 24 hours in advance for a full refund.
+                      {selDate && selTime && getCancelDeadline() && (
+                        <span className="block mt-1 font-semibold">
+                          Cancel before {getCancelDeadline().toLocaleString("en-US", {
+                            hour: "numeric",
+                            minute: "2-digit",
+                            hour12: true,
+                          })} on {getCancelDeadline().toLocaleDateString("en-GB", {
+                            month: "long",
+                            day: "numeric",
+                          })} for a full refund.
+                        </span>
+                      )}
+                    </p>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-2 text-xs text-gray-400 pt-1">
@@ -876,7 +1039,7 @@ const Booking = () => {
                     lock
                   </span>
                   Payments are SSL encrypted, PCI-compliant, and 100% secure via
-                  Stripe.
+                  Stripe. All taxes and fees included — no hidden costs.
                 </div>
               </div>
             </div>
@@ -885,19 +1048,27 @@ const Booking = () => {
             <button
               type="submit"
               disabled={!selDate || !selTime || travelerCount < 1 || submitting}
-              className="w-full bg-primary hover:bg-primary-dark disabled:opacity-50 text-white font-bold text-base sm:text-lg py-3.5 sm:py-4 rounded-2xl shadow-xl shadow-primary/25 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
+              className={`w-full ${
+                paymentMode === "reserve"
+                  ? "bg-green-600 hover:bg-green-700 shadow-green-600/25"
+                  : "bg-primary hover:bg-primary-dark shadow-primary/25"
+              } disabled:opacity-50 text-white font-bold text-base sm:text-lg py-3.5 sm:py-4 rounded-2xl shadow-xl transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2`}
             >
               {submitting ? (
                 <>
                   <span className="material-icons animate-spin text-base">
                     sync
                   </span>
-                  Saving…
+                  {paymentMode === "reserve" ? "Reserving…" : "Saving…"}
+                </>
+              ) : paymentMode === "reserve" ? (
+                <>
+                  <span className="material-icons">event_available</span>Reserve Now — Pay Later
                 </>
               ) : (
                 <>
                   <span className="material-icons">lock</span>Proceed to Payment
-                  — €{total.toFixed(2)}
+                  — {sym}{toDisplay(total)}
                 </>
               )}
             </button>
@@ -905,7 +1076,7 @@ const Booking = () => {
               <span className="material-icons text-green-500 text-sm align-middle mr-1">
                 event_available
               </span>
-              Free cancellation up to 24 hours before the tour starts.
+              Free cancellation up to 24 hours before the tour starts. All taxes and fees included.
             </p>
           </form>
 
@@ -942,6 +1113,35 @@ const Booking = () => {
                       </div>
                     </div>
                     <div className="p-4 sm:p-5 space-y-3 sm:space-y-4">
+                      {/* Currency toggle */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Price</span>
+                        <div className="flex bg-gray-100 rounded-full p-0.5">
+                          <button
+                            type="button"
+                            onClick={() => setCurrency("USD")}
+                            className={`px-3 py-1 text-xs font-bold rounded-full transition-all ${
+                              currency === "USD"
+                                ? "bg-white text-gray-900 shadow-sm"
+                                : "text-gray-500 hover:text-gray-700"
+                            }`}
+                          >
+                            $ USD
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setCurrency("EUR")}
+                            className={`px-3 py-1 text-xs font-bold rounded-full transition-all ${
+                              currency === "EUR"
+                                ? "bg-white text-gray-900 shadow-sm"
+                                : "text-gray-500 hover:text-gray-700"
+                            }`}
+                          >
+                            € EUR
+                          </button>
+                        </div>
+                      </div>
+
                       {/* Quick info */}
                       <div className="grid grid-cols-2 gap-3 text-sm text-gray-600">
                         <div className="flex items-center gap-2">
@@ -995,30 +1195,42 @@ const Booking = () => {
 
                       <div className="border-t border-dashed border-gray-200" />
 
+                      {/* Group discount badge */}
+                      {travelerCount >= 2 && (
+                        <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2 text-xs">
+                          <span className="material-icons text-green-500 text-sm align-middle mr-1">
+                            local_offer
+                          </span>
+                          <span className="text-green-800 font-semibold">
+                            Group discount applied! {sym}{toDisplay(perPersonRate)}/person
+                            {travelerCount >= 6 && " — best rate!"}
+                          </span>
+                        </div>
+                      )}
+
                       {/* Price breakdown */}
                       <div className="space-y-1.5 text-sm">
                         {travelerCount > 0 && (
                           <div className="flex justify-between text-gray-600">
                             <span>
                               {travelerCount} Traveler
-                              {travelerCount > 1 ? "s" : ""} × €
-                              {price.toFixed(2)}
+                              {travelerCount > 1 ? "s" : ""} × {sym}
+                              {toDisplay(perPersonRate)}
                             </span>
                             <span className="font-semibold text-gray-900">
-                              €{subtotal.toFixed(2)}
+                              {sym}{toDisplay(subtotal)}
                             </span>
                           </div>
                         )}
-                        <div className="flex justify-between text-gray-500">
-                          <span>Service Fee</span>
-                          <span>€{serviceFee.toFixed(2)}</span>
-                        </div>
                         <div className="flex justify-between items-end pt-2 border-t border-gray-100">
-                          <span className="font-bold text-gray-900 text-base">
-                            Total
-                          </span>
+                          <div>
+                            <span className="font-bold text-gray-900 text-base">
+                              Total
+                            </span>
+                            <p className="text-xs text-gray-400">All taxes and fees included</p>
+                          </div>
                           <span className="font-extrabold text-2xl text-primary">
-                            €{total.toFixed(2)}
+                            {sym}{toDisplay(total)}
                           </span>
                         </div>
                       </div>
@@ -1032,26 +1244,40 @@ const Booking = () => {
                         icon: "event_available",
                         color: "text-green-500",
                         text: "Free cancellation up to 24h before",
+                        sub: "Cancel up to 24 hours in advance for a full refund",
                       },
                       {
                         icon: "payments",
                         color: "text-blue-500",
-                        text: "Reserve now & pay later option",
+                        text: "Reserve now & pay later",
+                        sub: "Keep your travel plans flexible — pay nothing today",
                       },
                       {
                         icon: "person",
                         color: "text-primary",
                         text: "100% private — just your group",
+                        sub: null,
+                      },
+                      {
+                        icon: "receipt_long",
+                        color: "text-purple-500",
+                        text: "No hidden costs",
+                        sub: "All taxes and fees included in the price shown",
                       },
                     ].map((p) => (
                       <div
                         key={p.text}
-                        className="flex items-center gap-3 text-sm text-gray-600"
+                        className="flex items-start gap-3 text-sm"
                       >
-                        <span className={`material-icons text-base ${p.color}`}>
+                        <span className={`material-icons text-base ${p.color} mt-0.5`}>
                           {p.icon}
                         </span>
-                        {p.text}
+                        <div>
+                          <span className="text-gray-700 font-medium">{p.text}</span>
+                          {p.sub && (
+                            <p className="text-xs text-gray-400 mt-0.5">{p.sub}</p>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

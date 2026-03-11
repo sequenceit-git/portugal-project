@@ -34,8 +34,6 @@ export default defineConfig({
           "vendor-supabase": ["@supabase/supabase-js"],
           // Helmet
           "vendor-helmet": ["react-helmet-async"],
-          // MapLibre GL — only loaded on the /map route
-          "vendor-maplibre": ["maplibre-gl"],
         },
       },
     },

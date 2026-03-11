@@ -46,7 +46,7 @@ const TourCard = ({ tour, onPreviewClick }) => {
           <p className="text-slate-500 text-sm mb-1">{tour.activity}</p>
         )}
         <p className="mt-2 text-slate-700 text-sm">
-          {tour.duration}h &middot; up to {tour.people} people
+          {tour.duration}h &middot; Private Group Tour
         </p>
       </div>
       <div className="flex gap-2 px-4 pb-4">

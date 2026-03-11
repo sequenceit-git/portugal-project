@@ -5,7 +5,7 @@ import GalleryScroller from "../components/GalleryScroller";
 import Footer from "../components/Footer";
 import { Link } from "react-router-dom";
 import SEO from "../components/SEO";
-import RouteMapModal from "../components/RouteMapModal";
+import MeetingPoints from "../components/MeetingPoints";
 import TourItinerary from "../components/TourItinerary";
 import RecommendedTours from "../components/RecommendedTours";
 
@@ -13,7 +13,6 @@ const TourDetails = () => {
   const { id } = useParams();
   const [tour, setTour] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showRouteMap, setShowRouteMap] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
 
   useEffect(() => {
@@ -337,10 +336,10 @@ const TourDetails = () => {
                     groups
                   </span>
                   <span className="text-xs text-slate-500 font-medium uppercase tracking-wide">
-                    Group Size
+                    Group
                   </span>
                   <span className="text-slate-900 text-sm sm:text-base font-bold">
-                    Up to {tour.people}
+                    Private Tour
                   </span>
                 </div>
                 <div className="flex flex-col items-center justify-center text-center p-2 border-l border-slate-100">
@@ -371,6 +370,7 @@ const TourDetails = () => {
                 <div className="bg-primary/5 p-3 sm:p-4 flex justify-between items-center border-b border-primary/10">
                   <div>
                     <div className="flex items-baseline gap-1">
+                      <span className="text-xs text-slate-400 font-medium">From</span>
                       <span className="text-xl sm:text-2xl font-bold text-slate-900">
                         €{tour.price}
                       </span>
@@ -379,7 +379,7 @@ const TourDetails = () => {
                       </span>
                     </div>
                     <div className="text-xs text-slate-500 mt-0.5">
-                      Min 1, Max {tour.people} people
+                      Group discounts up to 30% off
                     </div>
                   </div>
                   <div className="flex flex-col items-end">
@@ -602,40 +602,8 @@ const TourDetails = () => {
               />
 
               <section className="lg:hidden" id="tour-meeting-location">
-                <div className="bg-surface-light rounded-xl overflow-hidden shadow-lg border border-slate-100">
-                  <div className="h-44 sm:h-48 relative bg-slate-200">
-                    <img
-                      alt="Map of Lisbon with pins"
-                      className="w-full h-full object-cover opacity-80"
-                      data-alt="Map of Lisbon showing tour route"
-                      data-location="Lisbon"
-                      loading="lazy"
-                      decoding="async"
-                      width="600"
-                      height="192"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuAP6NTVQWkjpYAWfFX4ZwcAB33l9UzTuTq3rwuG_JJmjK2rMba7ZxdpWlxWQv8YYfOOrjOOnOc9CCgQYqSDKJteCYVrXnu7izYjYVAf86hq1pVZpaIZ3tdfHWrY2Og7RYcfF4KO1rV_Kg6iMnnYUS1kd81BnFlWEWwGGlP4wHFEU0vPbPh6G2lDV8z70jm03E79pI5Iy-piH73-jUKL4HQn9k6P3ZHv8y1VkrryW3AG8uaY9lh90yKmfQONFBmuq0lx0yspywV8ew"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <button
-                        onClick={() => setShowRouteMap(true)}
-                        className="bg-white text-slate-900 px-4 py-2 rounded-full shadow-lg text-sm font-bold hover:scale-105 transition-transform flex items-center gap-1.5"
-                      >
-                        <span className="material-icons text-base text-primary">
-                          map
-                        </span>
-                        View Route Map
-                      </button>
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <h4 className="font-bold text-slate-900 text-sm mb-1">
-                      Meeting Point
-                    </h4>
-                    <p className="text-slate-600 text-xs">
-                      Miradouro da Graca (Near the Kiosk). Look for Mama holding
-                      an Orange umbrella.
-                    </p>
-                  </div>
+                <div className="bg-surface-light rounded-xl overflow-hidden shadow-lg border border-slate-100 p-4">
+                  <MeetingPoints compact />
                 </div>
               </section>
 
@@ -833,6 +801,7 @@ const TourDetails = () => {
                   <div className="bg-primary/5 p-3 sm:p-4 flex justify-between items-center border-b border-primary/10">
                     <div>
                       <div className="flex items-baseline gap-1">
+                        <span className="text-xs text-slate-400 font-medium">From</span>
                         <span className="text-xl sm:text-2xl font-bold text-slate-900">
                           €{tour.price}
                         </span>
@@ -841,7 +810,7 @@ const TourDetails = () => {
                         </span>
                       </div>
                       <div className="text-xs text-slate-500 mt-0.5">
-                        Min 1, Max {tour.people} people
+                        Group discounts up to 30% off
                       </div>
                     </div>
                     <div className="flex flex-col items-end">
@@ -920,42 +889,10 @@ const TourDetails = () => {
                 </div>
 
                 <div
-                  className="hidden lg:block bg-surface-light rounded-xl overflow-hidden shadow-lg border border-slate-100"
+                  className="hidden lg:block bg-surface-light rounded-xl overflow-hidden shadow-lg border border-slate-100 p-4"
                   id="tour-meeting-location"
                 >
-                  <div className="h-44 sm:h-48 relative bg-slate-200">
-                    <img
-                      alt="Map of Lisbon with pins"
-                      className="w-full h-full object-cover opacity-80"
-                      data-alt="Map of Lisbon showing tour route"
-                      data-location="Lisbon"
-                      loading="lazy"
-                      decoding="async"
-                      width="600"
-                      height="192"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuAP6NTVQWkjpYAWfFX4ZwcAB33l9UzTuTq3rwuG_JJmjK2rMba7ZxdpWlxWQv8YYfOOrjOOnOc9CCgQYqSDKJteCYVrXnu7izYjYVAf86hq1pVZpaIZ3tdfHWrY2Og7RYcfF4KO1rV_Kg6iMnnYUS1kd81BnFlWEWwGGlP4wHFEU0vPbPh6G2lDV8z70jm03E79pI5Iy-piH73-jUKL4HQn9k6P3ZHv8y1VkrryW3AG8uaY9lh90yKmfQONFBmuq0lx0yspywV8ew"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <button
-                        onClick={() => setShowRouteMap(true)}
-                        className="bg-white text-slate-900 px-4 py-2 rounded-full shadow-lg text-sm font-bold hover:scale-105 transition-transform flex items-center gap-1.5"
-                      >
-                        <span className="material-icons text-base text-primary">
-                          map
-                        </span>
-                        View Route Map
-                      </button>
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <h4 className="font-bold text-slate-900 text-sm mb-1">
-                      Meeting Point
-                    </h4>
-                    <p className="text-slate-600 text-xs">
-                      Miradouro da Graça (Near the Kiosk). Look for Mama holding
-                      an Orange umbrella.
-                    </p>
-                  </div>
+                  <MeetingPoints />
                 </div>
 
                 <div className="hidden lg:block bg-blue-50 p-3 sm:p-4 rounded-xl border border-blue-100">
@@ -980,12 +917,6 @@ const TourDetails = () => {
 
       <Footer />
 
-      {showRouteMap && (
-        <RouteMapModal
-          tourName={tour.name}
-          onClose={() => setShowRouteMap(false)}
-        />
-      )}
     </div>
   );
 };

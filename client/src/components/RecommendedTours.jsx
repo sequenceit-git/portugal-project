@@ -58,7 +58,7 @@ const RecommendedTourCard = ({ tour }) => (
         </span>
         <span className="flex items-center gap-1">
           <span className="material-icons text-primary text-sm">groups</span>
-          Up to {tour.people}
+          Private Group
         </span>
       </div>
 

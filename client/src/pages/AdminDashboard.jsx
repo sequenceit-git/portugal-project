@@ -11,7 +11,6 @@ const EMPTY_TOUR = {
   badge: "",
   badge_color: "primary",
   duration: "",
-  people: 6,
   guide_language: "English",
   meeting_point: "",
   highlights: "", // comma-separated in the form → stored as TEXT[]
@@ -186,7 +185,6 @@ const TourModal = ({ tour, onClose, onSaved }) => {
     const payload = {
       ...form,
       duration: parseFloat(form.duration),
-      people: parseInt(form.people) || 6,
       rating: parseFloat(form.rating) || 5.0,
       review_count: parseInt(form.review_count) || 0,
       price: form.price ? parseFloat(form.price) : null,
@@ -324,20 +322,14 @@ const TourModal = ({ tour, onClose, onSaved }) => {
             </div>
           </div>
 
-          {/* Row: duration + people + price */}
-          <div className="grid sm:grid-cols-3 gap-4">
+          {/* Row: duration + price */}
+          <div className="grid sm:grid-cols-2 gap-4">
             <Field
               label="Duration (hours)"
               field="duration"
               type="number"
               required
               placeholder="e.g. 1.5"
-            />
-            <Field
-              label="Max People"
-              field="people"
-              type="number"
-              placeholder="6"
             />
             <Field
               label="Price (€/person)"
@@ -901,7 +893,7 @@ const BookingsManager = () => {
                                 },
                                 {
                                   label: "Meeting Point",
-                                  value: b.special_requests || "None",
+                                  value: b.meeting_point || "Not selected",
                                 },
                               ].map(({ label, value }) => (
                                 <div key={label}>
