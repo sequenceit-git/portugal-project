@@ -4,7 +4,7 @@ import { supabase } from "../lib/supabaseClient";
 
 /* ── Skeleton loading card ──────────────────────────────────── */
 const SkeletonCard = () => (
-  <div className="rounded-2xl overflow-hidden shadow-lg bg-white border border-gray-100 animate-pulse flex-shrink-0 w-full sm:w-[calc(50%-8px)] lg:w-[calc(33.333%-10px)]">
+  <div className="rounded-2xl overflow-hidden shadow-lg bg-white border border-gray-100 animate-pulse flex-shrink-0 w-full sm:w-[calc(70%-8px)] lg:w-[calc(40%-10px)]">
     <div className="h-48 bg-gray-200" />
     <div className="p-4 space-y-2.5">
       <div className="h-3 bg-gray-200 rounded w-3/4" />
@@ -18,7 +18,7 @@ const SkeletonCard = () => (
 const RecommendedTourCard = ({ tour }) => (
   <Link
     to={`/tour-details/${tour.id}`}
-    className="group relative rounded-2xl overflow-hidden shadow-lg cursor-pointer flex flex-col bg-white border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 flex-shrink-0 w-full sm:w-[calc(50%-8px)] lg:w-[calc(33.333%-10px)]"
+    className="group relative rounded-2xl overflow-hidden shadow-lg cursor-pointer flex flex-col bg-white border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 flex-shrink-0 w-full sm:w-[calc(70%-8px)] lg:w-[calc(40%-10px)]"
   >
     {/* Image */}
     <div className="relative h-48 overflow-hidden">
