@@ -27,12 +27,27 @@ const allowedOrigins = [
   "http://localhost:5173",
   "https://tukinlisbon.com",
   "https://www.tukinlisbon.com",
+  // Add Vercel preview and production URLs
+  /https:\/\/.*\.vercel\.app$/,
 ];
 app.use(
   cors({
     origin(origin, callback) {
       // Allow requests with no origin (curl, server-to-server)
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      
+      // Check if origin is in allowed list or matches regex patterns
+      const isAllowed = allowedOrigins.some((allowed) => {
+        if (allowed instanceof RegExp) {
+          return allowed.test(origin);
+        }
+        return allowed === origin;
+      });
+      
+      if (isAllowed) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
