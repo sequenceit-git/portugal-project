@@ -112,12 +112,6 @@ const TourCard = ({ tour }) => (
           <span className="material-icons text-primary text-base">eco</span>
           Electric
         </span>
-        {tour.people && (
-          <span className="flex items-center gap-1">
-            <span className="material-icons text-primary text-base">group</span>
-            Up to {tour.people}
-          </span>
-        )}
       </div>
 
       {/* Title */}
