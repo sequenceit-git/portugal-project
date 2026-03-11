@@ -165,15 +165,15 @@ export default function RouteMapModal({ tourName, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-2 sm:p-4"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl overflow-hidden w-full max-w-3xl shadow-2xl"
+        className="bg-white rounded-2xl overflow-hidden w-full max-w-3xl shadow-2xl max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100">
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-slate-100 flex-shrink-0">
           <div>
             <h3 className="font-bold text-slate-900 text-base leading-tight">
               Route Map
@@ -190,7 +190,7 @@ export default function RouteMapModal({ tourName, onClose }) {
         </div>
 
         {/* Map */}
-        <div style={{ height: "420px", position: "relative" }}>
+        <div className="flex-1 min-h-[200px] sm:min-h-[320px]" style={{ height: "min(420px, 50vh)", position: "relative" }}>
           <Map
             center={center}
             zoom={zoom}
@@ -268,7 +268,7 @@ export default function RouteMapModal({ tourName, onClose }) {
         </div>
 
         {/* Stop legend */}
-        <div className="px-5 py-3 border-t border-slate-100 flex flex-wrap gap-3">
+        <div className="px-4 sm:px-5 py-3 border-t border-slate-100 flex flex-wrap gap-2 sm:gap-3 flex-shrink-0">
           {stops.map((stop, idx) => (
             <div key={stop.id} className="flex items-center gap-2">
               <span
