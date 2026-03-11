@@ -5,13 +5,15 @@ import GalleryScroller from "../components/GalleryScroller";
 import Footer from "../components/Footer";
 import { Link } from "react-router-dom";
 import SEO from "../components/SEO";
-import RouteMapModal from "../components/RouteMapModal";
+import MeetingPoints from "../components/MeetingPoints";
+import TourItinerary from "../components/TourItinerary";
+import RecommendedTours from "../components/RecommendedTours";
 
 const TourDetails = () => {
   const { id } = useParams();
   const [tour, setTour] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showRouteMap, setShowRouteMap] = useState(false);
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -65,22 +67,186 @@ const TourDetails = () => {
         })()
       : [];
 
-  const parsedJourney = Array.isArray(tour.journey)
-    ? tour.journey
-    : typeof tour.journey === "string" && tour.journey.trim()
-      ? (() => {
-          try {
-            const parsed = JSON.parse(tour.journey);
-            if (Array.isArray(parsed)) return parsed;
-          } catch {
-            // Fallback to plain-text split when value is not valid JSON.
-          }
-          return tour.journey
-            .split(/\r?\n|,|\|/)
-            .map((item) => item.trim())
-            .filter(Boolean);
-        })()
-      : [];
+  const defaultItinerarySteps = [
+    {
+      icon: "restart_alt",
+      title: "Miradouro da Graca",
+      subtitle: "Meet and panoramic viewpoint",
+    },
+    {
+      icon: "location_on",
+      title: "Lisbon Cathedral",
+      subtitle: "Historic center stop",
+    },
+    {
+      icon: "location_on",
+      title: "Sao Jorge Castle",
+      subtitle: "Old town skyline views",
+    },
+    {
+      icon: "location_on",
+      title: "LX Factory",
+      subtitle: "Creative district pass",
+    },
+    {
+      icon: "location_on",
+      title: "Baixa",
+      subtitle: "Photo stop and walk",
+    },
+    {
+      icon: "location_on",
+      title: "Jeronimos",
+      subtitle: "Monastery and Belem area",
+    },
+    {
+      icon: "location_on",
+      title: "Alfama",
+      subtitle: "Narrow streets and culture",
+    },
+    {
+      icon: "location_on",
+      title: "Bairro Alto",
+      subtitle: "Lively neighborhood vibes",
+    },
+    {
+      icon: "flag",
+      title: "Comercio Square",
+      subtitle: "Final stop by the river",
+    },
+  ];
+
+  const itineraryByTourId = {
+    1: {
+      title: "Itinerary",
+      steps: [
+        {
+          icon: "restart_alt",
+          title: "ID1 Start - Graça Terrace",
+          subtitle: "[ID1] Meet point with city intro",
+        },
+        {
+          icon: "location_on",
+          title: "ID1 Stop - Lisbon Cathedral",
+          subtitle: "[ID1] Historic quarter orientation",
+        },
+        {
+          icon: "location_on",
+          title: "ID1 Stop - Sao Jorge Castle",
+          subtitle: "[ID1] Hilltop skyline panorama",
+        },
+        {
+          icon: "location_on",
+          title: "ID1 Stop - Alfama Alleys",
+          subtitle: "[ID1] Narrow streets and fado vibe",
+        },
+        {
+          icon: "flag",
+          title: "ID1 End - Comercio Square",
+          subtitle: "[ID1] Riverside finish",
+        },
+      ],
+    },
+    2: {
+      title: "Itinerary",
+      steps: [
+        {
+          icon: "restart_alt",
+          title: "ID2 Start - Cais do Sodre",
+          subtitle: "[ID2] Quick briefing by the river",
+        },
+        {
+          icon: "location_on",
+          title: "ID2 Stop - 25 de Abril View",
+          subtitle: "[ID2] Bridge and waterfront photos",
+        },
+        {
+          icon: "location_on",
+          title: "ID2 Stop - MAAT",
+          subtitle: "[ID2] Contemporary architecture stop",
+        },
+        {
+          icon: "location_on",
+          title: "ID2 Stop - Belem Tower",
+          subtitle: "[ID2] Monument and riverside walk",
+        },
+        {
+          icon: "location_on",
+          title: "ID2 Stop - Jeronimos",
+          subtitle: "[ID2] Monastery exterior and gardens",
+        },
+        {
+          icon: "flag",
+          title: "ID2 End - Pasteis de Belem",
+          subtitle: "[ID2] Sweet ending",
+        },
+      ],
+    },
+    3: {
+      title: "Itinerary",
+      steps: [
+        {
+          icon: "restart_alt",
+          title: "ID3 Start - Rossio Square",
+          subtitle: "[ID3] Meeting point at city center",
+        },
+        {
+          icon: "location_on",
+          title: "ID3 Stop - Cais do Sodre",
+          subtitle: "[ID3] Transit hub and riverfront",
+        },
+        {
+          icon: "location_on",
+          title: "ID3 Stop - Time Out Market",
+          subtitle: "[ID3] Food hall and local energy",
+        },
+        {
+          icon: "location_on",
+          title: "ID3 Stop - LX Factory",
+          subtitle: "[ID3] Creative district walkthrough",
+        },
+        {
+          icon: "location_on",
+          title: "ID3 Stop - Docas",
+          subtitle: "[ID3] Marina and promenade view",
+        },
+        {
+          icon: "flag",
+          title: "ID3 End - Praca do Imperio",
+          subtitle: "[ID3] Finish at Belem gardens",
+        },
+      ],
+    },
+    4: {
+      title: "Itinerary",
+      steps: [
+        {
+          icon: "restart_alt",
+          title: "ID4 Start - Restauradores",
+          subtitle: "[ID4] Start near Avenida da Liberdade",
+        },
+        {
+          icon: "location_on",
+          title: "ID4 Stop - Elevador da Gloria",
+          subtitle: "[ID4] Classic yellow funicular",
+        },
+        {
+          icon: "location_on",
+          title: "ID4 Stop - Sao Pedro Viewpoint",
+          subtitle: "[ID4] Wide city overlook",
+        },
+        {
+          icon: "location_on",
+          title: "ID4 Stop - Santa Catarina",
+          subtitle: "[ID4] Sunset-facing terrace",
+        },
+        {
+          icon: "flag",
+          title: "ID4 End - Bairro Alto",
+          subtitle: "[ID4] Evening atmosphere finish",
+        },
+      ],
+    },
+  };
 
   const galleryImages = [tour.title_image, ...parsedGallery].filter(
     (img, index, arr) => img && arr.indexOf(img) === index,
@@ -118,9 +284,24 @@ const TourDetails = () => {
                   <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-2.5 sm:mb-3 text-balance leading-tight">
                     {tour.name}
                   </h1>
-                  <p className="text-sm sm:text-base text-white/90 max-w-xl font-medium">
-                    {tour.details}
-                  </p>
+                  <div className="relative max-w-xl">
+                    <p
+                      className={
+                        "text-sm sm:text-base text-white/90 font-medium " +
+                        (showFullDescription ? "" : "line-clamp-2")
+                      }
+                    >
+                      {tour.details}
+                    </p>
+                    {tour.details && tour.details.length > 120 && (
+                      <button
+                        className="mt-1 text-xs text-primary font-bold underline focus:outline-none"
+                        onClick={() => setShowFullDescription((v) => !v)}
+                      >
+                        {showFullDescription ? "Read Less" : "Read More"}
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="md:hidden w-full">
                   <Link
@@ -155,10 +336,10 @@ const TourDetails = () => {
                     groups
                   </span>
                   <span className="text-xs text-slate-500 font-medium uppercase tracking-wide">
-                    Group Size
+                    Group
                   </span>
                   <span className="text-slate-900 text-sm sm:text-base font-bold">
-                    Up to {tour.people}
+                    Private Tour
                   </span>
                 </div>
                 <div className="flex flex-col items-center justify-center text-center p-2 border-l border-slate-100">
@@ -189,6 +370,7 @@ const TourDetails = () => {
                 <div className="bg-primary/5 p-3 sm:p-4 flex justify-between items-center border-b border-primary/10">
                   <div>
                     <div className="flex items-baseline gap-1">
+                      <span className="text-xs text-slate-400 font-medium">From</span>
                       <span className="text-xl sm:text-2xl font-bold text-slate-900">
                         €{tour.price}
                       </span>
@@ -197,7 +379,7 @@ const TourDetails = () => {
                       </span>
                     </div>
                     <div className="text-xs text-slate-500 mt-0.5">
-                      Min 1, Max {tour.people} people
+                      Group discounts up to 30% off
                     </div>
                   </div>
                   <div className="flex flex-col items-end">
@@ -230,10 +412,7 @@ const TourDetails = () => {
                       className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm sm:text-base shadow-xl shadow-primary/30 hover:bg-orange-600 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group"
                       to={`/booking?tourId=${id}`}
                     >
-                      Check Availability
-                      <span className="material-icons group-hover:translate-x-1 transition-transform">
-                        calendar_month
-                      </span>
+                      Proceed to Booking
                     </Link>
                     <p className="text-center text-xs text-slate-500 mt-3 flex items-center justify-center gap-1">
                       <span className="material-icons text-sm text-green-500">
@@ -241,173 +420,217 @@ const TourDetails = () => {
                       </span>
                       Free cancellation up to 24h before
                     </p>
+
+                    <p className="text-center text-xs text-slate-500 mt-3 flex items-center justify-center gap-1">
+                      <span className="material-icons text-sm text-blue-500">
+                        payment
+                      </span>
+                      Reserve now & pay later
+                    </p>
                   </div>
                 </div>
               </div>
 
               <section>
-                <div className="flex items-center justify-between mb-6 sm:mb-8">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">
-                    Why I created this tour
-                  </h2>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right hidden sm:block">
-                      <p className="font-bold text-slate-900 leading-tight">
-                        Entertainment Mama
-                      </p>
-                      <p className="text-xs text-primary font-bold uppercase tracking-wide">
-                        Verified Local Guide
-                      </p>
-                    </div>
-                    <img
-                      alt="Portrait of a smiling man with a beard"
-                      className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-primary p-0.5"
-                      data-alt="Portrait of a smiling man with a beard"
-                      loading="lazy"
-                      decoding="async"
-                      width="56"
-                      height="56"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqCNAv-dhb4J-nE-vMuzmbSzYc1TJw3fvkBrm-F3x2hnpkNajUP2I5khETCKk_J0GxxRWkq9EKne_FRNDykVYw9BvqTFWe22tl2mrlmKUxdszTshx-Cl7AVnEENEvNJVcSAi1WDBV2SdAh95jnBaSRYL2qOEJ_dwOYlhznq8fmsRkaCooAbqA2JdRmbIledWq0z4VkXFDi_5TruOPHN7Ov5bt77JuD2i3gE9WvIBl8PogqF6_4Yhkj-v2R8qgHQvBCGOZgU1pp1A"
-                    />
-                  </div>
-                </div>
-                <div className="prose prose-base sm:prose-lg text-slate-600 max-w-none">
-                  <p className="mb-5 sm:mb-6 leading-relaxed">
-                    I was born in a small apartment overlooking the Tagus river,
-                    right here in Alfama. Growing up, these winding streets were
-                    my playground. But recently, I noticed something that broke
-                    my heart: visitors were walking right past the real magic of
-                    my neighborhood.
-                  </p>
-                  <div className="my-7 sm:my-10 pl-5 sm:pl-8 border-l-4 border-primary/40 italic text-lg sm:text-xl text-slate-800 font-medium">
-                    "I wanted to show you the Lisbon that guidebook writers
-                    miss. The smell of fresh laundry in the alleys, the hidden
-                    community gardens, and the elderly neighbor who still sings
-                    fado from her window."
-                  </div>
-                  <p className="mb-5 sm:mb-6 leading-relaxed">
-                    This isn't a history lecture. It's a walk with a friend.
-                    We'll dodge the crowded tourist trams and instead take the
-                    stairs locals use. I'll introduce you to Sr. Antonio, who
-                    bakes the best bread in the district (and hates the
-                    internet), and we'll end at a secret viewpoint that isn't on
-                    Google Maps. This tour is my love letter to the Lisbon that
-                    raised me.
-                  </p>
-                </div>
-              </section>
-
-              <section className="hidden lg:block">
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-5 sm:mb-6">
-                  What makes this tour different
-                </h2>
                 <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="p-4 sm:p-6 rounded-xl bg-orange-50 border border-primary/10">
-                    <div className="bg-white w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center shadow-sm mb-3 sm:mb-4">
-                      <span className="material-icons text-primary">
-                        record_voice_over
+                    <div className="flex items-center mb-3 sm:mb-4">
+                      <span className="material-icons text-primary text-2xl sm:text-3xl mr-2">
+                        star
                       </span>
+                      <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                        Highlights
+                      </h3>
                     </div>
-                    <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-2">
-                      Strictly Local, No Scripts
-                    </h3>
-                    <p className="text-slate-600 text-sm">
-                      No memorized speeches. Just real stories from a local's
-                      perspective, adapting to what we see on the street that
-                      day.
-                    </p>
+                    <ul className="text-slate-600 text-sm list-disc pl-5 space-y-1">
+                      <li>
+                        Feel the wind in your hair as you explore Lisbon in a
+                        tuk-tuk
+                      </li>
+                      <li>
+                        Discover the city's most iconic landmarks and hidden
+                        gems
+                      </li>
+                      <li>
+                        Enjoy panoramic views of the city from Miradouro da
+                        Senhora do Monte
+                      </li>
+                      <li>
+                        See the Jerónimos Monastery, Belém Tower, and Monument
+                        to the Discoveries
+                      </li>
+                      <li>
+                        Pass and stop by the Lisbon Cathedral and Praça do
+                        Comércio
+                      </li>
+                    </ul>
                   </div>
+
                   <div className="p-4 sm:p-6 rounded-xl bg-orange-50 border border-primary/10">
-                    <div className="bg-white w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center shadow-sm mb-3 sm:mb-4">
-                      <span className="material-icons text-primary">
-                        vpn_key
+                    <div className="flex items-center mb-3 sm:mb-4">
+                      <span className="material-icons text-primary text-2xl sm:text-3xl mr-2">
+                        check_circle
                       </span>
+                      <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                        Includes
+                      </h3>
                     </div>
-                    <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-2">
-                      Exclusive Access
-                    </h3>
-                    <p className="text-slate-600 text-sm">
-                      I hold the keys to a private terrace in Mouraria that is
-                      normally closed to the public. The view is unforgettable.
-                    </p>
+                    <ul className="text-slate-600 text-sm pl-0 space-y-1">
+                      <li className="flex items-center gap-2">
+                        <span className="material-icons text-green-500 text-base">
+                          check
+                        </span>
+                        Visit to LX Factory
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="material-icons text-green-500 text-base">
+                          check
+                        </span>
+                        Visit to Jerónimos Monastery
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="material-icons text-green-500 text-base">
+                          check
+                        </span>
+                        Visit to Torre de Belem
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="material-icons text-green-500 text-base">
+                          check
+                        </span>
+                        Visit to Monument to the Discoveries
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="material-icons text-green-500 text-base">
+                          check
+                        </span>
+                        Visit to Alfama
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="material-icons text-green-500 text-base">
+                          check
+                        </span>
+                        Visit to Miradouro de Santa Luzia
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="material-icons text-green-500 text-base">
+                          check
+                        </span>
+                        Visit to Mosteiro de Sao Vicente de Fora
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="material-icons text-green-500 text-base">
+                          check
+                        </span>
+                        Visit to National Pantheon
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="material-icons text-green-500 text-base">
+                          check
+                        </span>
+                        Visit to Miradouro da Senhora do Monte
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="material-icons text-orange-500 text-base">
+                          cancel
+                        </span>
+                        Entrance fees to attractions
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="material-icons text-orange-500 text-base">
+                          cancel
+                        </span>
+                        Food and drinks
+                      </li>
+                    </ul>
                   </div>
+
                   <div className="p-4 sm:p-6 rounded-xl bg-orange-50 border border-primary/10">
-                    <div className="bg-white w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center shadow-sm mb-3 sm:mb-4">
-                      <span className="material-icons text-primary">
-                        groups
+                    <div className="flex items-center mb-3 sm:mb-4">
+                      <span className="material-icons text-primary text-2xl sm:text-3xl mr-2">
+                        block
                       </span>
+                      <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                        Not suitable for
+                      </h3>
                     </div>
-                    <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-2">
-                      Private Experience
-                    </h3>
-                    <p className="text-slate-600 text-sm">
-                      This is a private tour for your group only. You get the
-                      guide's full attention and can adjust the pace as needed.
-                    </p>
+                    <ul className="text-slate-600 text-sm list-disc pl-5 space-y-1">
+                      <li>Children under 7 years</li>
+                      <li>People with mobility impairments</li>
+                      <li>Wheelchair users</li>
+                    </ul>
                   </div>
+
                   <div className="p-4 sm:p-6 rounded-xl bg-orange-50 border border-primary/10">
-                    <div className="bg-white w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center shadow-sm mb-3 sm:mb-4">
-                      <span className="material-icons text-primary">
-                        bakery_dining
+                    <div className="flex items-center mb-3 sm:mb-4">
+                      <span className="material-icons text-primary text-2xl sm:text-3xl mr-2">
+                        info
                       </span>
+                      <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                        Important Information
+                      </h3>
                     </div>
-                    <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-2">
-                      Authentic Tastes
-                    </h3>
-                    <p className="text-slate-600 text-sm">
-                      Includes a stop for warm Pastel de Nata and a Ginjinha
-                      shot at places locals actually frequent.
-                    </p>
+                    <div className="mb-2">
+                      <h4 className="text-base sm:text-md font-bold text-slate-900 mb-1">
+                        Not Allowed
+                      </h4>
+                      <ul className="text-slate-600 text-sm list-disc pl-5 space-y-1">
+                        <li>Baby strollers</li>
+                        <li>Luggage or large bags</li>
+                        <li>Electric wheelchairs</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="text-base sm:text-md font-bold text-slate-900 mb-1">
+                        Know Before You Go
+                      </h4>
+                      <ul className="text-slate-600 text-sm list-disc pl-5 space-y-1">
+                        <li>
+                          Some attractions are passed by without stopping.
+                        </li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </section>
 
-              {/* /// The Journey */}
+              <TourItinerary
+                tourId={id}
+                defaultTitle="Itinerary"
+                defaultSteps={defaultItinerarySteps}
+                itineraryByTourId={itineraryByTourId}
+              />
 
-              {/* {parsedJourney.length > 0 && (
-                <section className="relative">
-                  <h2 className="text-2xl font-bold text-slate-900 mb-8">
-                    The Journey
-                  </h2>
-                  <div className="absolute left-8 top-20 bottom-10 w-0.5 bg-gradient-to-b from-primary/20 via-primary/40 to-primary/10" />
-                  <div className="space-y-10">
-                    {parsedJourney.map((step, idx) => {
-                      const icons = [
-                        "place",
-                        "bakery_dining",
-                        "museum",
-                        "restaurant",
-                        "directions_walk",
-                      ];
-                      return (
-                        <div key={idx} className="relative flex gap-6 group">
-                          <div className="flex-none w-16 flex flex-col items-center z-10">
-                            <div className="w-10 h-10 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                              <span className="material-icons text-primary text-sm">
-                                {icons[idx % icons.length]}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex-1 bg-surface-light p-6 rounded-xl shadow-sm border border-slate-100 hover:border-primary/30 transition-colors">
-                            <h3 className="text-lg font-bold text-slate-900">
-                              {step}
-                            </h3>
-                          </div>
-                        </div>
-                      );
-                    })}
+              <section className="lg:hidden" id="tour-meeting-location">
+                <div className="bg-surface-light rounded-xl overflow-hidden shadow-lg border border-slate-100 p-4">
+                  <MeetingPoints compact />
+                </div>
+              </section>
+
+              <section className="lg:hidden">
+                <div className="bg-blue-50 p-3 sm:p-4 rounded-xl border border-blue-100">
+                  <div className="flex gap-3">
+                    <span className="material-icons text-blue-500">info</span>
+                    <div>
+                      <h4 className="text-sm font-bold text-blue-900">
+                        Wear comfy shoes!
+                      </h4>
+                      <p className="text-xs text-blue-700 mt-1">
+                        Lisbon is hilly and the cobblestones can be slippery.
+                        Heels are not recommended for this tour.
+                      </p>
+                    </div>
                   </div>
-                </section>
-              )} */}
+                </div>
+              </section>
 
-              {/* <section>
-                <h2 className="text-2xl font-bold text-slate-900 mb-6">
-                  Guest Moments
-                </h2>
+              <section>
                 <GalleryScroller images={galleryImages} />
-              </section> */}
+              </section>
 
-              <section className="bg-white rounded-2xl p-5 sm:p-8 border border-slate-100 shadow-sm relative overflow-hidden">
+              <RecommendedTours currentTourId={id} limit={3} />
+
+              {/* <section className="bg-white rounded-2xl p-5 sm:p-8 border border-slate-100 shadow-sm relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-5 sm:p-8 opacity-5 pointer-events-none">
                   <span className="material-icons text-9xl text-primary">
                     format_quote
@@ -569,7 +792,7 @@ const TourDetails = () => {
                     </span>
                   </Link>
                 </div>
-              </section>
+              </section> */}
             </div>
 
             <div className="lg:col-span-4 relative">
@@ -578,6 +801,7 @@ const TourDetails = () => {
                   <div className="bg-primary/5 p-3 sm:p-4 flex justify-between items-center border-b border-primary/10">
                     <div>
                       <div className="flex items-baseline gap-1">
+                        <span className="text-xs text-slate-400 font-medium">From</span>
                         <span className="text-xl sm:text-2xl font-bold text-slate-900">
                           €{tour.price}
                         </span>
@@ -586,7 +810,7 @@ const TourDetails = () => {
                         </span>
                       </div>
                       <div className="text-xs text-slate-500 mt-0.5">
-                        Min 1, Max {tour.people} people
+                        Group discounts up to 30% off
                       </div>
                     </div>
                     <div className="flex flex-col items-end">
@@ -637,56 +861,41 @@ const TourDetails = () => {
                         className="w-full bg-primary text-white py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg shadow-xl shadow-primary/30 hover:bg-orange-600 hover:shadow-2xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group"
                         to={`/booking?tourId=${id}`}
                       >
-                        Check Availability
+                        Proceed to Booking
                         <span className="material-icons group-hover:translate-x-1 transition-transform">
                           calendar_month
                         </span>
                       </Link>
-                      <p className="text-center text-xs text-slate-500 mt-3 flex items-center justify-center gap-1">
-                        <span className="material-icons text-sm text-green-500">
-                          verified_user
-                        </span>
-                        Free cancellation up to 24h before
-                      </p>
+                      <div className="flex flex-col gap-1 mt-3">
+                        <div className="flex items-center justify-center gap-1">
+                          <span className="material-icons text-xs text-green-500">
+                            verified_user
+                          </span>
+                          <span className="text-[11px] sm:text-xs">
+                            Free cancellation up to 24h before
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-center gap-1">
+                          <span className="material-icons text-xs text-blue-500">
+                            payments
+                          </span>
+                          <span className="text-[11px] sm:text-xs">
+                            Reserve now & pay later
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-surface-light rounded-xl overflow-hidden shadow-lg border border-slate-100">
-                  <div className="h-44 sm:h-48 relative bg-slate-200">
-                    <img
-                      alt="Map of Lisbon with pins"
-                      className="w-full h-full object-cover opacity-80"
-                      data-alt="Map of Lisbon showing tour route"
-                      data-location="Lisbon"
-                      loading="lazy"
-                      decoding="async"
-                      width="600"
-                      height="192"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuAP6NTVQWkjpYAWfFX4ZwcAB33l9UzTuTq3rwuG_JJmjK2rMba7ZxdpWlxWQv8YYfOOrjOOnOc9CCgQYqSDKJteCYVrXnu7izYjYVAf86hq1pVZpaIZ3tdfHWrY2Og7RYcfF4KO1rV_Kg6iMnnYUS1kd81BnFlWEWwGGlP4wHFEU0vPbPh6G2lDV8z70jm03E79pI5Iy-piH73-jUKL4HQn9k6P3ZHv8y1VkrryW3AG8uaY9lh90yKmfQONFBmuq0lx0yspywV8ew"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <button
-                        onClick={() => setShowRouteMap(true)}
-                        className="bg-white text-slate-900 px-4 py-2 rounded-full shadow-lg text-sm font-bold hover:scale-105 transition-transform flex items-center gap-1.5"
-                      >
-                        <span className="material-icons text-base text-primary">map</span>
-                        View Route Map
-                      </button>
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <h4 className="font-bold text-slate-900 text-sm mb-1">
-                      Meeting Point
-                    </h4>
-                    <p className="text-slate-600 text-xs">
-                      Miradouro da Graça (Near the Kiosk). Look for Mama holding
-                      an Orange umbrella.
-                    </p>
-                  </div>
+                <div
+                  className="hidden lg:block bg-surface-light rounded-xl overflow-hidden shadow-lg border border-slate-100 p-4"
+                  id="tour-meeting-location"
+                >
+                  <MeetingPoints />
                 </div>
 
-                <div className="bg-blue-50 p-3 sm:p-4 rounded-xl border border-blue-100">
+                <div className="hidden lg:block bg-blue-50 p-3 sm:p-4 rounded-xl border border-blue-100">
                   <div className="flex gap-3">
                     <span className="material-icons text-blue-500">info</span>
                     <div>
@@ -708,12 +917,6 @@ const TourDetails = () => {
 
       <Footer />
 
-      {showRouteMap && (
-        <RouteMapModal
-          tourName={tour.name}
-          onClose={() => setShowRouteMap(false)}
-        />
-      )}
     </div>
   );
 };
