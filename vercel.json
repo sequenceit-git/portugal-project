@@ -6,7 +6,7 @@
   "framework": null,
   "functions": {
     "api/index.js": {
-      "runtime": "nodejs20.x",
+      "includeFiles": "server/**",
       "maxDuration": 30
     }
   },
@@ -51,8 +51,5 @@
         }
       ]
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
