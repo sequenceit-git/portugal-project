@@ -16,6 +16,21 @@ const ALLOWED_ORIGINS = [
 const SITE_URL =
   Deno.env.get("SITE_URL") || "https://tukinlisbon.com"; // fallback for success/cancel
 
+// ── Group discount pricing ──────────────────────────────────
+const GROUP_DISCOUNTS = [
+  { min: 6, pct: 0.30 },  // 6+ → 30% off
+  { min: 5, pct: 0.25 },  // 5   → 25% off
+  { min: 4, pct: 0.20 },  // 4   → 20% off
+  { min: 3, pct: 0.15 },  // 3   → 15% off
+  { min: 2, pct: 0.10 },  // 2   → 10% off
+];
+
+function getPerPersonRate(count: number, basePrice: number): number {
+  const tier = GROUP_DISCOUNTS.find((t) => count >= t.min);
+  if (!tier) return basePrice; // 1 person → full price
+  return Math.round(basePrice * (1 - tier.pct) * 100) / 100;
+}
+
 function getCorsHeaders(req: Request) {
   const origin = req.headers.get("origin") || "";
   const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
@@ -72,9 +87,8 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // ── Server-side price validation ─────────────────────────
-    // Look up the booking to get tour_id and passenger count,
-    // then look up the tour to get the authoritative price.
+    // ── Server-side price validation (group discount) ─────────
+    // Look up the booking to get tour_id and passenger count
     const { data: booking, error: bookingErr } = await supabase
       .from("bookings")
       .select("id, tour_name, total_guests, tour_id")
@@ -88,49 +102,33 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Try to resolve the tour price from the database
-    let tourPrice: number | null = null;
     let tourName = booking.tour_name || "Tour Booking";
+    let tourBasePrice = 0;
 
+    // Resolve tour name and base price from the database
     if (booking.tour_id) {
       const { data: tour } = await supabase
         .from("tours")
-        .select("price, name")
+        .select("name, price")
         .eq("id", booking.tour_id)
         .single();
       if (tour) {
-        tourPrice = tour.price;
         tourName = tour.name || tourName;
+        tourBasePrice = Number(tour.price) || 0;
       }
     }
 
-    // If we couldn't find a tour by ID, try by name
-    if (tourPrice === null && booking.tour_name) {
-      const { data: tour } = await supabase
-        .from("tours")
-        .select("price, name")
-        .eq("name", booking.tour_name)
-        .single();
-      if (tour) {
-        tourPrice = tour.price;
-        tourName = tour.name || tourName;
-      }
-    }
-
-    // Calculate the server-side total
-    const paxCount = booking.total_guests || passengers || 1;
-    const serverTotal = tourPrice !== null
-      ? tourPrice * paxCount
-      : null;
-
-    // If we have a server-verified price, use it; otherwise reject
-    if (serverTotal === null) {
-      console.error(`Could not resolve price for booking ${bookingId}`);
+    if (tourBasePrice <= 0) {
       return new Response(
-        JSON.stringify({ error: "Unable to determine tour price. Please contact support." }),
-        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        JSON.stringify({ error: "Tour price not found" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
+
+    // Calculate the server-side total using group discount pricing
+    const paxCount = booking.total_guests || passengers || 1;
+    const perPersonRate = getPerPersonRate(paxCount, tourBasePrice);
+    const serverTotal = perPersonRate * paxCount; // no service fee
 
     // ── Determine redirect URLs (hardcoded allowed origins) ──
     const reqOrigin = req.headers.get("origin") || "";
@@ -150,10 +148,10 @@ Deno.serve(async (req: Request) => {
       line_items: [
         {
           price_data: {
-            currency: "eur",
+            currency: "usd",
             product_data: {
               name: tourName,
-              description: `${paxCount} guest(s) · ${bookingDate || ""} · ${bookingTime || ""}`,
+              description: `${paxCount} guest(s) × $${perPersonRate}/person · ${bookingDate || ""} · ${bookingTime || ""}`,
             },
             unit_amount: Math.round(serverTotal * 100), // Stripe uses cents
           },
@@ -174,7 +172,7 @@ Deno.serve(async (req: Request) => {
       booking_id: bookingId,
       stripe_session_id: session.id,
       amount: serverTotal,
-      currency: "eur",
+      currency: "usd",
       status: "pending",
       customer_email: customerEmail,
       customer_name: customerName || null,
