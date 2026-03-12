@@ -47,10 +47,12 @@ const LoginGate = ({ onUnlock }) => {
     setError("");
     setLoading(true);
     try {
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password: pw,
-      });
+      const { data, error: authError } = await supabase.auth.signInWithPassword(
+        {
+          email,
+          password: pw,
+        },
+      );
       if (authError) throw authError;
       // Check admin role
       if (data.user?.app_metadata?.role !== "admin") {
@@ -115,16 +117,18 @@ const LoginGate = ({ onUnlock }) => {
               }`}
               required
             />
-            {error && (
-              <p className="text-red-500 text-xs mt-1.5">{error}</p>
-            )}
+            {error && <p className="text-red-500 text-xs mt-1.5">{error}</p>}
           </div>
           <button
             type="submit"
             disabled={loading}
             className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {loading && <span className="material-icons animate-spin text-base">sync</span>}
+            {loading && (
+              <span className="material-icons animate-spin text-base">
+                sync
+              </span>
+            )}
             {loading ? "Signing in…" : "Enter Dashboard"}
           </button>
         </form>
@@ -139,6 +143,38 @@ const LoginGate = ({ onUnlock }) => {
 // Coerce any null/undefined DB value to "" so React controlled
 // inputs never receive null as a value prop.
 const nullToStr = (v) => (v == null ? "" : v);
+
+const Field = ({
+  label,
+  field,
+  type = "text",
+  required,
+  placeholder,
+  form,
+  errors,
+  set,
+}) => (
+  <div>
+    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+      {label}
+      {required && <span className="text-red-400 ml-0.5">*</span>}
+    </label>
+    <input
+      type={type}
+      value={form[field]}
+      onChange={set(field)}
+      placeholder={placeholder}
+      className={`w-full border rounded-lg px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-primary/30 ${
+        errors[field]
+          ? "border-red-400 bg-red-50"
+          : "border-gray-200 focus:border-primary"
+      }`}
+    />
+    {errors[field] && (
+      <p className="text-red-500 text-[11px] mt-1">{errors[field]}</p>
+    )}
+  </div>
+);
 
 const TourModal = ({ tour, onClose, onSaved }) => {
   const [form, setForm] = useState(() => {
@@ -222,29 +258,6 @@ const TourModal = ({ tour, onClose, onSaved }) => {
     }
   };
 
-  const Field = ({ label, field, type = "text", required, placeholder }) => (
-    <div>
-      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
-        {label}
-        {required && <span className="text-red-400 ml-0.5">*</span>}
-      </label>
-      <input
-        type={type}
-        value={form[field]}
-        onChange={set(field)}
-        placeholder={placeholder}
-        className={`w-full border rounded-lg px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-primary/30 ${
-          errors[field]
-            ? "border-red-400 bg-red-50"
-            : "border-gray-200 focus:border-primary"
-        }`}
-      />
-      {errors[field] && (
-        <p className="text-red-500 text-[11px] mt-1">{errors[field]}</p>
-      )}
-    </div>
-  );
-
   return (
     <div
       ref={overlayRef}
@@ -276,11 +289,17 @@ const TourModal = ({ tour, onClose, onSaved }) => {
               field="name"
               required
               placeholder="e.g. Alfama & the Viewpoints"
+              form={form}
+              errors={errors}
+              set={set}
             />
             <Field
               label="Subtitle"
               field="subtitle"
               placeholder="e.g. Lisbon's Hilltop Charm"
+              form={form}
+              errors={errors}
+              set={set}
             />
           </div>
 
@@ -305,6 +324,9 @@ const TourModal = ({ tour, onClose, onSaved }) => {
               label="Badge Text"
               field="badge"
               placeholder="e.g. Most Popular"
+              form={form}
+              errors={errors}
+              set={set}
             />
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
@@ -330,12 +352,18 @@ const TourModal = ({ tour, onClose, onSaved }) => {
               type="number"
               required
               placeholder="e.g. 1.5"
+              form={form}
+              errors={errors}
+              set={set}
             />
             <Field
               label="Price (€/person)"
               field="price"
               type="number"
               placeholder="e.g. 35"
+              form={form}
+              errors={errors}
+              set={set}
             />
           </div>
 
@@ -345,18 +373,27 @@ const TourModal = ({ tour, onClose, onSaved }) => {
               label="Guide Language"
               field="guide_language"
               placeholder="English"
+              form={form}
+              errors={errors}
+              set={set}
             />
             <Field
               label="Rating (0–5)"
               field="rating"
               type="number"
               placeholder="5.0"
+              form={form}
+              errors={errors}
+              set={set}
             />
             <Field
               label="Review Count"
               field="review_count"
               type="number"
               placeholder="0"
+              form={form}
+              errors={errors}
+              set={set}
             />
           </div>
 
@@ -365,6 +402,9 @@ const TourModal = ({ tour, onClose, onSaved }) => {
             label="Meeting Point"
             field="meeting_point"
             placeholder="Leave blank for flexible pickup"
+            form={form}
+            errors={errors}
+            set={set}
           />
 
           {/* Title image */}
@@ -373,6 +413,9 @@ const TourModal = ({ tour, onClose, onSaved }) => {
             field="title_image"
             required
             placeholder="https://..."
+            form={form}
+            errors={errors}
+            set={set}
           />
 
           {/* Preview thumbnail */}
@@ -430,6 +473,9 @@ const TourModal = ({ tour, onClose, onSaved }) => {
             label="Activity Tags"
             field="activity"
             placeholder="e.g. Sightseeing · History · Photography"
+            form={form}
+            errors={errors}
+            set={set}
           />
 
           {/* Gallery URLs */}
@@ -1963,7 +2009,8 @@ const TransactionsManager = () => {
     // 2) Fetch from local payments table (with booking join)
     const { data: localData, error: localErr } = await supabase
       .from("payments")
-      .select(`
+      .select(
+        `
         *,
         booking:bookings (
           id, tour_id, tour_name, booking_date, booking_time,
@@ -1971,7 +2018,8 @@ const TransactionsManager = () => {
           first_name, last_name, email, phone, special_requests,
           subtotal, service_fee, total_amount, status
         )
-      `)
+      `,
+      )
       .order("created_at", { ascending: false });
 
     if (localErr) console.error("payments error:", localErr);
@@ -2005,7 +2053,8 @@ const TransactionsManager = () => {
         currency: st.currency || "eur",
         status,
         customer_name: st.customer_name || local?.customer_name || "—",
-        customer_email: st.customer_email || st.receipt_email || local?.customer_email || "—",
+        customer_email:
+          st.customer_email || st.receipt_email || local?.customer_email || "—",
         tour_name: st.tour_name || local?.tour_name || "—",
         booking_id: st.booking_id || local?.booking_id,
         created_at: st.created_at || local?.created_at,
@@ -2159,12 +2208,17 @@ const TransactionsManager = () => {
       {/* Mini Revenue Chart */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
         <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-4 flex items-center gap-2">
-          <span className="material-icons text-primary text-base">bar_chart</span>
+          <span className="material-icons text-primary text-base">
+            bar_chart
+          </span>
           Monthly Revenue (Last 6 Months)
         </h3>
         <div className="flex items-end gap-3 h-32">
           {monthlyRevenue.map((m) => (
-            <div key={m.key} className="flex-1 flex flex-col items-center gap-1">
+            <div
+              key={m.key}
+              className="flex-1 flex flex-col items-center gap-1"
+            >
               <span className="text-[10px] font-bold text-gray-500">
                 €{m.revenue > 0 ? m.revenue.toFixed(0) : "0"}
               </span>
@@ -2205,7 +2259,8 @@ const TransactionsManager = () => {
                       : "text-gray-500 hover:bg-gray-100"
                   }`}
                 >
-                  {s} <span className="ml-1 opacity-70">({counts[s] ?? 0})</span>
+                  {s}{" "}
+                  <span className="ml-1 opacity-70">({counts[s] ?? 0})</span>
                 </button>
               ))}
             </div>
@@ -2248,7 +2303,9 @@ const TransactionsManager = () => {
         {/* Loading / empty */}
         {loading ? (
           <div className="flex justify-center items-center py-20">
-            <span className="material-icons animate-spin text-primary text-3xl">sync</span>
+            <span className="material-icons animate-spin text-primary text-3xl">
+              sync
+            </span>
           </div>
         ) : visible.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3 text-gray-400">
@@ -2262,16 +2319,22 @@ const TransactionsManager = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-100">
-                    {["Customer", "Tour", "Amount", "Status", "Date", "Session", "Actions"].map(
-                      (h) => (
-                        <th
-                          key={h}
-                          className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                        >
-                          {h}
-                        </th>
-                      ),
-                    )}
+                    {[
+                      "Customer",
+                      "Tour",
+                      "Amount",
+                      "Status",
+                      "Date",
+                      "Session",
+                      "Actions",
+                    ].map((h) => (
+                      <th
+                        key={h}
+                        className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                      >
+                        {h}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -2314,14 +2377,20 @@ const TransactionsManager = () => {
                             {new Date(p.created_at).toLocaleDateString("en-GB")}
                           </p>
                           <p className="text-xs text-gray-400">
-                            {new Date(p.created_at).toLocaleTimeString("en-GB", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {new Date(p.created_at).toLocaleTimeString(
+                              "en-GB",
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )}
                           </p>
                         </td>
                         <td className="px-4 py-3">
-                          <p className="text-xs text-gray-400 font-mono truncate max-w-[120px]" title={p.stripe_session_id}>
+                          <p
+                            className="text-xs text-gray-400 font-mono truncate max-w-[120px]"
+                            title={p.stripe_session_id}
+                          >
                             {p.stripe_session_id
                               ? `…${p.stripe_session_id.slice(-12)}`
                               : "—"}
@@ -2335,7 +2404,9 @@ const TransactionsManager = () => {
                             className="flex items-center gap-1 text-xs border border-gray-200 text-gray-500 hover:bg-gray-50 font-bold px-3 py-1.5 rounded-lg transition"
                           >
                             <span className="material-icons text-xs">
-                              {expanding === p.id ? "expand_less" : "expand_more"}
+                              {expanding === p.id
+                                ? "expand_less"
+                                : "expand_more"}
                             </span>
                             Details
                           </button>
@@ -2346,12 +2417,29 @@ const TransactionsManager = () => {
                           <td colSpan={7} className="px-6 py-4">
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                               {[
-                                { label: "Payment ID", value: typeof p.id === "number" ? `#${p.id}` : `${(p.id || "").slice(0, 16)}…` },
-                                { label: "Booking ID", value: p.booking_id ? `#${p.booking_id.slice(0, 8)}…` : "—" },
+                                {
+                                  label: "Payment ID",
+                                  value:
+                                    typeof p.id === "number"
+                                      ? `#${p.id}`
+                                      : `${(p.id || "").slice(0, 16)}…`,
+                                },
+                                {
+                                  label: "Booking ID",
+                                  value: p.booking_id
+                                    ? `#${p.booking_id.slice(0, 8)}…`
+                                    : "—",
+                                },
                                 {
                                   label: "Booking Date",
                                   value: p.booking?.booking_date
-                                    ? new Date(p.booking.booking_date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
+                                    ? new Date(
+                                        p.booking.booking_date + "T00:00:00",
+                                      ).toLocaleDateString("en-GB", {
+                                        day: "numeric",
+                                        month: "long",
+                                        year: "numeric",
+                                      })
                                     : "—",
                                 },
                                 {
@@ -2390,11 +2478,16 @@ const TransactionsManager = () => {
                                 },
                                 {
                                   label: "Created",
-                                  value: new Date(p.created_at).toLocaleString("en-GB"),
+                                  value: new Date(p.created_at).toLocaleString(
+                                    "en-GB",
+                                  ),
                                 },
                                 {
                                   label: "Data Source",
-                                  value: p._source === "stripe_sync" ? "Stripe Sync" : "Local",
+                                  value:
+                                    p._source === "stripe_sync"
+                                      ? "Stripe Sync"
+                                      : "Local",
                                 },
                                 {
                                   label: "Receipt",
@@ -2481,9 +2574,22 @@ const TransactionsManager = () => {
                     <div className="bg-gray-50 rounded-xl p-3 grid grid-cols-2 gap-3 text-xs">
                       {[
                         { label: "Payment ID", value: `#${p.id}` },
-                        { label: "Booking ID", value: p.booking_id ? `#${p.booking_id}` : "—" },
-                        { label: "Session", value: p.stripe_session_id ? `…${p.stripe_session_id.slice(-12)}` : "—" },
-                        { label: "Created", value: new Date(p.created_at).toLocaleDateString("en-GB") },
+                        {
+                          label: "Booking ID",
+                          value: p.booking_id ? `#${p.booking_id}` : "—",
+                        },
+                        {
+                          label: "Session",
+                          value: p.stripe_session_id
+                            ? `…${p.stripe_session_id.slice(-12)}`
+                            : "—",
+                        },
+                        {
+                          label: "Created",
+                          value: new Date(p.created_at).toLocaleDateString(
+                            "en-GB",
+                          ),
+                        },
                       ].map(({ label, value }) => (
                         <div key={label}>
                           <p className="font-bold text-gray-400 uppercase tracking-wider text-[10px]">
@@ -2528,7 +2634,9 @@ const AdminDashboard = () => {
       setCheckingAuth(false);
     });
     // Listen for auth state changes (e.g., session expiry)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) setUnlocked(false);
     });
     return () => subscription.unsubscribe();
@@ -2559,7 +2667,9 @@ const AdminDashboard = () => {
   if (checkingAuth) {
     return (
       <div className="min-h-screen bg-background-light flex items-center justify-center">
-        <span className="material-icons animate-spin text-primary text-4xl">sync</span>
+        <span className="material-icons animate-spin text-primary text-4xl">
+          sync
+        </span>
       </div>
     );
   }
