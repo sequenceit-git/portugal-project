@@ -18,6 +18,7 @@ const SkeletonCard = () => (
 const RecommendedTourCard = ({ tour }) => (
   <Link
     to={`/tour-details/${tour.id}`}
+    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
     className="group relative rounded-2xl overflow-hidden shadow-lg cursor-pointer flex flex-col bg-white border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 flex-shrink-0 w-full sm:w-[calc(70%-8px)] lg:w-[calc(40%-10px)]"
   >
     {/* Image */}

@@ -14,7 +14,11 @@ const TourItinerary = ({
   if (!steps.length) return null;
 
   const scrollToMap = () => {
-    const mapElement = document.getElementById("tour-meeting-location");
+    const allMapElements = document.querySelectorAll("#tour-meeting-location");
+    // Pick the one that is visible (not hidden by display:none or lg:hidden)
+    const mapElement = Array.from(allMapElements).find(
+      (el) => el.offsetParent !== null
+    );
     if (mapElement) {
       mapElement.scrollIntoView({ behavior: "smooth", block: "start" });
     }

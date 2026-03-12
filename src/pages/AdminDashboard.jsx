@@ -498,14 +498,19 @@ const TourModal = ({ tour, onClose, onSaved }) => {
           {/* Journey */}
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
-              Journey / Itinerary
+              Journey / Itinerary{" "}
+              <span className="normal-case font-normal text-gray-400">
+                (one stop per line: Place Name | Short description)
+              </span>
             </label>
             <textarea
               value={form.journey}
               onChange={set("journey")}
-              rows={3}
-              placeholder="Detailed journey description..."
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none"
+              rows={6}
+              placeholder={
+                "Miradouro da Graça | Meet point with panoramic views\nLisbon Cathedral | Historic center stop\nAlfama Alleys | Narrow streets and fado vibe\nComercio Square | Final stop by the river"
+              }
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none font-mono"
             />
           </div>
         </div>
@@ -1389,13 +1394,37 @@ const GalleryManager = () => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({ done: 0, total: 0 });
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [form, setForm] = useState({ tour_name: "", description: "" });
-  const [filePreview, setFilePreview] = useState(null);
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]); // array of File objects
+  const [tourOptions, setTourOptions] = useState([]);
+  const [tourDropdownOpen, setTourDropdownOpen] = useState(false);
+  const tourDropdownRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (
+        tourDropdownRef.current &&
+        !tourDropdownRef.current.contains(e.target)
+      ) {
+        setTourDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const fetchTourOptions = async () => {
+    const { data } = await supabase.from("tours").select("name").order("name");
+    if (data && data.length > 0) {
+      setTourOptions([...data.map((t) => t.name), "Other"]);
+    }
+  };
 
   const fetchImages = async () => {
     setLoading(true);
@@ -1410,24 +1439,31 @@ const GalleryManager = () => {
 
   useEffect(() => {
     fetchImages();
+    fetchTourOptions();
   }, []);
 
   const handleFileChange = (e) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    if (f.size > 5 * 1024 * 1024) {
-      setUploadError("File must be under 5 MB.");
-      return;
+    const selected = Array.from(e.target.files || []);
+    if (!selected.length) return;
+    const oversized = selected.filter((f) => f.size > 5 * 1024 * 1024);
+    if (oversized.length) {
+      setUploadError(
+        `${oversized.length} file(s) exceed 5 MB and were skipped.`,
+      );
+    } else {
+      setUploadError("");
     }
-    setFile(f);
-    setFilePreview(URL.createObjectURL(f));
-    setUploadError("");
+    const valid = selected.filter((f) => f.size <= 5 * 1024 * 1024);
+    setFiles((prev) => {
+      const existingNames = new Set(prev.map((f) => f.name));
+      return [...prev, ...valid.filter((f) => !existingNames.has(f.name))];
+    });
   };
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!file) {
-      setUploadError("Please select an image.");
+    if (!files.length) {
+      setUploadError("Please select at least one image.");
       return;
     }
     if (!form.tour_name.trim()) {
@@ -1437,45 +1473,49 @@ const GalleryManager = () => {
 
     setUploading(true);
     setUploadError("");
+    setUploadProgress({ done: 0, total: files.length });
 
-    const ext = file.name.split(".").pop();
-    const fileName = `gallery_${Date.now()}.${ext}`;
+    const errors = [];
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      const ext = f.name.split(".").pop();
+      const fileName = `gallery_${Date.now()}_${i}.${ext}`;
 
-    // Upload to storage
-    const { error: storageErr } = await supabase.storage
-      .from("gallery")
-      .upload(fileName, file, { cacheControl: "3600", upsert: false });
+      const { error: storageErr } = await supabase.storage
+        .from("gallery")
+        .upload(fileName, f, { cacheControl: "3600", upsert: false });
 
-    if (storageErr) {
-      setUploadError("Upload failed: " + storageErr.message);
-      setUploading(false);
-      return;
+      if (storageErr) {
+        errors.push(`${f.name}: ${storageErr.message}`);
+        setUploadProgress((p) => ({ ...p, done: p.done + 1 }));
+        continue;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("gallery")
+        .getPublicUrl(fileName);
+
+      const { error: dbErr } = await supabase.from("gallery").insert([
+        {
+          image_url: urlData.publicUrl,
+          tour_name: form.tour_name.trim(),
+          description: form.description.trim() || null,
+        },
+      ]);
+
+      if (dbErr) errors.push(`${f.name}: ${dbErr.message}`);
+      setUploadProgress((p) => ({ ...p, done: p.done + 1 }));
     }
 
-    const { data: urlData } = supabase.storage
-      .from("gallery")
-      .getPublicUrl(fileName);
+    if (errors.length)
+      setUploadError("Some uploads failed: " + errors.join(" | "));
 
-    const { error: dbErr } = await supabase.from("gallery").insert([
-      {
-        image_url: urlData.publicUrl,
-        tour_name: form.tour_name.trim(),
-        description: form.description.trim() || null,
-      },
-    ]);
-
-    if (dbErr) {
-      setUploadError("Database error: " + dbErr.message);
-      setUploading(false);
-      return;
-    }
-
-    // Reset form
-    setFile(null);
-    setFilePreview(null);
+    // Reset
+    setFiles([]);
     setForm({ tour_name: "", description: "" });
     if (fileInputRef.current) fileInputRef.current.value = "";
     setUploading(false);
+    setUploadProgress({ done: 0, total: 0 });
     fetchImages();
   };
 
@@ -1522,7 +1562,7 @@ const GalleryManager = () => {
           <span className="material-icons text-primary text-base">
             add_photo_alternate
           </span>
-          Upload New Photo
+          Upload Photos
         </h3>
         <form onSubmit={handleUpload} className="space-y-4">
           {/* File drop zone */}
@@ -1530,48 +1570,101 @@ const GalleryManager = () => {
             onClick={() => fileInputRef.current?.click()}
             className="border-2 border-dashed border-gray-200 hover:border-primary/40 rounded-xl p-6 text-center cursor-pointer transition-colors bg-gray-50 hover:bg-primary/5"
           >
-            {filePreview ? (
+            {files.length > 0 ? (
               <div className="flex flex-col items-center gap-3">
-                <img
-                  src={filePreview}
-                  alt="Preview"
-                  className="max-h-40 rounded-lg object-contain shadow"
-                />
-                <p className="text-xs text-gray-500">{file?.name}</p>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {files.map((f, idx) => (
+                    <div key={idx} className="relative group/thumb">
+                      <img
+                        src={URL.createObjectURL(f)}
+                        alt={f.name}
+                        className="h-20 w-20 object-cover rounded-lg border border-gray-200 shadow-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setFiles((prev) => prev.filter((_, i) => i !== idx));
+                        }}
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover/thumb:opacity-100 transition shadow"
+                      >
+                        <span className="material-icons text-[11px]">
+                          close
+                        </span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500">
+                  {files.length} photo{files.length !== 1 ? "s" : ""} selected
+                </p>
                 <p className="text-xs text-primary font-semibold">
-                  Click to change
+                  Click to add more
                 </p>
               </div>
             ) : (
               <div className="flex flex-col items-center gap-2 text-gray-400">
                 <span className="material-icons text-4xl">cloud_upload</span>
-                <p className="text-sm font-semibold">Click to select image</p>
-                <p className="text-xs">JPG, PNG, WEBP · Max 5 MB</p>
+                <p className="text-sm font-semibold">Click to select images</p>
+                <p className="text-xs">
+                  JPG, PNG, WEBP · Max 5 MB each · Multiple allowed
+                </p>
               </div>
             )}
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
+              multiple
               className="hidden"
               onChange={handleFileChange}
             />
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
-            <div>
+            <div ref={tourDropdownRef} className="relative">
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
                 Tour / Tag Name <span className="text-red-400">*</span>
               </label>
-              <input
-                type="text"
-                value={form.tour_name}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, tour_name: e.target.value }))
-                }
-                placeholder="e.g. Alfama Walking Tour"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
-              />
+              {/* Trigger button */}
+              <button
+                type="button"
+                onClick={() => setTourDropdownOpen((o) => !o)}
+                className="w-full flex items-center justify-between border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition bg-white text-left"
+              >
+                <span
+                  className={form.tour_name ? "text-gray-900" : "text-gray-400"}
+                >
+                  {form.tour_name || "— Select a tour —"}
+                </span>
+                <span
+                  className={`material-icons text-base text-gray-400 transition-transform ${tourDropdownOpen ? "rotate-180" : ""}`}
+                >
+                  expand_more
+                </span>
+              </button>
+              {/* Scrollable list panel */}
+              {tourDropdownOpen && (
+                <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg overflow-y-auto max-h-48">
+                  {tourOptions.map((name) => (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => {
+                        setForm((f) => ({ ...f, tour_name: name }));
+                        setTourDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2.5 text-sm hover:bg-primary/5 hover:text-primary transition ${
+                        form.tour_name === name
+                          ? "bg-primary/10 text-primary font-semibold"
+                          : "text-gray-700"
+                      }`}
+                    >
+                      {name}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
@@ -1597,6 +1690,29 @@ const GalleryManager = () => {
             </p>
           )}
 
+          {uploading && uploadProgress.total > 0 && (
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>
+                  Uploading {uploadProgress.done} of {uploadProgress.total}…
+                </span>
+                <span>
+                  {Math.round(
+                    (uploadProgress.done / uploadProgress.total) * 100,
+                  )}
+                  %
+                </span>
+              </div>
+              <div className="w-full bg-gray-100 rounded-full h-2">
+                <div
+                  className="bg-primary h-2 rounded-full transition-all"
+                  style={{
+                    width: `${(uploadProgress.done / uploadProgress.total) * 100}%`,
+                  }}
+                />
+              </div>
+            </div>
+          )}
           <button
             type="submit"
             disabled={uploading}
@@ -1607,12 +1723,12 @@ const GalleryManager = () => {
                 <span className="material-icons animate-spin text-base">
                   refresh
                 </span>
-                Uploading…
+                Uploading {uploadProgress.done}/{uploadProgress.total}…
               </>
             ) : (
               <>
-                <span className="material-icons text-base">upload</span>Upload
-                Photo
+                <span className="material-icons text-base">upload</span>
+                Upload {files.length > 1 ? `${files.length} Photos` : "Photo"}
               </>
             )}
           </button>
@@ -2759,6 +2875,14 @@ const AdminDashboard = () => {
                 <span className="hidden sm:inline">Add Tour</span>
               </button>
             )}
+            {/* Home */}
+            <a
+              href="/"
+              title="Go to main site"
+              className="w-9 h-9 border border-gray-200 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:border-primary/40 transition"
+            >
+              <span className="material-icons text-base">home</span>
+            </a>
             {/* Logout */}
             <button
               onClick={handleLogout}

@@ -249,10 +249,10 @@ const Tours = () => {
               <span className="text-primary font-bold tracking-wider uppercase text-sm">
                 Tuk-Tuk Experiences
               </span>
-              <h2 className="mt-2 text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
+              <h2 className="mt-2 sm:mt-3 text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-1 leading-snug">
                 Choose Your Adventure
               </h2>
-              <p className="mt-2 text-sm sm:text-base text-gray-500 max-w-lg">
+              <p className="mt-2 text-sm sm:text-sm text-gray-500 max-w-lg">
                 Every route is private, customisable, and fully led by a
                 licensed English-speaking Lisbon insider.
               </p>
