@@ -104,10 +104,10 @@ const Gallery = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-14 lg:py-16">
         {/* Header */}
         <div className="mb-16">
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 mb-4">
+          <h1 className="mt-2 sm:mt-3 text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-1 leading-snug">
             Guest Moments Gallery
           </h1>
-          <p className="text-xl text-slate-600 max-w-2xl">
+          <p className="text-[10px] sm:text-[16px] text-gray-600 max-w-xl">
             Explore beautiful moments captured during our tours across Portugal.
             Real moments from real travelers.
           </p>

@@ -137,7 +137,7 @@ const Home = () => {
 
   return (
     <div className="bg-background-light text-gray-800 font-display antialiased selection:bg-primary selection:text-white overflow-x-hidden">
-      <header className="relative pt-16 sm:pt-20 md:pt-24 lg:pt-28 min-h-[auto] lg:min-h-screen flex items-start">
+      <header className="relative pt-16 sm:pt-20 md:pt-24 lg:pt-5 min-h-[auto] lg:min-h-screen flex items-start">
         <div className="absolute top-0 right-0 w-2/3 h-full bg-azulejo-light clip-path-slant hidden lg:block -z-10"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full grid lg:grid-cols-12 gap-7 sm:gap-10 lg:gap-12 items-start lg:items-center pb-8 sm:pb-10 lg:py-12">
           <div className="lg:col-span-5 order-2 lg:order-1 relative z-10">
@@ -239,7 +239,7 @@ const Home = () => {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
               <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 text-white">
-                <p className="font-bold text-lg sm:text-xl">
+                <p className="font-bold text-xl sm:text-xl ">
                   Entertainment Mama
                 </p>
                 <p className="text-xs sm:text-sm opacity-90">
@@ -269,7 +269,7 @@ const Home = () => {
           <span className="text-primary font-bold tracking-wider uppercase text-[11px] sm:text-sm">
             Bem-vindo a Lisboa
           </span>
-          <h2 className="mt-2 sm:mt-3 text-xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-5 sm:mb-8 leading-snug">
+          <h2 className="mt-2 sm:mt-3 text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-1 leading-snug">
             Not just a guide, but a friend in the city.
           </h2>
           <div className="relative max-w-2xl sm:max-w-3xl mx-auto text-left px-0 sm:px-0">
@@ -279,7 +279,7 @@ const Home = () => {
             <span className="material-icons hidden sm:block absolute left-0 lg:-left-8 -top-5 sm:-top-4 text-xl sm:text-4xl text-primary/20 transform -scale-x-100">
               format_quote
             </span>
-            <p className="text-[13px] sm:text-base md:text-2xl text-gray-600 font-light leading-6 sm:leading-relaxed mb-5 sm:mb-8 pl-0 sm:pl-0">
+            <p className="text-xs sm:text-base md:text-lg text-gray-600 font-light leading-6 sm:leading-relaxed mb-3 sm:mb-8 sm:mt-3 pl-0 sm:pl-0">
               "Hi, I’m Mama, your local friend in Lisbon, and I created
               Entertainment Mama to offer the smartest, greenest, and most fun
               way to explore this beautiful city. With our 100% electric{" "}
@@ -294,7 +294,7 @@ const Home = () => {
             <div className="flex justify-center items-center mt-5 sm:mt-8 gap-2 sm:gap-3">
               <div className="hidden sm:block h-px w-16 bg-primary/30"></div>
               <span
-                className="text-sm sm:text-3xl text-primary font-bold italic"
+                className="text-base sm:text-2xl text-primary font-bold italic"
                 style={{ fontFamily: "cursive" }}
               >
                 Entertainment Mama
@@ -310,13 +310,15 @@ const Home = () => {
           {/* Section header */}
           <div className="flex flex-col md:flex-row justify-between items-end mb-8 sm:mb-12 gap-5 sm:gap-6">
             <div>
-              <span className="text-primary font-bold tracking-wider uppercase text-[11px] sm:text-sm">
+              <span className="text-primary font-bold tracking-wider uppercase text-[10px] sm:text-sm">
                 Tuk-Tuk Experiences
               </span>
-              <h2 className="mt-1.5 sm:mt-2 text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2 sm:mb-3">
-                Choose Your Adventure
+              <h2 className="mt-1.5 sm:mt-2 text-2xl sm:text-3xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">
+                <h2 className="mt-2 sm:mt-3 text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-1 leading-snug">
+                  Choose Your Adventure
+                </h2>
               </h2>
-              <p className="text-sm sm:text-base text-gray-600 max-w-xl">
+              <p className="text-[10px] sm:text-[16px] text-gray-600 max-w-xl">
                 Three handcrafted routes through the soul of Lisbon — each one
                 aboard a 100% electric tuk-tuk with a licensed local guide.
               </p>
@@ -511,7 +513,7 @@ const Home = () => {
               <span className="text-primary font-bold tracking-wider uppercase text-[10px] sm:text-xs">
                 Guest Love
               </span>
-              <h2 className="mt-1 sm:mt-2 text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
+              <h2 className="mt-2 sm:mt-3 text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-1 leading-snug">
                 What Guests Say
               </h2>
             </div>

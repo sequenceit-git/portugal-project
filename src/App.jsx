@@ -63,7 +63,7 @@ const App = () => {
   return (
     <div className="min-h-screen text-slate-900">
       {!isAdmin && <Navbar />}
-      <main className={isAdmin || isHome || isTourDetails ? "" : "pt-24"}>
+      <main className={isAdmin ? "" : "pt-16"}>
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Home />} />

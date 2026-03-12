@@ -2,19 +2,19 @@ const Footer = () => {
   return (
     <footer className="bg-white border-t border-gray-200 pt-12 sm:pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 md:gap-12 mb-10 sm:mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 md:gap-12 mb-5 sm:mb-6">
           <div>
-            <a href="/" className="flex items-center mb-6">
-              <img
-                src="/assets/logo/lisbonlogo.png"
-                alt="Tukinlisbon"
-                className="h-10 sm:h-14 w-auto object-contain"
-                width="56"
-                height="56"
-                loading="lazy"
-                decoding="async"
-              />
-            </a>
+            <div className="flex items-center mb-2">
+              <div className="h-6 sm:h-16 md:h-20 lg:h-24 xl:h-28 overflow-hidden flex items-center">
+                <img
+                  src="/assets/logo/lisbonlogo.png"
+                  alt="Tukinlisbon"
+                  className="h-16 sm:h-20 md:h-24 lg:h-28 xl:h-32 w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            </div>
             <p className="text-gray-500 text-xs sm:text-sm mb-4 sm:mb-6">
               Personalized tours in Lisbon tailored to create unforgettable
               memories. Experience the city like a local.

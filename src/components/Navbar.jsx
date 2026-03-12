@@ -14,36 +14,34 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 z-50 w-full bg-white/95 backdrop-blur border-b border-primary/10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14 sm:h-16 md:h-20 lg:h-24">
+    <nav className="fixed top-0 z-50 w-full bg-white shadow-sm">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <NavLink
             to="/"
-            className="flex items-center"
+            className="flex-shrink-0 flex items-center h-16 overflow-hidden"
             onClick={() => setIsOpen(false)}
           >
-            <img
-              src="/assets/logo/lisbonlogo.png"
-              alt="Tukinlisbon"
-              width="170"
-              height="110"
-              className="h-10 sm:h-12 md:h-14 lg:h-20 w-auto object-contain"
-            />
+              <img
+                src="/assets/logo/lisbonlogo.png"
+                alt="Tukinlisbon"
+                className="h-20 sm:h-24 md:h-28 lg:h-32 xl:h-36 w-auto object-contain"
+              />
           </NavLink>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-8 ml-auto">
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 end={item.to === "/"}
                 className={({ isActive }) =>
-                  `text-lg font-medium transition-colors ${
+                  `text-base font-medium transition-colors whitespace-nowrap ${
                     isActive
-                      ? "text-primary"
-                      : "text-slate-900 hover:text-primary"
+                      ? "text-primary border-b-2 border-primary pb-1"
+                      : "text-slate-700 hover:text-primary"
                   }`
                 }
               >
@@ -52,7 +50,7 @@ const Navbar = () => {
             ))}
             <NavLink
               to="/tours"
-              className="bg-primary text-white px-4 py-2 rounded-full text-md font-semibold shadow-lg shadow-primary/20 hover:bg-orange-600 transition-colors"
+              className="bg-primary hover:bg-orange-600 text-white px-6 py-2.5 rounded-lg text-base font-semibold shadow-md hover:shadow-lg transition-all"
             >
               Book a Tour
             </NavLink>
@@ -60,11 +58,11 @@ const Navbar = () => {
 
           {/* Hamburger Button */}
           <button
-            className="md:hidden p-1 rounded-lg text-slate-600 hover:text-primary hover:bg-primary/5 transition-colors"
+            className="md:hidden p-2 rounded-lg text-slate-600 hover:text-primary hover:bg-slate-100 transition-colors"
             onClick={() => setIsOpen((prev) => !prev)}
             aria-label="Toggle menu"
           >
-            <span className="material-icons text-3xl">
+            <span className="material-icons text-2xl">
               {isOpen ? "close" : "menu"}
             </span>
           </button>
@@ -73,11 +71,11 @@ const Navbar = () => {
 
       {/* Mobile Drawer */}
       <div
-        className={`md:hidden bg-white overflow-hidden transition-all duration-300 ease-in-out ${
-          isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+        className={`md:hidden bg-white border-t border-slate-200 overflow-hidden transition-all duration-300 ease-in-out ${
+          isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
         }`}
       >
-        <div className="px-4 py-4 space-y-1">
+        <div className="px-4 py-4 space-y-2">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
@@ -85,10 +83,10 @@ const Navbar = () => {
               end={item.to === "/"}
               onClick={() => setIsOpen(false)}
               className={({ isActive }) =>
-                `block px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-colors ${
+                `block px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   isActive
                     ? "bg-primary/10 text-primary"
-                    : "text-slate-800 hover:bg-slate-50 hover:text-primary"
+                    : "text-slate-700 hover:bg-slate-50 hover:text-primary"
                 }`
               }
             >
@@ -98,7 +96,7 @@ const Navbar = () => {
           <NavLink
             to="/tours"
             onClick={() => setIsOpen(false)}
-            className="block mt-2.5 sm:mt-3 px-3 sm:px-4 py-2 sm:py-2.5 bg-primary text-white rounded-lg sm:rounded-xl text-sm sm:text-base font-semibold text-center shadow-lg shadow-primary/20 hover:bg-orange-600 transition-colors"
+            className="block mt-4 px-4 py-2.5 bg-primary hover:bg-orange-600 text-white rounded-lg text-sm font-semibold text-center shadow-md transition-all"
           >
             Book a Tour
           </NavLink>
