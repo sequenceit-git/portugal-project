@@ -93,6 +93,8 @@ const CATEGORIES = [
   "Landmark",
 ];
 
+const LISBON_CENTER = [-9.1393, 38.7223];
+
 const GuideMap = () => {
   const [activeCategory, setActiveCategory] = useState("All Spots");
   const [search, setSearch] = useState("");
@@ -107,18 +109,15 @@ const GuideMap = () => {
     return matchCat && matchSearch;
   });
 
-  const getGoogleMapsUrl = (spot) =>
-    spot.mapsUrl || `https://www.google.com/maps/search/?api=1&query=${spot.lat},${spot.lng}`;
-
   return (
-    <section className="min-h-[calc(100vh-6rem)] bg-background-light font-display text-slate-800 flex flex-col md:flex-row antialiased">
+    <section className="h-[calc(100vh-6rem)] bg-background-light font-display text-slate-800 overflow-hidden flex flex-col md:flex-row antialiased">
       {/* ── Sidebar ──────────────────────────────── */}
-      <aside className="w-full md:w-[400px] lg:w-[450px] flex-shrink-0 flex flex-col md:h-[calc(100vh-6rem)] bg-white border-r border-slate-200 shadow-xl z-20">
+      <aside className="w-full md:w-[400px] lg:w-[450px] flex-shrink-0 flex flex-col h-full bg-white border-r border-slate-200 shadow-xl z-20">
         {/* Header */}
         <div className="p-6 border-b border-slate-100 bg-white">
           <div className="flex items-center gap-3 mb-6">
             <img
-              src="/assets/logo/logo.png"
+              src="/assets/logo/image.png"
               alt="Tukinlisbon"
               className="h-12 w-auto object-contain"
               width="48"
@@ -346,7 +345,7 @@ const GuideMap = () => {
               </span>
             </div>
           </div>
-        )}
+        </div>
       </main>
     </section>
   );

@@ -24,7 +24,7 @@ const Navbar = () => {
             onClick={() => setIsOpen(false)}
           >
             <img
-              src="/assets/logo/logo.png"
+              src="/assets/logo/image.png"
               alt="Tukinlisbon"
               width="80"
               height="80"

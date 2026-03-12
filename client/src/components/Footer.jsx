@@ -6,7 +6,7 @@ const Footer = () => {
           <div>
             <a href="/" className="flex items-center mb-6">
               <img
-                src="/assets/logo/logo.png"
+                src="/assets/logo/image.png"
                 alt="Tukinlisbon"
                 className="h-10 sm:h-14 w-auto object-contain"
                 width="56"
