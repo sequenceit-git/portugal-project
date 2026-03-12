@@ -15,9 +15,9 @@ const TourItinerary = ({
 
   const scrollToMap = () => {
     const allMapElements = document.querySelectorAll("#tour-meeting-location");
-    // Pick the one that is visible (not hidden by display:none or lg:hidden)
+    // Use getComputedStyle to correctly detect Tailwind media-query visibility
     const mapElement = Array.from(allMapElements).find(
-      (el) => el.offsetParent !== null,
+      (el) => window.getComputedStyle(el).display !== "none",
     );
     if (mapElement) {
       mapElement.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -123,7 +123,7 @@ const TourItinerary = ({
           className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-primary/10 hover:bg-primary/20 text-primary font-semibold text-xs sm:text-sm rounded-lg transition-colors w-fit"
         >
           <span className="material-icons text-base">location_on</span>
-          Check Meeting Location
+          Check Meeting Location below
         </button>
       </div>
 

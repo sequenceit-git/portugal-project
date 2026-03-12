@@ -1398,6 +1398,7 @@ const GalleryManager = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [toast, setToast] = useState(null); // { type: 'success'|'error', message }
   const [form, setForm] = useState({ tour_name: "", description: "" });
   const [files, setFiles] = useState([]); // array of File objects
   const [tourOptions, setTourOptions] = useState([]);
@@ -1510,6 +1511,22 @@ const GalleryManager = () => {
     if (errors.length)
       setUploadError("Some uploads failed: " + errors.join(" | "));
 
+    const succeeded = files.length - errors.length;
+    if (succeeded > 0 && errors.length === 0) {
+      setToast({
+        type: "success",
+        message: `${succeeded} photo${succeeded !== 1 ? "s" : ""} uploaded successfully!`,
+      });
+    } else if (succeeded > 0 && errors.length > 0) {
+      setToast({
+        type: "error",
+        message: `${succeeded} uploaded, ${errors.length} failed.`,
+      });
+    } else {
+      setToast({ type: "error", message: "Upload failed. Please try again." });
+    }
+    setTimeout(() => setToast(null), 4000);
+
     // Reset
     setFiles([]);
     setForm({ tour_name: "", description: "" });
@@ -1546,7 +1563,27 @@ const GalleryManager = () => {
 
   return (
     <div>
-      {/* Header */}
+      {/* Toast notification */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl text-sm font-semibold transition-all animate-fade-in ${
+            toast.type === "success"
+              ? "bg-green-500 text-white"
+              : "bg-red-500 text-white"
+          }`}
+        >
+          <span className="material-icons text-xl">
+            {toast.type === "success" ? "check_circle" : "error"}
+          </span>
+          {toast.message}
+          <button
+            onClick={() => setToast(null)}
+            className="ml-2 opacity-70 hover:opacity-100 transition"
+          >
+            <span className="material-icons text-base">close</span>
+          </button>
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h2 className="text-2xl font-extrabold text-gray-900">Gallery</h2>

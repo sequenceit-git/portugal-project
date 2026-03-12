@@ -21,9 +21,7 @@ const TermsOfService = lazy(() => import("./pages/TermsOfService.jsx"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[60vh]">
-    <span className="material-icons animate-spin text-primary text-4xl">
-      sync
-    </span>
+    <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
   </div>
 );
 
