@@ -17,7 +17,7 @@ const TourItinerary = ({
     const allMapElements = document.querySelectorAll("#tour-meeting-location");
     // Pick the one that is visible (not hidden by display:none or lg:hidden)
     const mapElement = Array.from(allMapElements).find(
-      (el) => el.offsetParent !== null
+      (el) => el.offsetParent !== null,
     );
     if (mapElement) {
       mapElement.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -26,11 +26,11 @@ const TourItinerary = ({
 
   const itineraryColumns = 3;
   // Independent desktop controls: move icons/cards and path separately.
-  const itineraryIconXPositions = [120, 400, 800];
-  const itineraryLineXPositions = [120, 400, 950];
+  const itineraryIconXPositions = [120, 460, 870];
+  const itineraryLineXPositions = [120, 460, 960];
   const itineraryStartY = 56;
-  const itineraryRowGap = 172;
-  const itineraryIconRadius = 32;
+  const itineraryRowGap = 205;
+  const itineraryIconRadius = 28;
 
   const itineraryDesktopPositions = steps.map((_, idx) => {
     const row = Math.floor(idx / itineraryColumns);
@@ -183,16 +183,16 @@ const TourItinerary = ({
             return (
               <div
                 key={step.title}
-                className="absolute -translate-x-1/2 flex flex-col items-center text-center w-40"
+                className="absolute -translate-x-1/2 flex flex-col items-center text-center w-36"
                 style={{ left: pos.left, top: pos.top }}
               >
-                <span className="w-16 h-16 rounded-full bg-background-light text-primary border-2 border-primary/20 flex items-center justify-center shadow-md">
-                  <span className="material-icons text-2xl">{step.icon}</span>
+                <span className="w-14 h-14 rounded-full bg-background-light text-primary border-2 border-primary/20 flex items-center justify-center shadow-md">
+                  <span className="material-icons text-xl">{step.icon}</span>
                 </span>
-                <p className="mt-2 text-sm font-bold text-slate-900 leading-tight">
+                <p className="mt-1.5 text-[11px] font-bold text-slate-900 leading-tight">
                   {step.title}
                 </p>
-                <p className="text-xs text-slate-500 leading-tight mt-1">
+                <p className="text-[10px] text-slate-500 leading-tight mt-0.5">
                   {step.subtitle}
                 </p>
               </div>
