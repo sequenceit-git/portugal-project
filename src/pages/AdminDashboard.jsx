@@ -18,7 +18,7 @@ const EMPTY_TOUR = {
   title_image: "",
   details: "",
   activity: "",
-  journey: "",
+  // journey: "", // COMMENTED OUT - Using static itinerary from src/lib/staticItinerary.js
   rating: 5.0,
   review_count: 0,
   price: "",
@@ -495,7 +495,7 @@ const TourModal = ({ tour, onClose, onSaved }) => {
             />
           </div>
 
-          {/* Journey */}
+          {/* JOURNEY FIELD - COMMENTED OUT (Using static itinerary instead)
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
               Journey / Itinerary{" "}
@@ -513,6 +513,9 @@ const TourModal = ({ tour, onClose, onSaved }) => {
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none font-mono"
             />
           </div>
+          */}
+
+          {/* Note: Itinerary is now static and configured in src/lib/staticItinerary.js */}
         </div>
 
         {/* Footer */}

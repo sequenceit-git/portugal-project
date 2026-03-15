@@ -5,6 +5,9 @@ import { supabase } from "../lib/supabaseClient";
 import TourPreviewPopup from "../components/TourPreviewPopup";
 import SEO from "../components/SEO";
 
+// Carousel helpers for tours
+const carouselStep = 500; // px to scroll per arrow
+
 const BADGE_COLOR = {
   amber: "bg-primary text-white",
   primary: "bg-primary text-white",
@@ -23,7 +26,7 @@ const Home = () => {
           "id,name,subtitle,badge,badge_color,duration,guide_language,meeting_point,highlights,title_image,price,gallery,details,category,rating,review_count,people,activity",
         )
         .order("id", { ascending: true })
-        .limit(3);
+        .limit(6);
       setTours(data || []);
       setToursLoading(false);
     };
@@ -33,6 +36,75 @@ const Home = () => {
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [canScrollReviews, setCanScrollReviews] = useState(false);
+
+  // Tours carousel ref and drag logic
+  const tourCarouselRef = useRef(null);
+  const tourDragStateRef = useRef({
+    isDragging: false,
+    startX: 0,
+    scrollLeft: 0,
+    hasDragged: false,
+    lastX: 0,
+    velocity: 0,
+  });
+  const animationFrameRef = useRef(null);
+
+  useEffect(() => {
+    const carousel = tourCarouselRef.current;
+    if (!carousel) return;
+
+    const handleTouchStart = (e) => {
+      tourDragStateRef.current.isDragging = true;
+      tourDragStateRef.current.startX = e.touches[0].clientX;
+      tourDragStateRef.current.lastX = e.touches[0].clientX;
+      tourDragStateRef.current.scrollLeft = carousel.scrollLeft;
+      carousel.style.scrollBehavior = "auto";
+    };
+
+    const handleTouchMove = (e) => {
+      if (!tourDragStateRef.current.isDragging) return;
+
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+
+      animationFrameRef.current = requestAnimationFrame(() => {
+        const dx = tourDragStateRef.current.startX - e.touches[0].clientX;
+        const lastDx = tourDragStateRef.current.lastX - e.touches[0].clientX;
+
+        tourDragStateRef.current.velocity = lastDx;
+        tourDragStateRef.current.lastX = e.touches[0].clientX;
+        carousel.scrollLeft = tourDragStateRef.current.scrollLeft + dx;
+      });
+    };
+
+    const handleTouchEnd = (e) => {
+      if (!tourDragStateRef.current.isDragging) return;
+      tourDragStateRef.current.isDragging = false;
+      carousel.style.scrollBehavior = "smooth";
+
+      // Apply momentum scrolling
+      const velocity = tourDragStateRef.current.velocity;
+      if (Math.abs(velocity) > 2) {
+        carousel.scrollLeft += velocity * 8;
+      }
+    };
+
+    carousel.addEventListener("touchstart", handleTouchStart, {
+      passive: true,
+    });
+    carousel.addEventListener("touchmove", handleTouchMove, { passive: true });
+    carousel.addEventListener("touchend", handleTouchEnd, { passive: true });
+
+    return () => {
+      carousel.removeEventListener("touchstart", handleTouchStart);
+      carousel.removeEventListener("touchmove", handleTouchMove);
+      carousel.removeEventListener("touchend", handleTouchEnd);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     supabase
@@ -319,7 +391,7 @@ const Home = () => {
                 </h2>
               </h2>
               <p className="text-[10px] sm:text-[16px] text-gray-600 max-w-xl">
-                Three handcrafted routes through the soul of Lisbon — each one
+                Four handcrafted routes through the soul of Lisbon — each one
                 aboard a 100% electric tuk-tuk with a licensed local guide.
               </p>
             </div>
@@ -335,7 +407,7 @@ const Home = () => {
           {/* ── Loading skeletons ── */}
           {toursLoading && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
-              {[1, 2, 3].map((i) => (
+              {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
                   className="rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-lg animate-pulse"
@@ -358,132 +430,169 @@ const Home = () => {
 
           {/* ── Dynamic tour cards ── */}
           {!toursLoading && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-              {tours.map((tour) => {
-                const highlights = Array.isArray(tour.highlights)
-                  ? tour.highlights
-                  : typeof tour.highlights === "string" && tour.highlights
+            <div className="relative group">
+              <button
+                className="absolute left-1 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white shadow-lg rounded-full p-1.5 sm:p-2.5 border border-gray-200 transition disabled:opacity-40 disabled:cursor-not-allowed hover:scale-110"
+                style={{ left: "0.25rem" }}
+                onClick={() =>
+                  tourCarouselRef.current?.scrollBy({
+                    left: -carouselStep,
+                    behavior: "smooth",
+                  })
+                }
+                disabled={tours.length <= 1}
+                aria-label="Scroll left"
+              >
+                <span className="material-icons text-base sm:text-lg">
+                  chevron_left
+                </span>
+              </button>
+              <div
+                ref={tourCarouselRef}
+                className="flex gap-4 sm:gap-6 lg:gap-8 overflow-x-auto scroll-smooth snap-x snap-mandatory select-none scrollbar-hide"
+                style={{
+                  WebkitOverflowScrolling: "touch",
+                  cursor: "grab",
+                  scrollbarWidth: "none",
+                  msOverflowStyle: "none",
+                  userSelect: "none",
+                  WebkitUserSelect: "none",
+                }}
+              >
+                {tours.map((tour) => {
+                  const highlights = Array.isArray(tour.highlights)
                     ? tour.highlights
-                        .split(",")
-                        .map((s) => s.trim())
-                        .filter(Boolean)
-                    : [];
-                const badgeCls =
-                  BADGE_COLOR[tour.badge_color] || BADGE_COLOR.primary;
-                return (
-                  <div
-                    key={tour.id}
-                    className="group relative rounded-2xl overflow-hidden shadow-lg cursor-pointer flex flex-col bg-white border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
-                  >
-                    {/* Image */}
-                    <div className="relative h-40 sm:h-52 md:h-60 overflow-hidden">
-                      <img
-                        alt={tour.name}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        loading="lazy"
-                        decoding="async"
-                        width="480"
-                        height="240"
-                        src={tour.title_image}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                      {tour.badge && (
-                        <div
-                          className={`absolute top-3 sm:top-4 left-3 sm:left-4 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-extrabold uppercase tracking-wide shadow ${badgeCls}`}
-                        >
-                          {tour.badge}
+                    : typeof tour.highlights === "string" && tour.highlights
+                      ? tour.highlights
+                          .split(",")
+                          .map((s) => s.trim())
+                          .filter(Boolean)
+                      : [];
+                  const badgeCls =
+                    BADGE_COLOR[tour.badge_color] || BADGE_COLOR.primary;
+                  return (
+                    <div
+                      key={tour.id}
+                      className="group relative rounded-2xl overflow-hidden shadow-lg cursor-pointer flex flex-col bg-white border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 min-w-[240px] sm:min-w-[280px] md:min-w-[320px] lg:min-w-[360px] snap-center"
+                    >
+                      {/* ...existing card content... */}
+                      <div className="relative h-40 sm:h-52 md:h-60 overflow-hidden">
+                        <img
+                          alt={tour.name}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          loading="lazy"
+                          decoding="async"
+                          width="480"
+                          height="240"
+                          src={tour.title_image}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        {tour.badge && (
+                          <div
+                            className={`absolute top-3 sm:top-4 left-3 sm:left-4 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-extrabold uppercase tracking-wide shadow ${badgeCls}`}
+                          >
+                            {tour.badge}
+                          </div>
+                        )}
+                        <div className="absolute top-3 sm:top-4 right-3 sm:right-4 bg-white/90 backdrop-blur-sm px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-bold uppercase tracking-wide text-gray-900">
+                          Tuk-Tuk
                         </div>
-                      )}
-                      <div className="absolute top-3 sm:top-4 right-3 sm:right-4 bg-white/90 backdrop-blur-sm px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-bold uppercase tracking-wide text-gray-900">
-                        Tuk-Tuk
                       </div>
-                    </div>
-
-                    {/* Body */}
-                    <div className="flex flex-col flex-1 p-3 sm:p-5 md:p-6">
-                      <div className="flex flex-row flex-wrap items-center gap-2.5 sm:gap-3 md:gap-4 text-[11px] sm:text-sm text-gray-500 mb-2.5 sm:mb-4">
-                        <span className="flex items-center gap-1">
-                          <span className="material-icons text-primary text-sm sm:text-base">
-                            schedule
-                          </span>
-                          {tour.duration}h
-                        </span>
-                        {tour.guide_language && (
+                      <div className="flex flex-col flex-1 p-3 sm:p-5 md:p-6">
+                        <div className="flex flex-row flex-wrap items-center gap-2.5 sm:gap-3 md:gap-4 text-[11px] sm:text-sm text-gray-500 mb-2.5 sm:mb-4">
                           <span className="flex items-center gap-1">
                             <span className="material-icons text-primary text-sm sm:text-base">
-                              language
+                              schedule
                             </span>
-                            {tour.guide_language.split(/[,/]/)[0].trim()}
+                            {tour.duration}h
                           </span>
+                          {tour.guide_language && (
+                            <span className="flex items-center gap-1">
+                              <span className="material-icons text-primary text-sm sm:text-base">
+                                language
+                              </span>
+                              {tour.guide_language.split(/[,/]/)[0].trim()}
+                            </span>
+                          )}
+                          <span className="flex items-center gap-1">
+                            <span className="material-icons text-primary text-sm sm:text-base">
+                              eco
+                            </span>
+                            Electric
+                          </span>
+                        </div>
+                        <h3 className="text-base sm:text-xl font-extrabold text-gray-900 mb-1.5 sm:mb-2 leading-snug">
+                          {tour.name}
+                          {tour.subtitle && (
+                            <span className="block text-primary text-xs sm:text-base font-semibold mt-0.5">
+                              {tour.subtitle}
+                            </span>
+                          )}
+                        </h3>
+                        {highlights.length > 0 && (
+                          <ul className="flex flex-wrap gap-1.5 mb-2.5 sm:mb-5">
+                            {highlights.slice(0, 3).map((h) => (
+                              <li
+                                key={h}
+                                className="text-[9px] sm:text-[11px] font-medium bg-gray-100 text-gray-700 border border-gray-200 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full"
+                              >
+                                {h}
+                              </li>
+                            ))}
+                          </ul>
                         )}
-                        <span className="flex items-center gap-1">
-                          <span className="material-icons text-primary text-sm sm:text-base">
-                            eco
-                          </span>
-                          Electric
-                        </span>
-                      </div>
-
-                      <h3 className="text-base sm:text-xl font-extrabold text-gray-900 mb-1.5 sm:mb-2 leading-snug">
-                        {tour.name}
-                        {tour.subtitle && (
-                          <span className="block text-primary text-xs sm:text-base font-semibold mt-0.5">
-                            {tour.subtitle}
-                          </span>
+                        {tour.price && (
+                          <p className="text-xs sm:text-sm font-bold text-gray-900 mb-2.5 sm:mb-3">
+                            From{" "}
+                            <span className="text-primary text-base sm:text-lg">
+                              €{Number(tour.price).toFixed(0)}
+                            </span>
+                            <span className="text-gray-400 font-normal text-xs sm:text-sm ml-1">
+                              /person
+                            </span>
+                          </p>
                         )}
-                      </h3>
-
-                      {/* Highlights */}
-                      {highlights.length > 0 && (
-                        <ul className="flex flex-wrap gap-1.5 mb-2.5 sm:mb-5">
-                          {highlights.slice(0, 3).map((h) => (
-                            <li
-                              key={h}
-                              className="text-[9px] sm:text-[11px] font-medium bg-gray-100 text-gray-700 border border-gray-200 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full"
-                            >
-                              {h}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-
-                      {/* Price */}
-                      {tour.price && (
-                        <p className="text-xs sm:text-sm font-bold text-gray-900 mb-2.5 sm:mb-3">
-                          From{" "}
-                          <span className="text-primary text-base sm:text-lg">
-                            €{Number(tour.price).toFixed(0)}
-                          </span>
-                          <span className="text-gray-400 font-normal text-xs sm:text-sm ml-1">
-                            /person
-                          </span>
-                        </p>
-                      )}
-
-                      <div className="mt-auto flex flex-col sm:flex-row gap-2">
-                        <button
-                          onClick={() => handlePreviewClick(tour)}
-                          className="w-full sm:flex-1 inline-flex items-center justify-center gap-1.5 bg-white border-2 border-primary hover:bg-primary/5 text-primary font-bold text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-3 rounded-xl transition-all"
-                        >
-                          <span className="material-icons text-sm">
-                            visibility
-                          </span>
-                          <span>Preview</span>
-                        </button>
-                        <Link
-                          to={`/tour-details/${tour.id}`}
-                          className="w-full sm:flex-1 inline-flex items-center justify-center gap-1.5 bg-primary hover:bg-primary-dark text-white font-bold text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-3 rounded-xl transition-all hover:-translate-y-0.5 shadow-lg shadow-primary/20"
-                        >
-                          Book
-                          <span className="material-icons text-sm">
-                            arrow_forward
-                          </span>
-                        </Link>
+                        <div className="mt-auto flex flex-col sm:flex-row gap-2">
+                          <button
+                            onClick={() => handlePreviewClick(tour)}
+                            className="w-full sm:flex-1 inline-flex items-center justify-center gap-1.5 bg-white border-2 border-primary hover:bg-primary/5 text-primary font-bold text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-3 rounded-xl transition-all"
+                          >
+                            <span className="material-icons text-sm">
+                              visibility
+                            </span>
+                            <span>Preview</span>
+                          </button>
+                          <Link
+                            to={`/tour-details/${tour.id}`}
+                            className="w-full sm:flex-1 inline-flex items-center justify-center gap-1.5 bg-primary hover:bg-primary-dark text-white font-bold text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-3 rounded-xl transition-all hover:-translate-y-0.5 shadow-lg shadow-primary/20"
+                          >
+                            Book
+                            <span className="material-icons text-sm">
+                              arrow_forward
+                            </span>
+                          </Link>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+              <button
+                className="absolute right-1 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white shadow-lg rounded-full p-1.5 sm:p-2.5 border border-gray-200 transition disabled:opacity-40 disabled:cursor-not-allowed hover:scale-110"
+                style={{ right: "0.25rem" }}
+                onClick={() =>
+                  tourCarouselRef.current?.scrollBy({
+                    left: carouselStep,
+                    behavior: "smooth",
+                  })
+                }
+                disabled={tours.length <= 1}
+                aria-label="Scroll right"
+              >
+                <span className="material-icons text-base sm:text-lg">
+                  chevron_right
+                </span>
+              </button>
             </div>
           )}
 

@@ -27,9 +27,9 @@ const TourItinerary = ({
   const itineraryColumns = 3;
   // Independent desktop controls: move icons/cards and path separately.
   const itineraryIconXPositions = [120, 460, 870];
-  const itineraryLineXPositions = [120, 460, 960];
+  const itineraryLineXPositions = [100, 460, 960];
   const itineraryStartY = 56;
-  const itineraryRowGap = 205;
+  const itineraryRowGap = 160;
   const itineraryIconRadius = 28;
 
   const itineraryDesktopPositions = steps.map((_, idx) => {

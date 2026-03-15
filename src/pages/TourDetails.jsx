@@ -8,6 +8,7 @@ import SEO from "../components/SEO";
 import MeetingPoints from "../components/MeetingPoints";
 import TourItinerary from "../components/TourItinerary";
 import RecommendedTours from "../components/RecommendedTours";
+import { STATIC_ITINERARY_CONFIG } from "../components/StaticItineraryConfig";
 
 const TourDetails = () => {
   const { id } = useParams();
@@ -67,20 +68,28 @@ const TourDetails = () => {
         })()
       : [];
 
-  const defaultItinerarySteps = tour.journey
-    ? tour.journey
-        .split("\n")
-        .map((l) => l.trim())
-        .filter(Boolean)
-        .map((line, idx, arr) => {
-          const [title, subtitle = ""] = line.split("|").map((s) => s.trim());
-          let icon = "location_on";
-          if (idx === 0) icon = "restart_alt";
-          if (idx === arr.length - 1) icon = "flag";
-          return { icon, title, subtitle };
-        })
-    : [];
+  /* ─────────────────────────────────────────────────────────────
+     DYNAMIC ITINERARY (Commented Out) — Kept for future use
+     
+     Previously parsed tour.journey field to generate itinerary steps.
+     Can be re-enabled by uncommenting below and updating AdminDashboard.
+  ───────────────────────────────────────────────────────────── */
+  // const defaultItinerarySteps = tour.journey
+  //   ? tour.journey
+  //       .split("\n")
+  //       .map((l) => l.trim())
+  //       .filter(Boolean)
+  //       .map((line, idx, arr) => {
+  //         const [title, subtitle = ""] = line.split("|").map((s) => s.trim());
+  //         let icon = "location_on";
+  //         if (idx === 0) icon = "restart_alt";
+  //         if (idx === arr.length - 1) icon = "flag";
+  //         return { icon, title, subtitle };
+  //       })
+  //   : [];
 
+  // Now using static itinerary from lib/staticItinerary.js
+  const defaultItinerarySteps = [];
   const itineraryByTourId = {};
 
   const galleryImages = [tour.title_image, ...parsedGallery].filter(
@@ -433,8 +442,8 @@ const TourDetails = () => {
 
               <TourItinerary
                 tourId={id}
-                defaultTitle="Itinerary"
-                defaultSteps={defaultItinerarySteps}
+                defaultTitle={STATIC_ITINERARY_CONFIG.title}
+                defaultSteps={STATIC_ITINERARY_CONFIG.steps}
                 itineraryByTourId={itineraryByTourId}
               />
 
