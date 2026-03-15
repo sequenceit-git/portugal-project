@@ -218,14 +218,14 @@ const TourDetails = () => {
                         From
                       </span>
                       <span className="text-xl sm:text-2xl font-bold text-slate-900">
-                        €{tour.price}
+                        €{tour.price_1_person || "—"}
                       </span>
                       <span className="text-slate-500 text-xs sm:text-sm font-medium">
                         / person
                       </span>
                     </div>
                     <div className="text-xs text-slate-500 mt-0.5">
-                      Group discounts up to 30% off
+                      Pricing varies by group size
                     </div>
                   </div>
                   <div className="flex flex-col items-end">
@@ -651,14 +651,14 @@ const TourDetails = () => {
                           From
                         </span>
                         <span className="text-xl sm:text-2xl font-bold text-slate-900">
-                          €{tour.price}
+                          €{tour.price_1_person || "—"}
                         </span>
                         <span className="text-slate-500 text-sm font-medium">
                           / person
                         </span>
                       </div>
                       <div className="text-xs text-slate-500 mt-0.5">
-                        Group discounts up to 30% off
+                        Pricing varies by group size
                       </div>
                     </div>
                     <div className="flex flex-col items-end">

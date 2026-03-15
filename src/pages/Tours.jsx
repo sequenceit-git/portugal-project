@@ -85,9 +85,9 @@ const TourCard = ({ tour }) => (
       </div>
 
       {/* Price pill on image */}
-      {tour.price && (
+      {tour.price_1_person && (
         <div className="absolute bottom-3.5 right-3.5 bg-primary text-white px-2.5 py-1 rounded-full text-[11px] font-extrabold">
-          From €{Number(tour.price).toFixed(0)}/person
+          From €{Number(tour.price_1_person).toFixed(0)}/person
         </div>
       )}
     </div>
@@ -185,7 +185,7 @@ const Tours = () => {
       const { data, error } = await supabase
         .from("tours")
         .select(
-          "id,name,subtitle,category,badge,badge_color,duration,people,guide_language,meeting_point,highlights,gallery,details,activity,journey,rating,review_count,price,title_image",
+          "id,name,subtitle,category,badge,badge_color,duration,people,guide_language,meeting_point,highlights,gallery,details,activity,journey,rating,review_count,price_1_person,price_2_person,price_3_person,price_4_person,price_5_person,price_6_person,title_image",
         )
         .order("created_at", { ascending: true });
 

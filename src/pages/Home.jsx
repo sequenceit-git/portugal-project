@@ -23,7 +23,7 @@ const Home = () => {
       const { data } = await supabase
         .from("tours")
         .select(
-          "id,name,subtitle,badge,badge_color,duration,guide_language,meeting_point,highlights,title_image,price,gallery,details,category,rating,review_count,people,activity",
+          "id,name,subtitle,badge,badge_color,duration,guide_language,meeting_point,highlights,title_image,price_1_person,price_2_person,price_3_person,price_4_person,price_5_person,price_6_person,gallery,details,category,rating,review_count,people,activity",
         )
         .order("id", { ascending: true })
         .limit(6);
@@ -541,11 +541,11 @@ const Home = () => {
                             ))}
                           </ul>
                         )}
-                        {tour.price && (
+                        {tour.price_1_person && (
                           <p className="text-xs sm:text-sm font-bold text-gray-900 mb-2.5 sm:mb-3">
                             From{" "}
                             <span className="text-primary text-base sm:text-lg">
-                              €{Number(tour.price).toFixed(0)}
+                              €{Number(tour.price_1_person).toFixed(0)}
                             </span>
                             <span className="text-gray-400 font-normal text-xs sm:text-sm ml-1">
                               /person

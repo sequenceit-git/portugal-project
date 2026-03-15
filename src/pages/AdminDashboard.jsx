@@ -21,7 +21,12 @@ const EMPTY_TOUR = {
   // journey: "", // COMMENTED OUT - Using static itinerary from src/lib/staticItinerary.js
   rating: 5.0,
   review_count: 0,
-  price: "",
+  price_1_person: "",
+  price_2_person: "",
+  price_3_person: "",
+  price_4_person: "",
+  price_5_person: "",
+  price_6_person: "",
 };
 
 /* ─────────────────────────────────────────────────────────────
@@ -223,7 +228,24 @@ const TourModal = ({ tour, onClose, onSaved }) => {
       duration: parseFloat(form.duration),
       rating: parseFloat(form.rating) || 5.0,
       review_count: parseInt(form.review_count) || 0,
-      price: form.price ? parseFloat(form.price) : null,
+      price_1_person: form.price_1_person
+        ? parseFloat(form.price_1_person)
+        : null,
+      price_2_person: form.price_2_person
+        ? parseFloat(form.price_2_person)
+        : null,
+      price_3_person: form.price_3_person
+        ? parseFloat(form.price_3_person)
+        : null,
+      price_4_person: form.price_4_person
+        ? parseFloat(form.price_4_person)
+        : null,
+      price_5_person: form.price_5_person
+        ? parseFloat(form.price_5_person)
+        : null,
+      price_6_person: form.price_6_person
+        ? parseFloat(form.price_6_person)
+        : null,
       highlights: form.highlights
         ? form.highlights
             .split(",")
@@ -344,7 +366,7 @@ const TourModal = ({ tour, onClose, onSaved }) => {
             </div>
           </div>
 
-          {/* Row: duration + price */}
+          {/* Row: duration */}
           <div className="grid sm:grid-cols-2 gap-4">
             <Field
               label="Duration (hours)"
@@ -356,15 +378,73 @@ const TourModal = ({ tour, onClose, onSaved }) => {
               errors={errors}
               set={set}
             />
-            <Field
-              label="Price (€/person)"
-              field="price"
-              type="number"
-              placeholder="e.g. 35"
-              form={form}
-              errors={errors}
-              set={set}
-            />
+          </div>
+
+          {/* Per-Person Pricing Tiers */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <h3 className="text-sm font-bold text-blue-900 mb-4">
+              Per-Person Pricing Tiers
+            </h3>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Field
+                label="1 Person (€)"
+                field="price_1_person"
+                type="number"
+                placeholder="e.g. 60"
+                form={form}
+                errors={errors}
+                set={set}
+              />
+              <Field
+                label="2 People (€/person)"
+                field="price_2_person"
+                type="number"
+                placeholder="e.g. 35"
+                form={form}
+                errors={errors}
+                set={set}
+              />
+              <Field
+                label="3 People (€/person)"
+                field="price_3_person"
+                type="number"
+                placeholder="e.g. 30"
+                form={form}
+                errors={errors}
+                set={set}
+              />
+              <Field
+                label="4 People (€/person)"
+                field="price_4_person"
+                type="number"
+                placeholder="e.g. 30"
+                form={form}
+                errors={errors}
+                set={set}
+              />
+              <Field
+                label="5 People (€/person)"
+                field="price_5_person"
+                type="number"
+                placeholder="e.g. 25"
+                form={form}
+                errors={errors}
+                set={set}
+              />
+              <Field
+                label="6+ People (€/person)"
+                field="price_6_person"
+                type="number"
+                placeholder="e.g. 22"
+                form={form}
+                errors={errors}
+                set={set}
+              />
+            </div>
+            <p className="text-xs text-blue-700 mt-3 text-center">
+              💡 For 6+ people, use the "6+ People" rate. Example: 7 people ×
+              €22/person = €154 total
+            </p>
           </div>
 
           {/* Row: guide_language + rating + review_count */}
@@ -2808,7 +2888,7 @@ const AdminDashboard = () => {
     const { data, error } = await supabase
       .from("tours")
       .select(
-        "id,name,subtitle,category,badge,badge_color,duration,people,guide_language,meeting_point,highlights,gallery,details,activity,journey,rating,review_count,price,title_image,created_at",
+        "id,name,subtitle,category,badge,badge_color,duration,people,guide_language,meeting_point,highlights,gallery,details,activity,journey,rating,review_count,price_1_person,price_2_person,price_3_person,price_4_person,price_5_person,price_6_person,title_image,created_at",
       )
       .order("created_at", { ascending: true });
     if (error) console.error(error);
@@ -2999,8 +3079,8 @@ const AdminDashboard = () => {
                   ? "€" +
                     Math.min(
                       ...tours
-                        .filter((t) => t.price)
-                        .map((t) => Number(t.price)),
+                        .filter((t) => t.price_1_person)
+                        .map((t) => Number(t.price_1_person)),
                     )
                   : "—",
                 color: "bg-green-100 text-green-600",
@@ -3082,7 +3162,7 @@ const AdminDashboard = () => {
                         Duration
                       </th>
                       <th className="text-left px-5 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                        Price
+                        Price Range
                       </th>
                       <th className="text-left px-5 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">
                         Rating
@@ -3134,7 +3214,9 @@ const AdminDashboard = () => {
                           {tour.duration}h
                         </td>
                         <td className="px-5 py-4 text-gray-600">
-                          {tour.price ? `€${tour.price}` : "—"}
+                          {tour.price_1_person
+                            ? `€${tour.price_1_person}–${tour.price_6_person}`
+                            : "—"}
                         </td>
                         <td className="px-5 py-4">
                           <span className="flex items-center gap-1 text-amber-500 font-bold">
@@ -3191,7 +3273,9 @@ const AdminDashboard = () => {
                       </p>
                       <p className="text-xs text-gray-400">
                         {tour.category} · {tour.duration}h ·{" "}
-                        {tour.price ? `€${tour.price}` : "Free"}
+                        {tour.price_1_person
+                          ? `€${tour.price_1_person}–${tour.price_6_person}`
+                          : "Free"}
                       </p>
                       <div className="flex gap-2 mt-2">
                         <button

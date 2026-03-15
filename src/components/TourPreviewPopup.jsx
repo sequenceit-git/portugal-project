@@ -145,13 +145,13 @@ const TourPreviewPopup = ({ tour, isOpen, onClose }) => {
                 </p>
               </div>
             )}
-            {tour.price && (
+            {tour.price_1_person && (
               <div className="bg-primary/10 p-2.5 sm:p-5 rounded-lg">
                 <p className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold mb-1 sm:mb-2">
-                  Price
+                  Starting Price
                 </p>
                 <p className="text-base sm:text-2xl font-bold text-primary">
-                  €{tour.price}
+                  €{tour.price_1_person}
                   <span className="text-[10px] sm:text-sm font-normal text-slate-600 ml-1">
                     /person
                   </span>
