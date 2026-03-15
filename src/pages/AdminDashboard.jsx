@@ -18,10 +18,15 @@ const EMPTY_TOUR = {
   title_image: "",
   details: "",
   activity: "",
-  journey: "",
+  // journey: "", // COMMENTED OUT - Using static itinerary from src/lib/staticItinerary.js
   rating: 5.0,
   review_count: 0,
-  price: "",
+  price_1_person: "",
+  price_2_person: "",
+  price_3_person: "",
+  price_4_person: "",
+  price_5_person: "",
+  price_6_person: "",
 };
 
 /* ─────────────────────────────────────────────────────────────
@@ -47,10 +52,12 @@ const LoginGate = ({ onUnlock }) => {
     setError("");
     setLoading(true);
     try {
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password: pw,
-      });
+      const { data, error: authError } = await supabase.auth.signInWithPassword(
+        {
+          email,
+          password: pw,
+        },
+      );
       if (authError) throw authError;
       // Check admin role
       if (data.user?.app_metadata?.role !== "admin") {
@@ -115,16 +122,18 @@ const LoginGate = ({ onUnlock }) => {
               }`}
               required
             />
-            {error && (
-              <p className="text-red-500 text-xs mt-1.5">{error}</p>
-            )}
+            {error && <p className="text-red-500 text-xs mt-1.5">{error}</p>}
           </div>
           <button
             type="submit"
             disabled={loading}
             className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {loading && <span className="material-icons animate-spin text-base">sync</span>}
+            {loading && (
+              <span className="material-icons animate-spin text-base">
+                sync
+              </span>
+            )}
             {loading ? "Signing in…" : "Enter Dashboard"}
           </button>
         </form>
@@ -139,6 +148,38 @@ const LoginGate = ({ onUnlock }) => {
 // Coerce any null/undefined DB value to "" so React controlled
 // inputs never receive null as a value prop.
 const nullToStr = (v) => (v == null ? "" : v);
+
+const Field = ({
+  label,
+  field,
+  type = "text",
+  required,
+  placeholder,
+  form,
+  errors,
+  set,
+}) => (
+  <div>
+    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+      {label}
+      {required && <span className="text-red-400 ml-0.5">*</span>}
+    </label>
+    <input
+      type={type}
+      value={form[field]}
+      onChange={set(field)}
+      placeholder={placeholder}
+      className={`w-full border rounded-lg px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-primary/30 ${
+        errors[field]
+          ? "border-red-400 bg-red-50"
+          : "border-gray-200 focus:border-primary"
+      }`}
+    />
+    {errors[field] && (
+      <p className="text-red-500 text-[11px] mt-1">{errors[field]}</p>
+    )}
+  </div>
+);
 
 const TourModal = ({ tour, onClose, onSaved }) => {
   const [form, setForm] = useState(() => {
@@ -187,7 +228,24 @@ const TourModal = ({ tour, onClose, onSaved }) => {
       duration: parseFloat(form.duration),
       rating: parseFloat(form.rating) || 5.0,
       review_count: parseInt(form.review_count) || 0,
-      price: form.price ? parseFloat(form.price) : null,
+      price_1_person: form.price_1_person
+        ? parseFloat(form.price_1_person)
+        : null,
+      price_2_person: form.price_2_person
+        ? parseFloat(form.price_2_person)
+        : null,
+      price_3_person: form.price_3_person
+        ? parseFloat(form.price_3_person)
+        : null,
+      price_4_person: form.price_4_person
+        ? parseFloat(form.price_4_person)
+        : null,
+      price_5_person: form.price_5_person
+        ? parseFloat(form.price_5_person)
+        : null,
+      price_6_person: form.price_6_person
+        ? parseFloat(form.price_6_person)
+        : null,
       highlights: form.highlights
         ? form.highlights
             .split(",")
@@ -222,29 +280,6 @@ const TourModal = ({ tour, onClose, onSaved }) => {
     }
   };
 
-  const Field = ({ label, field, type = "text", required, placeholder }) => (
-    <div>
-      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
-        {label}
-        {required && <span className="text-red-400 ml-0.5">*</span>}
-      </label>
-      <input
-        type={type}
-        value={form[field]}
-        onChange={set(field)}
-        placeholder={placeholder}
-        className={`w-full border rounded-lg px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-primary/30 ${
-          errors[field]
-            ? "border-red-400 bg-red-50"
-            : "border-gray-200 focus:border-primary"
-        }`}
-      />
-      {errors[field] && (
-        <p className="text-red-500 text-[11px] mt-1">{errors[field]}</p>
-      )}
-    </div>
-  );
-
   return (
     <div
       ref={overlayRef}
@@ -276,11 +311,17 @@ const TourModal = ({ tour, onClose, onSaved }) => {
               field="name"
               required
               placeholder="e.g. Alfama & the Viewpoints"
+              form={form}
+              errors={errors}
+              set={set}
             />
             <Field
               label="Subtitle"
               field="subtitle"
               placeholder="e.g. Lisbon's Hilltop Charm"
+              form={form}
+              errors={errors}
+              set={set}
             />
           </div>
 
@@ -305,6 +346,9 @@ const TourModal = ({ tour, onClose, onSaved }) => {
               label="Badge Text"
               field="badge"
               placeholder="e.g. Most Popular"
+              form={form}
+              errors={errors}
+              set={set}
             />
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
@@ -322,7 +366,7 @@ const TourModal = ({ tour, onClose, onSaved }) => {
             </div>
           </div>
 
-          {/* Row: duration + price */}
+          {/* Row: duration */}
           <div className="grid sm:grid-cols-2 gap-4">
             <Field
               label="Duration (hours)"
@@ -330,13 +374,77 @@ const TourModal = ({ tour, onClose, onSaved }) => {
               type="number"
               required
               placeholder="e.g. 1.5"
+              form={form}
+              errors={errors}
+              set={set}
             />
-            <Field
-              label="Price (€/person)"
-              field="price"
-              type="number"
-              placeholder="e.g. 35"
-            />
+          </div>
+
+          {/* Per-Person Pricing Tiers */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <h3 className="text-sm font-bold text-blue-900 mb-4">
+              Per-Person Pricing Tiers
+            </h3>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Field
+                label="1 Person (€)"
+                field="price_1_person"
+                type="number"
+                placeholder="e.g. 60"
+                form={form}
+                errors={errors}
+                set={set}
+              />
+              <Field
+                label="2 People (€/person)"
+                field="price_2_person"
+                type="number"
+                placeholder="e.g. 35"
+                form={form}
+                errors={errors}
+                set={set}
+              />
+              <Field
+                label="3 People (€/person)"
+                field="price_3_person"
+                type="number"
+                placeholder="e.g. 30"
+                form={form}
+                errors={errors}
+                set={set}
+              />
+              <Field
+                label="4 People (€/person)"
+                field="price_4_person"
+                type="number"
+                placeholder="e.g. 30"
+                form={form}
+                errors={errors}
+                set={set}
+              />
+              <Field
+                label="5 People (€/person)"
+                field="price_5_person"
+                type="number"
+                placeholder="e.g. 25"
+                form={form}
+                errors={errors}
+                set={set}
+              />
+              <Field
+                label="6+ People (€/person)"
+                field="price_6_person"
+                type="number"
+                placeholder="e.g. 22"
+                form={form}
+                errors={errors}
+                set={set}
+              />
+            </div>
+            <p className="text-xs text-blue-700 mt-3 text-center">
+              💡 For 6+ people, use the "6+ People" rate. Example: 7 people ×
+              €22/person = €154 total
+            </p>
           </div>
 
           {/* Row: guide_language + rating + review_count */}
@@ -345,18 +453,27 @@ const TourModal = ({ tour, onClose, onSaved }) => {
               label="Guide Language"
               field="guide_language"
               placeholder="English"
+              form={form}
+              errors={errors}
+              set={set}
             />
             <Field
               label="Rating (0–5)"
               field="rating"
               type="number"
               placeholder="5.0"
+              form={form}
+              errors={errors}
+              set={set}
             />
             <Field
               label="Review Count"
               field="review_count"
               type="number"
               placeholder="0"
+              form={form}
+              errors={errors}
+              set={set}
             />
           </div>
 
@@ -365,6 +482,9 @@ const TourModal = ({ tour, onClose, onSaved }) => {
             label="Meeting Point"
             field="meeting_point"
             placeholder="Leave blank for flexible pickup"
+            form={form}
+            errors={errors}
+            set={set}
           />
 
           {/* Title image */}
@@ -373,6 +493,9 @@ const TourModal = ({ tour, onClose, onSaved }) => {
             field="title_image"
             required
             placeholder="https://..."
+            form={form}
+            errors={errors}
+            set={set}
           />
 
           {/* Preview thumbnail */}
@@ -430,6 +553,9 @@ const TourModal = ({ tour, onClose, onSaved }) => {
             label="Activity Tags"
             field="activity"
             placeholder="e.g. Sightseeing · History · Photography"
+            form={form}
+            errors={errors}
+            set={set}
           />
 
           {/* Gallery URLs */}
@@ -449,19 +575,27 @@ const TourModal = ({ tour, onClose, onSaved }) => {
             />
           </div>
 
-          {/* Journey */}
+          {/* JOURNEY FIELD - COMMENTED OUT (Using static itinerary instead)
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
-              Journey / Itinerary
+              Journey / Itinerary{" "}
+              <span className="normal-case font-normal text-gray-400">
+                (one stop per line: Place Name | Short description)
+              </span>
             </label>
             <textarea
               value={form.journey}
               onChange={set("journey")}
-              rows={3}
-              placeholder="Detailed journey description..."
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none"
+              rows={6}
+              placeholder={
+                "Miradouro da Graça | Meet point with panoramic views\nLisbon Cathedral | Historic center stop\nAlfama Alleys | Narrow streets and fado vibe\nComercio Square | Final stop by the river"
+              }
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none font-mono"
             />
           </div>
+          */}
+
+          {/* Note: Itinerary is now static and configured in src/lib/staticItinerary.js */}
         </div>
 
         {/* Footer */}
@@ -1343,13 +1477,38 @@ const GalleryManager = () => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({ done: 0, total: 0 });
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [toast, setToast] = useState(null); // { type: 'success'|'error', message }
   const [form, setForm] = useState({ tour_name: "", description: "" });
-  const [filePreview, setFilePreview] = useState(null);
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]); // array of File objects
+  const [tourOptions, setTourOptions] = useState([]);
+  const [tourDropdownOpen, setTourDropdownOpen] = useState(false);
+  const tourDropdownRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (
+        tourDropdownRef.current &&
+        !tourDropdownRef.current.contains(e.target)
+      ) {
+        setTourDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const fetchTourOptions = async () => {
+    const { data } = await supabase.from("tours").select("name").order("name");
+    if (data && data.length > 0) {
+      setTourOptions([...data.map((t) => t.name), "Other"]);
+    }
+  };
 
   const fetchImages = async () => {
     setLoading(true);
@@ -1364,24 +1523,31 @@ const GalleryManager = () => {
 
   useEffect(() => {
     fetchImages();
+    fetchTourOptions();
   }, []);
 
   const handleFileChange = (e) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    if (f.size > 5 * 1024 * 1024) {
-      setUploadError("File must be under 5 MB.");
-      return;
+    const selected = Array.from(e.target.files || []);
+    if (!selected.length) return;
+    const oversized = selected.filter((f) => f.size > 5 * 1024 * 1024);
+    if (oversized.length) {
+      setUploadError(
+        `${oversized.length} file(s) exceed 5 MB and were skipped.`,
+      );
+    } else {
+      setUploadError("");
     }
-    setFile(f);
-    setFilePreview(URL.createObjectURL(f));
-    setUploadError("");
+    const valid = selected.filter((f) => f.size <= 5 * 1024 * 1024);
+    setFiles((prev) => {
+      const existingNames = new Set(prev.map((f) => f.name));
+      return [...prev, ...valid.filter((f) => !existingNames.has(f.name))];
+    });
   };
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!file) {
-      setUploadError("Please select an image.");
+    if (!files.length) {
+      setUploadError("Please select at least one image.");
       return;
     }
     if (!form.tour_name.trim()) {
@@ -1391,45 +1557,65 @@ const GalleryManager = () => {
 
     setUploading(true);
     setUploadError("");
+    setUploadProgress({ done: 0, total: files.length });
 
-    const ext = file.name.split(".").pop();
-    const fileName = `gallery_${Date.now()}.${ext}`;
+    const errors = [];
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      const ext = f.name.split(".").pop();
+      const fileName = `gallery_${Date.now()}_${i}.${ext}`;
 
-    // Upload to storage
-    const { error: storageErr } = await supabase.storage
-      .from("gallery")
-      .upload(fileName, file, { cacheControl: "3600", upsert: false });
+      const { error: storageErr } = await supabase.storage
+        .from("gallery")
+        .upload(fileName, f, { cacheControl: "3600", upsert: false });
 
-    if (storageErr) {
-      setUploadError("Upload failed: " + storageErr.message);
-      setUploading(false);
-      return;
+      if (storageErr) {
+        errors.push(`${f.name}: ${storageErr.message}`);
+        setUploadProgress((p) => ({ ...p, done: p.done + 1 }));
+        continue;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("gallery")
+        .getPublicUrl(fileName);
+
+      const { error: dbErr } = await supabase.from("gallery").insert([
+        {
+          image_url: urlData.publicUrl,
+          tour_name: form.tour_name.trim(),
+          description: form.description.trim() || null,
+        },
+      ]);
+
+      if (dbErr) errors.push(`${f.name}: ${dbErr.message}`);
+      setUploadProgress((p) => ({ ...p, done: p.done + 1 }));
     }
 
-    const { data: urlData } = supabase.storage
-      .from("gallery")
-      .getPublicUrl(fileName);
+    if (errors.length)
+      setUploadError("Some uploads failed: " + errors.join(" | "));
 
-    const { error: dbErr } = await supabase.from("gallery").insert([
-      {
-        image_url: urlData.publicUrl,
-        tour_name: form.tour_name.trim(),
-        description: form.description.trim() || null,
-      },
-    ]);
-
-    if (dbErr) {
-      setUploadError("Database error: " + dbErr.message);
-      setUploading(false);
-      return;
+    const succeeded = files.length - errors.length;
+    if (succeeded > 0 && errors.length === 0) {
+      setToast({
+        type: "success",
+        message: `${succeeded} photo${succeeded !== 1 ? "s" : ""} uploaded successfully!`,
+      });
+    } else if (succeeded > 0 && errors.length > 0) {
+      setToast({
+        type: "error",
+        message: `${succeeded} uploaded, ${errors.length} failed.`,
+      });
+    } else {
+      setToast({ type: "error", message: "Upload failed. Please try again." });
     }
+    setTimeout(() => setToast(null), 4000);
 
-    // Reset form
-    setFile(null);
-    setFilePreview(null);
+    // Reset
+    setFiles([]);
     setForm({ tour_name: "", description: "" });
     if (fileInputRef.current) fileInputRef.current.value = "";
     setUploading(false);
+    setUploadProgress({ done: 0, total: 0 });
     fetchImages();
   };
 
@@ -1460,7 +1646,27 @@ const GalleryManager = () => {
 
   return (
     <div>
-      {/* Header */}
+      {/* Toast notification */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl text-sm font-semibold transition-all animate-fade-in ${
+            toast.type === "success"
+              ? "bg-green-500 text-white"
+              : "bg-red-500 text-white"
+          }`}
+        >
+          <span className="material-icons text-xl">
+            {toast.type === "success" ? "check_circle" : "error"}
+          </span>
+          {toast.message}
+          <button
+            onClick={() => setToast(null)}
+            className="ml-2 opacity-70 hover:opacity-100 transition"
+          >
+            <span className="material-icons text-base">close</span>
+          </button>
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h2 className="text-2xl font-extrabold text-gray-900">Gallery</h2>
@@ -1476,7 +1682,7 @@ const GalleryManager = () => {
           <span className="material-icons text-primary text-base">
             add_photo_alternate
           </span>
-          Upload New Photo
+          Upload Photos
         </h3>
         <form onSubmit={handleUpload} className="space-y-4">
           {/* File drop zone */}
@@ -1484,48 +1690,101 @@ const GalleryManager = () => {
             onClick={() => fileInputRef.current?.click()}
             className="border-2 border-dashed border-gray-200 hover:border-primary/40 rounded-xl p-6 text-center cursor-pointer transition-colors bg-gray-50 hover:bg-primary/5"
           >
-            {filePreview ? (
+            {files.length > 0 ? (
               <div className="flex flex-col items-center gap-3">
-                <img
-                  src={filePreview}
-                  alt="Preview"
-                  className="max-h-40 rounded-lg object-contain shadow"
-                />
-                <p className="text-xs text-gray-500">{file?.name}</p>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {files.map((f, idx) => (
+                    <div key={idx} className="relative group/thumb">
+                      <img
+                        src={URL.createObjectURL(f)}
+                        alt={f.name}
+                        className="h-20 w-20 object-cover rounded-lg border border-gray-200 shadow-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setFiles((prev) => prev.filter((_, i) => i !== idx));
+                        }}
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover/thumb:opacity-100 transition shadow"
+                      >
+                        <span className="material-icons text-[11px]">
+                          close
+                        </span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500">
+                  {files.length} photo{files.length !== 1 ? "s" : ""} selected
+                </p>
                 <p className="text-xs text-primary font-semibold">
-                  Click to change
+                  Click to add more
                 </p>
               </div>
             ) : (
               <div className="flex flex-col items-center gap-2 text-gray-400">
                 <span className="material-icons text-4xl">cloud_upload</span>
-                <p className="text-sm font-semibold">Click to select image</p>
-                <p className="text-xs">JPG, PNG, WEBP · Max 5 MB</p>
+                <p className="text-sm font-semibold">Click to select images</p>
+                <p className="text-xs">
+                  JPG, PNG, WEBP · Max 5 MB each · Multiple allowed
+                </p>
               </div>
             )}
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
+              multiple
               className="hidden"
               onChange={handleFileChange}
             />
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
-            <div>
+            <div ref={tourDropdownRef} className="relative">
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
                 Tour / Tag Name <span className="text-red-400">*</span>
               </label>
-              <input
-                type="text"
-                value={form.tour_name}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, tour_name: e.target.value }))
-                }
-                placeholder="e.g. Alfama Walking Tour"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
-              />
+              {/* Trigger button */}
+              <button
+                type="button"
+                onClick={() => setTourDropdownOpen((o) => !o)}
+                className="w-full flex items-center justify-between border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition bg-white text-left"
+              >
+                <span
+                  className={form.tour_name ? "text-gray-900" : "text-gray-400"}
+                >
+                  {form.tour_name || "— Select a tour —"}
+                </span>
+                <span
+                  className={`material-icons text-base text-gray-400 transition-transform ${tourDropdownOpen ? "rotate-180" : ""}`}
+                >
+                  expand_more
+                </span>
+              </button>
+              {/* Scrollable list panel */}
+              {tourDropdownOpen && (
+                <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg overflow-y-auto max-h-48">
+                  {tourOptions.map((name) => (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => {
+                        setForm((f) => ({ ...f, tour_name: name }));
+                        setTourDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2.5 text-sm hover:bg-primary/5 hover:text-primary transition ${
+                        form.tour_name === name
+                          ? "bg-primary/10 text-primary font-semibold"
+                          : "text-gray-700"
+                      }`}
+                    >
+                      {name}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
@@ -1551,6 +1810,29 @@ const GalleryManager = () => {
             </p>
           )}
 
+          {uploading && uploadProgress.total > 0 && (
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>
+                  Uploading {uploadProgress.done} of {uploadProgress.total}…
+                </span>
+                <span>
+                  {Math.round(
+                    (uploadProgress.done / uploadProgress.total) * 100,
+                  )}
+                  %
+                </span>
+              </div>
+              <div className="w-full bg-gray-100 rounded-full h-2">
+                <div
+                  className="bg-primary h-2 rounded-full transition-all"
+                  style={{
+                    width: `${(uploadProgress.done / uploadProgress.total) * 100}%`,
+                  }}
+                />
+              </div>
+            </div>
+          )}
           <button
             type="submit"
             disabled={uploading}
@@ -1561,12 +1843,12 @@ const GalleryManager = () => {
                 <span className="material-icons animate-spin text-base">
                   refresh
                 </span>
-                Uploading…
+                Uploading {uploadProgress.done}/{uploadProgress.total}…
               </>
             ) : (
               <>
-                <span className="material-icons text-base">upload</span>Upload
-                Photo
+                <span className="material-icons text-base">upload</span>
+                Upload {files.length > 1 ? `${files.length} Photos` : "Photo"}
               </>
             )}
           </button>
@@ -1963,7 +2245,8 @@ const TransactionsManager = () => {
     // 2) Fetch from local payments table (with booking join)
     const { data: localData, error: localErr } = await supabase
       .from("payments")
-      .select(`
+      .select(
+        `
         *,
         booking:bookings (
           id, tour_id, tour_name, booking_date, booking_time,
@@ -1971,7 +2254,8 @@ const TransactionsManager = () => {
           first_name, last_name, email, phone, special_requests,
           subtotal, service_fee, total_amount, status
         )
-      `)
+      `,
+      )
       .order("created_at", { ascending: false });
 
     if (localErr) console.error("payments error:", localErr);
@@ -2005,7 +2289,8 @@ const TransactionsManager = () => {
         currency: st.currency || "eur",
         status,
         customer_name: st.customer_name || local?.customer_name || "—",
-        customer_email: st.customer_email || st.receipt_email || local?.customer_email || "—",
+        customer_email:
+          st.customer_email || st.receipt_email || local?.customer_email || "—",
         tour_name: st.tour_name || local?.tour_name || "—",
         booking_id: st.booking_id || local?.booking_id,
         created_at: st.created_at || local?.created_at,
@@ -2159,12 +2444,17 @@ const TransactionsManager = () => {
       {/* Mini Revenue Chart */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
         <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-4 flex items-center gap-2">
-          <span className="material-icons text-primary text-base">bar_chart</span>
+          <span className="material-icons text-primary text-base">
+            bar_chart
+          </span>
           Monthly Revenue (Last 6 Months)
         </h3>
         <div className="flex items-end gap-3 h-32">
           {monthlyRevenue.map((m) => (
-            <div key={m.key} className="flex-1 flex flex-col items-center gap-1">
+            <div
+              key={m.key}
+              className="flex-1 flex flex-col items-center gap-1"
+            >
               <span className="text-[10px] font-bold text-gray-500">
                 €{m.revenue > 0 ? m.revenue.toFixed(0) : "0"}
               </span>
@@ -2205,7 +2495,8 @@ const TransactionsManager = () => {
                       : "text-gray-500 hover:bg-gray-100"
                   }`}
                 >
-                  {s} <span className="ml-1 opacity-70">({counts[s] ?? 0})</span>
+                  {s}{" "}
+                  <span className="ml-1 opacity-70">({counts[s] ?? 0})</span>
                 </button>
               ))}
             </div>
@@ -2248,7 +2539,9 @@ const TransactionsManager = () => {
         {/* Loading / empty */}
         {loading ? (
           <div className="flex justify-center items-center py-20">
-            <span className="material-icons animate-spin text-primary text-3xl">sync</span>
+            <span className="material-icons animate-spin text-primary text-3xl">
+              sync
+            </span>
           </div>
         ) : visible.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3 text-gray-400">
@@ -2262,16 +2555,22 @@ const TransactionsManager = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-100">
-                    {["Customer", "Tour", "Amount", "Status", "Date", "Session", "Actions"].map(
-                      (h) => (
-                        <th
-                          key={h}
-                          className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                        >
-                          {h}
-                        </th>
-                      ),
-                    )}
+                    {[
+                      "Customer",
+                      "Tour",
+                      "Amount",
+                      "Status",
+                      "Date",
+                      "Session",
+                      "Actions",
+                    ].map((h) => (
+                      <th
+                        key={h}
+                        className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                      >
+                        {h}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -2314,14 +2613,20 @@ const TransactionsManager = () => {
                             {new Date(p.created_at).toLocaleDateString("en-GB")}
                           </p>
                           <p className="text-xs text-gray-400">
-                            {new Date(p.created_at).toLocaleTimeString("en-GB", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {new Date(p.created_at).toLocaleTimeString(
+                              "en-GB",
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )}
                           </p>
                         </td>
                         <td className="px-4 py-3">
-                          <p className="text-xs text-gray-400 font-mono truncate max-w-[120px]" title={p.stripe_session_id}>
+                          <p
+                            className="text-xs text-gray-400 font-mono truncate max-w-[120px]"
+                            title={p.stripe_session_id}
+                          >
                             {p.stripe_session_id
                               ? `…${p.stripe_session_id.slice(-12)}`
                               : "—"}
@@ -2335,7 +2640,9 @@ const TransactionsManager = () => {
                             className="flex items-center gap-1 text-xs border border-gray-200 text-gray-500 hover:bg-gray-50 font-bold px-3 py-1.5 rounded-lg transition"
                           >
                             <span className="material-icons text-xs">
-                              {expanding === p.id ? "expand_less" : "expand_more"}
+                              {expanding === p.id
+                                ? "expand_less"
+                                : "expand_more"}
                             </span>
                             Details
                           </button>
@@ -2346,12 +2653,29 @@ const TransactionsManager = () => {
                           <td colSpan={7} className="px-6 py-4">
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                               {[
-                                { label: "Payment ID", value: typeof p.id === "number" ? `#${p.id}` : `${(p.id || "").slice(0, 16)}…` },
-                                { label: "Booking ID", value: p.booking_id ? `#${p.booking_id.slice(0, 8)}…` : "—" },
+                                {
+                                  label: "Payment ID",
+                                  value:
+                                    typeof p.id === "number"
+                                      ? `#${p.id}`
+                                      : `${(p.id || "").slice(0, 16)}…`,
+                                },
+                                {
+                                  label: "Booking ID",
+                                  value: p.booking_id
+                                    ? `#${p.booking_id.slice(0, 8)}…`
+                                    : "—",
+                                },
                                 {
                                   label: "Booking Date",
                                   value: p.booking?.booking_date
-                                    ? new Date(p.booking.booking_date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
+                                    ? new Date(
+                                        p.booking.booking_date + "T00:00:00",
+                                      ).toLocaleDateString("en-GB", {
+                                        day: "numeric",
+                                        month: "long",
+                                        year: "numeric",
+                                      })
                                     : "—",
                                 },
                                 {
@@ -2390,11 +2714,16 @@ const TransactionsManager = () => {
                                 },
                                 {
                                   label: "Created",
-                                  value: new Date(p.created_at).toLocaleString("en-GB"),
+                                  value: new Date(p.created_at).toLocaleString(
+                                    "en-GB",
+                                  ),
                                 },
                                 {
                                   label: "Data Source",
-                                  value: p._source === "stripe_sync" ? "Stripe Sync" : "Local",
+                                  value:
+                                    p._source === "stripe_sync"
+                                      ? "Stripe Sync"
+                                      : "Local",
                                 },
                                 {
                                   label: "Receipt",
@@ -2481,9 +2810,22 @@ const TransactionsManager = () => {
                     <div className="bg-gray-50 rounded-xl p-3 grid grid-cols-2 gap-3 text-xs">
                       {[
                         { label: "Payment ID", value: `#${p.id}` },
-                        { label: "Booking ID", value: p.booking_id ? `#${p.booking_id}` : "—" },
-                        { label: "Session", value: p.stripe_session_id ? `…${p.stripe_session_id.slice(-12)}` : "—" },
-                        { label: "Created", value: new Date(p.created_at).toLocaleDateString("en-GB") },
+                        {
+                          label: "Booking ID",
+                          value: p.booking_id ? `#${p.booking_id}` : "—",
+                        },
+                        {
+                          label: "Session",
+                          value: p.stripe_session_id
+                            ? `…${p.stripe_session_id.slice(-12)}`
+                            : "—",
+                        },
+                        {
+                          label: "Created",
+                          value: new Date(p.created_at).toLocaleDateString(
+                            "en-GB",
+                          ),
+                        },
                       ].map(({ label, value }) => (
                         <div key={label}>
                           <p className="font-bold text-gray-400 uppercase tracking-wider text-[10px]">
@@ -2528,7 +2870,9 @@ const AdminDashboard = () => {
       setCheckingAuth(false);
     });
     // Listen for auth state changes (e.g., session expiry)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) setUnlocked(false);
     });
     return () => subscription.unsubscribe();
@@ -2544,7 +2888,7 @@ const AdminDashboard = () => {
     const { data, error } = await supabase
       .from("tours")
       .select(
-        "id,name,subtitle,category,badge,badge_color,duration,people,guide_language,meeting_point,highlights,gallery,details,activity,journey,rating,review_count,price,title_image,created_at",
+        "id,name,subtitle,category,badge,badge_color,duration,people,guide_language,meeting_point,highlights,gallery,details,activity,journey,rating,review_count,price_1_person,price_2_person,price_3_person,price_4_person,price_5_person,price_6_person,title_image,created_at",
       )
       .order("created_at", { ascending: true });
     if (error) console.error(error);
@@ -2559,7 +2903,9 @@ const AdminDashboard = () => {
   if (checkingAuth) {
     return (
       <div className="min-h-screen bg-background-light flex items-center justify-center">
-        <span className="material-icons animate-spin text-primary text-4xl">sync</span>
+        <span className="material-icons animate-spin text-primary text-4xl">
+          sync
+        </span>
       </div>
     );
   }
@@ -2649,6 +2995,14 @@ const AdminDashboard = () => {
                 <span className="hidden sm:inline">Add Tour</span>
               </button>
             )}
+            {/* Home */}
+            <a
+              href="/"
+              title="Go to main site"
+              className="w-9 h-9 border border-gray-200 rounded-lg flex items-center justify-center text-gray-500 hover:text-primary hover:border-primary/40 transition"
+            >
+              <span className="material-icons text-base">home</span>
+            </a>
             {/* Logout */}
             <button
               onClick={handleLogout}
@@ -2725,8 +3079,8 @@ const AdminDashboard = () => {
                   ? "€" +
                     Math.min(
                       ...tours
-                        .filter((t) => t.price)
-                        .map((t) => Number(t.price)),
+                        .filter((t) => t.price_1_person)
+                        .map((t) => Number(t.price_1_person)),
                     )
                   : "—",
                 color: "bg-green-100 text-green-600",
@@ -2808,7 +3162,7 @@ const AdminDashboard = () => {
                         Duration
                       </th>
                       <th className="text-left px-5 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                        Price
+                        Price Range
                       </th>
                       <th className="text-left px-5 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">
                         Rating
@@ -2860,7 +3214,9 @@ const AdminDashboard = () => {
                           {tour.duration}h
                         </td>
                         <td className="px-5 py-4 text-gray-600">
-                          {tour.price ? `€${tour.price}` : "—"}
+                          {tour.price_1_person
+                            ? `€${tour.price_1_person}–${tour.price_6_person}`
+                            : "—"}
                         </td>
                         <td className="px-5 py-4">
                           <span className="flex items-center gap-1 text-amber-500 font-bold">
@@ -2917,7 +3273,9 @@ const AdminDashboard = () => {
                       </p>
                       <p className="text-xs text-gray-400">
                         {tour.category} · {tour.duration}h ·{" "}
-                        {tour.price ? `€${tour.price}` : "Free"}
+                        {tour.price_1_person
+                          ? `€${tour.price_1_person}–${tour.price_6_person}`
+                          : "Free"}
                       </p>
                       <div className="flex gap-2 mt-2">
                         <button

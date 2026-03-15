@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
 
@@ -19,11 +19,75 @@ const AdminDashboard = lazy(() => import("./pages/AdminDashboard.jsx"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.jsx"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService.jsx"));
 
+const SplashScreen = ({ onDone }) => {
+  const [slideOut, setSlideOut] = useState(false);
+  const [hidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    const slideTimer = setTimeout(() => setSlideOut(true), 2300);
+    const hideTimer = setTimeout(() => {
+      setHidden(true);
+      onDone();
+    }, 3000);
+    return () => {
+      clearTimeout(slideTimer);
+      clearTimeout(hideTimer);
+    };
+  }, [onDone]);
+
+  if (hidden) return null;
+
+  return (
+    <div
+      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#f8f6f5] transition-transform duration-700 ease-in-out ${
+        slideOut ? "translate-y-full" : "translate-y-0"
+      }`}
+    >
+      {/* Small logo up top */}
+      <img
+        src="/assets/logo/lisbonlogo.png"
+        alt="Lisbon Private Tours"
+        className="w-16 h-auto mb-8 select-none opacity-80"
+        draggable={false}
+      />
+
+      {/* Big styled brand name */}
+      <div className="text-center leading-none select-none">
+        <span
+          className="block font-display font-black tracking-tight text-[#221610]"
+          style={{
+            fontSize: "clamp(3rem, 10vw, 6rem)",
+            letterSpacing: "-0.03em",
+          }}
+        >
+          TukIn
+        </span>
+        <span
+          className="block font-display font-black tracking-tight text-primary"
+          style={{
+            fontSize: "clamp(3rem, 10vw, 6rem)",
+            letterSpacing: "-0.03em",
+            marginTop: "-0.15em",
+          }}
+        >
+          Lisbon
+        </span>
+      </div>
+
+      {/* Tagline */}
+      <p className="mt-4 text-[#221610]/40 text-xs tracking-[0.35em] uppercase font-display font-medium">
+        Your city. Their story.
+      </p>
+
+      {/* Spinner */}
+      <div className="mt-10 w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+};
+
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[60vh]">
-    <span className="material-icons animate-spin text-primary text-4xl">
-      sync
-    </span>
+    <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
   </div>
 );
 
@@ -60,33 +124,45 @@ const App = () => {
   const showWhatsApp =
     WHATSAPP_PAGES.includes(location.pathname) || isTourDetails;
 
+  const [showSplash, setShowSplash] = useState(
+    () => !sessionStorage.getItem("splashShown"),
+  );
+
+  const handleSplashDone = () => {
+    sessionStorage.setItem("splashShown", "1");
+    setShowSplash(false);
+  };
+
   return (
-    <div className="min-h-screen text-slate-900">
-      {!isAdmin && <Navbar />}
-      <main className={isAdmin || isHome || isTourDetails ? "" : "pt-24"}>
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/tours" element={<Tours />} />
-            <Route path="/tour-details/:id" element={<TourDetails />} />
-            <Route path="/meet-your-guide" element={<MeetYourGuide />} />
-            <Route path="/guest-stories" element={<GuestStories />} />
-            <Route path="/booking" element={<Booking />} />
-            <Route path="/booking/success" element={<BookingSuccess />} />
-            <Route path="/booking/cancel" element={<BookingCancel />} />
-            <Route path="/map" element={<GuideMap />} />
-            <Route path="/gallery" element={<Gallery />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/feedback" element={<Feedback />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/terms-of-service" element={<TermsOfService />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
-      </main>
-      {showWhatsApp && <WhatsAppButton />}
-    </div>
+    <>
+      {showSplash && <SplashScreen onDone={handleSplashDone} />}
+      <div className="min-h-screen text-slate-900">
+        {!isAdmin && <Navbar />}
+        <main className={isAdmin ? "" : "pt-16"}>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/tours" element={<Tours />} />
+              <Route path="/tour-details/:id" element={<TourDetails />} />
+              <Route path="/meet-your-guide" element={<MeetYourGuide />} />
+              <Route path="/guest-stories" element={<GuestStories />} />
+              <Route path="/booking" element={<Booking />} />
+              <Route path="/booking/success" element={<BookingSuccess />} />
+              <Route path="/booking/cancel" element={<BookingCancel />} />
+              <Route path="/map" element={<GuideMap />} />
+              <Route path="/gallery" element={<Gallery />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/feedback" element={<Feedback />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-of-service" element={<TermsOfService />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
+        </main>
+        {showWhatsApp && <WhatsAppButton />}
+      </div>
+    </>
   );
 };
 

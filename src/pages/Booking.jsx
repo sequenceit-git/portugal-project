@@ -65,22 +65,22 @@ const buildCalendar = (year, month) => {
 const toDateStr = (y, m, d) =>
   `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
-/* ── Group discount pricing ───────────────────────────────── */
-// basePrice = tour.price (€ per person for 1 traveler)
-// Returns the discounted per-person rate based on group size
-const GROUP_DISCOUNTS = [
-  { min: 6, pct: 0.30 },  // 6+ → 30% off
-  { min: 5, pct: 0.25 },  // 5   → 25% off
-  { min: 4, pct: 0.20 },  // 4   → 20% off
-  { min: 3, pct: 0.15 },  // 3   → 15% off
-  { min: 2, pct: 0.10 },  // 2   → 10% off
-];
+/* ── Tour-Specific Per-Person Pricing ──────────────────────── */
+// Each tour has 6 pricing tiers based on group size
+// For 6+ people, always use price_6_person as the per-person rate
+const getTourPerPersonRate = (tour, travelerCount) => {
+  if (!tour) return 0;
 
-const getPerPersonRate = (count, basePrice) => {
-  const base = Number(basePrice) || 0;
-  const tier = GROUP_DISCOUNTS.find((t) => count >= t.min);
-  if (!tier) return base; // 1 person → full price
-  return Math.round(base * (1 - tier.pct) * 100) / 100;
+  const count = Math.max(1, travelerCount);
+
+  if (count === 1) return Number(tour.price_1_person) || 0;
+  if (count === 2) return Number(tour.price_2_person) || 0;
+  if (count === 3) return Number(tour.price_3_person) || 0;
+  if (count === 4) return Number(tour.price_4_person) || 0;
+  if (count === 5) return Number(tour.price_5_person) || 0;
+
+  // For 6 or more, use price_6_person rate
+  return Number(tour.price_6_person) || 0;
 };
 
 // EUR/USD conversion rate (approximate)
@@ -179,7 +179,7 @@ const Booking = () => {
       const { data, error } = await supabase
         .from("tours")
         .select(
-          "id,name,subtitle,category,title_image,duration,people,guide_language,meeting_point,highlights,rating,review_count,price,details,activity",
+          "id,name,subtitle,category,title_image,duration,people,guide_language,meeting_point,highlights,rating,review_count,price_1_person,price_2_person,price_3_person,price_4_person,price_5_person,price_6_person,details,activity",
         )
         .eq("id", tourId)
         .single();
@@ -193,9 +193,8 @@ const Booking = () => {
     load();
   }, [tourId]);
 
-  // Group discount pricing — per person rate based on tour price & traveler count
-  const basePrice = Number(tour?.price) || 0;
-  const perPersonRate = getPerPersonRate(travelerCount, basePrice);
+  // Tour-specific per-person pricing based on traveler count
+  const perPersonRate = getTourPerPersonRate(tour, travelerCount);
   const totalGuests = travelerCount;
   const subtotal = travelerCount * perPersonRate;
   const total = subtotal; // no service fee
@@ -278,7 +277,10 @@ const Booking = () => {
           email: form.email,
           phone: form.phone || null,
           special_requests: form.specialReq || null,
-          meeting_point: (MEETING_POINTS.find((m) => m.id === meetingPointId) || MEETING_POINTS[0]).name,
+          meeting_point: (
+            MEETING_POINTS.find((m) => m.id === meetingPointId) ||
+            MEETING_POINTS[0]
+          ).name,
           payment_method: paymentMode === "reserve" ? "pay_later" : "stripe",
           subtotal: parseFloat(subtotal.toFixed(2)),
           service_fee: 0,
@@ -350,10 +352,13 @@ const Booking = () => {
           </span>
         </div>
         <h1 className="text-3xl font-extrabold text-gray-900">
-          {paymentMode === "reserve" ? "Reservation Confirmed!" : "Booking Confirmed!"}
+          {paymentMode === "reserve"
+            ? "Reservation Confirmed!"
+            : "Booking Confirmed!"}
         </h1>
         <p className="text-gray-500 max-w-md">
-          Thank you, <strong>{form.firstName}</strong>! Your {paymentMode === "reserve" ? "reservation" : "booking"} for{" "}
+          Thank you, <strong>{form.firstName}</strong>! Your{" "}
+          {paymentMode === "reserve" ? "reservation" : "booking"} for{" "}
           <strong>{tour?.name}</strong> on{" "}
           <strong>
             {selDate &&
@@ -375,8 +380,9 @@ const Booking = () => {
           Confirmation sent to <strong>{form.email}</strong>.
           {paymentMode === "reserve" && (
             <span className="block mt-2 text-sm text-amber-600">
-              💡 Your spot is reserved — no payment needed today. You can pay closer to the tour date.
-              Free cancellation up to 24 hours before the tour.
+              💡 Your spot is reserved — no payment needed today. You can pay
+              closer to the tour date. Free cancellation up to 24 hours before
+              the tour.
             </span>
           )}
         </p>
@@ -473,7 +479,8 @@ const Booking = () => {
                       Traveler
                     </span>
                     <span className="text-xs text-gray-400">
-                      {sym}{toDisplay(perPersonRate)} / person
+                      {sym}
+                      {toDisplay(perPersonRate)} / person
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -795,7 +802,9 @@ const Booking = () => {
                   <div className="relative">
                     <select
                       value={meetingPointId}
-                      onChange={(e) => setMeetingPointId(Number(e.target.value))}
+                      onChange={(e) =>
+                        setMeetingPointId(Number(e.target.value))
+                      }
                       className="w-full appearance-none bg-gray-100 rounded-full px-5 py-3.5 pr-10 text-sm font-semibold text-gray-800 outline-none transition focus:ring-2 focus:ring-primary/30 cursor-pointer"
                     >
                       {MEETING_POINTS.map((mp) => (
@@ -810,7 +819,9 @@ const Booking = () => {
                   </div>
                   {/* Selected meeting point note + Maps link */}
                   {(() => {
-                    const mp = MEETING_POINTS.find((m) => m.id === meetingPointId) || MEETING_POINTS[0];
+                    const mp =
+                      MEETING_POINTS.find((m) => m.id === meetingPointId) ||
+                      MEETING_POINTS[0];
                     return (
                       <div className="bg-gray-50 rounded-xl px-4 py-3 flex items-start gap-3 text-sm text-gray-600">
                         <span className="material-icons text-primary text-base mt-0.5">
@@ -824,17 +835,24 @@ const Booking = () => {
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1.5 mt-2 text-xs font-bold text-primary hover:text-primary-dark transition"
                           >
-                            <span className="material-icons text-sm">location_on</span>
+                            <span className="material-icons text-sm">
+                              location_on
+                            </span>
                             View on Google Maps
-                            <span className="material-icons text-xs">open_in_new</span>
+                            <span className="material-icons text-xs">
+                              open_in_new
+                            </span>
                           </a>
                         </div>
                       </div>
                     );
                   })()}
                   <p className="text-xs text-gray-400 px-1 mt-1">
-                    <span className="material-icons text-xs align-middle mr-0.5">info</span>
-                    For hotel pickup, please mention your address within 2 km of any meeting point.
+                    <span className="material-icons text-xs align-middle mr-0.5">
+                      info
+                    </span>
+                    For hotel pickup, please mention your address within 2 km of
+                    any meeting point.
                   </p>
                 </div>
               </div>
@@ -940,9 +958,13 @@ const Booking = () => {
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                    paymentMode === "pay_now" ? "border-primary" : "border-gray-300"
-                  }`}>
+                  <div
+                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                      paymentMode === "pay_now"
+                        ? "border-primary"
+                        : "border-gray-300"
+                    }`}
+                  >
                     {paymentMode === "pay_now" && (
                       <div className="w-3 h-3 rounded-full bg-primary" />
                     )}
@@ -955,7 +977,8 @@ const Booking = () => {
                   <div className="text-left">
                     <p className="font-bold text-gray-900">Pay with Stripe</p>
                     <p className="text-sm text-gray-500">
-                      Pay now with credit card, Apple Pay, Google Pay, or more via Stripe's secure checkout.
+                      Pay now with credit card, Apple Pay, Google Pay, or more
+                      via Stripe's secure checkout.
                     </p>
                   </div>
                 </button>
@@ -970,9 +993,13 @@ const Booking = () => {
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                    paymentMode === "reserve" ? "border-green-500" : "border-gray-300"
-                  }`}>
+                  <div
+                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                      paymentMode === "reserve"
+                        ? "border-green-500"
+                        : "border-gray-300"
+                    }`}
+                  >
                     {paymentMode === "reserve" && (
                       <div className="w-3 h-3 rounded-full bg-green-500" />
                     )}
@@ -983,9 +1010,12 @@ const Booking = () => {
                     </span>
                   </div>
                   <div className="text-left">
-                    <p className="font-bold text-gray-900">Reserve now & pay later</p>
+                    <p className="font-bold text-gray-900">
+                      Reserve now & pay later
+                    </p>
                     <p className="text-sm text-gray-500">
-                      Keep your travel plans flexible — book your spot and pay nothing today.
+                      Keep your travel plans flexible — book your spot and pay
+                      nothing today.
                     </p>
                   </div>
                 </button>
@@ -1015,19 +1045,25 @@ const Booking = () => {
                     verified
                   </span>
                   <div>
-                    <p className="font-bold text-green-800 text-sm">Free cancellation</p>
+                    <p className="font-bold text-green-800 text-sm">
+                      Free cancellation
+                    </p>
                     <p className="text-xs text-green-700">
                       Cancel up to 24 hours in advance for a full refund.
                       {selDate && selTime && getCancelDeadline() && (
                         <span className="block mt-1 font-semibold">
-                          Cancel before {getCancelDeadline().toLocaleString("en-US", {
+                          Cancel before{" "}
+                          {getCancelDeadline().toLocaleString("en-US", {
                             hour: "numeric",
                             minute: "2-digit",
                             hour12: true,
-                          })} on {getCancelDeadline().toLocaleDateString("en-GB", {
+                          })}{" "}
+                          on{" "}
+                          {getCancelDeadline().toLocaleDateString("en-GB", {
                             month: "long",
                             day: "numeric",
-                          })} for a full refund.
+                          })}{" "}
+                          for a full refund.
                         </span>
                       )}
                     </p>
@@ -1063,12 +1099,14 @@ const Booking = () => {
                 </>
               ) : paymentMode === "reserve" ? (
                 <>
-                  <span className="material-icons">event_available</span>Reserve Now — Pay Later
+                  <span className="material-icons">event_available</span>Reserve
+                  Now — Pay Later
                 </>
               ) : (
                 <>
                   <span className="material-icons">lock</span>Proceed to Payment
-                  — {sym}{toDisplay(total)}
+                  — {sym}
+                  {toDisplay(total)}
                 </>
               )}
             </button>
@@ -1076,7 +1114,8 @@ const Booking = () => {
               <span className="material-icons text-green-500 text-sm align-middle mr-1">
                 event_available
               </span>
-              Free cancellation up to 24 hours before the tour starts. All taxes and fees included.
+              Free cancellation up to 24 hours before the tour starts. All taxes
+              and fees included.
             </p>
           </form>
 
@@ -1115,7 +1154,9 @@ const Booking = () => {
                     <div className="p-4 sm:p-5 space-y-3 sm:space-y-4">
                       {/* Currency toggle */}
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Price</span>
+                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                          Price
+                        </span>
                         <div className="flex bg-gray-100 rounded-full p-0.5">
                           <button
                             type="button"
@@ -1202,7 +1243,8 @@ const Booking = () => {
                             local_offer
                           </span>
                           <span className="text-green-800 font-semibold">
-                            Group discount applied! {sym}{toDisplay(perPersonRate)}/person
+                            Group discount applied! {sym}
+                            {toDisplay(perPersonRate)}/person
                             {travelerCount >= 6 && " — best rate!"}
                           </span>
                         </div>
@@ -1218,7 +1260,8 @@ const Booking = () => {
                               {toDisplay(perPersonRate)}
                             </span>
                             <span className="font-semibold text-gray-900">
-                              {sym}{toDisplay(subtotal)}
+                              {sym}
+                              {toDisplay(subtotal)}
                             </span>
                           </div>
                         )}
@@ -1227,10 +1270,13 @@ const Booking = () => {
                             <span className="font-bold text-gray-900 text-base">
                               Total
                             </span>
-                            <p className="text-xs text-gray-400">All taxes and fees included</p>
+                            <p className="text-xs text-gray-400">
+                              All taxes and fees included
+                            </p>
                           </div>
                           <span className="font-extrabold text-2xl text-primary">
-                            {sym}{toDisplay(total)}
+                            {sym}
+                            {toDisplay(total)}
                           </span>
                         </div>
                       </div>
@@ -1269,13 +1315,19 @@ const Booking = () => {
                         key={p.text}
                         className="flex items-start gap-3 text-sm"
                       >
-                        <span className={`material-icons text-base ${p.color} mt-0.5`}>
+                        <span
+                          className={`material-icons text-base ${p.color} mt-0.5`}
+                        >
                           {p.icon}
                         </span>
                         <div>
-                          <span className="text-gray-700 font-medium">{p.text}</span>
+                          <span className="text-gray-700 font-medium">
+                            {p.text}
+                          </span>
                           {p.sub && (
-                            <p className="text-xs text-gray-400 mt-0.5">{p.sub}</p>
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              {p.sub}
+                            </p>
                           )}
                         </div>
                       </div>

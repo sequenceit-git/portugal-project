@@ -85,9 +85,9 @@ const TourCard = ({ tour }) => (
       </div>
 
       {/* Price pill on image */}
-      {tour.price && (
+      {tour.price_1_person && (
         <div className="absolute bottom-3.5 right-3.5 bg-primary text-white px-2.5 py-1 rounded-full text-[11px] font-extrabold">
-          From €{Number(tour.price).toFixed(0)}/person
+          From €{Number(tour.price_1_person).toFixed(0)}/person
         </div>
       )}
     </div>
@@ -185,7 +185,7 @@ const Tours = () => {
       const { data, error } = await supabase
         .from("tours")
         .select(
-          "id,name,subtitle,category,badge,badge_color,duration,people,guide_language,meeting_point,highlights,gallery,details,activity,journey,rating,review_count,price,title_image",
+          "id,name,subtitle,category,badge,badge_color,duration,people,guide_language,meeting_point,highlights,gallery,details,activity,journey,rating,review_count,price_1_person,price_2_person,price_3_person,price_4_person,price_5_person,price_6_person,title_image",
         )
         .order("created_at", { ascending: true });
 
@@ -249,10 +249,10 @@ const Tours = () => {
               <span className="text-primary font-bold tracking-wider uppercase text-sm">
                 Tuk-Tuk Experiences
               </span>
-              <h2 className="mt-2 text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
+              <h2 className="mt-2 sm:mt-3 text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-1 leading-snug">
                 Choose Your Adventure
               </h2>
-              <p className="mt-2 text-sm sm:text-base text-gray-500 max-w-lg">
+              <p className="mt-2 text-sm sm:text-sm text-gray-500 max-w-lg">
                 Every route is private, customisable, and fully led by a
                 licensed English-speaking Lisbon insider.
               </p>

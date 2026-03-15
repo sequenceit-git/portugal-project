@@ -29,7 +29,7 @@ const GuestStories = () => {
       category: "Couples Tour",
       quote: '"The highlight of our European trip!"',
       review:
-        '"Manuel knew every secret spot in Alfama. We tried the best Ginjinha and saw views we would have never found on our own. Highly recommend!"',
+        '"Mama knew every secret spot in Alfama. We tried the best Ginjinha and saw views we would have never found on our own. Highly recommend!"',
       author: "Sarah & Tom",
       location: "USA",
       rating: 5,
@@ -166,19 +166,19 @@ const GuestStories = () => {
         canonical="/guest-stories"
       />
       {/* Hero Section */}
-      <header className="relative pt-24 pb-12 lg:pt-32 lg:pb-16 overflow-hidden">
+      <header className="relative pt-16 pb-0 min-h-[62px] overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <span className="inline-block py-1 px-3 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-bold tracking-wider uppercase mb-3 sm:mb-4">
+          <span className="inline-block py-1 px-3 rounded-full bg-primary/10 text-primary text-[10px] sm:text-xs font-bold tracking-wider uppercase mb-3 sm:mb-4">
             Guest Book
           </span>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight mb-4 sm:mb-6">
+          <h1 className="mt-2 sm:mt-3 text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-1 leading-snug">
             Memories Made in{" "}
             <span className="text-primary underline decoration-4 decoration-primary/30 underline-offset-4">
               Lisbon
             </span>
           </h1>
-          <p className="max-w-2xl mx-auto text-base sm:text-lg text-gray-600 mb-7 sm:mb-10 leading-relaxed">
+          <p className="max-w-2xl mx-auto text-sm sm:text-base md:text-[15px] text-gray-600 mb-7 sm:mb-10 leading-relaxed">
             Join hundreds of happy travelers who explored the hidden gems,
             tasted the best pastéis, and felt the soul of the city with me.
           </p>
@@ -188,12 +188,14 @@ const GuestStories = () => {
             <div className="flex flex-col items-center">
               <div className="flex items-center gap-1 mb-1">
                 <span className="text-2xl sm:text-3xl font-bold text-gray-900">
-                  4.9
+                  4.7
                 </span>
-                <div className="flex text-primary">{renderStars(5)}</div>
+                <div className="flex text-primary border-gray">
+                  {renderStars(5)}
+                </div>
               </div>
               <span className="text-xs sm:text-sm font-medium text-gray-500">
-                Based on 500+ reviews
+                Based on 200+ reviews
               </span>
             </div>
             <div className="h-12 w-px bg-gray-300 hidden sm:block"></div>
@@ -620,10 +622,10 @@ const GuestStories = () => {
                 calendar_today
               </span>
             </span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 mb-3 sm:mb-4">
+            <h2 className="mt-2 sm:mt-3 text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-1 leading-snug">
               Ready to create your own story?
             </h2>
-            <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-base sm:text-[15px] text-gray-600 max-w-2xl mx-auto">
               Dates fill up quickly, especially during summer. Check
               availability now to secure your personal tour of Lisbon.
             </p>
@@ -631,14 +633,12 @@ const GuestStories = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link
               to="/tours"
-              className="w-full sm:w-auto bg-primary hover:bg-orange-600 text-white text-base sm:text-lg font-bold py-3.5 sm:py-4 px-8 sm:px-10 rounded-xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
+              className="w-full sm:w-auto bg-primary hover:bg-orange-600 text-white text-base sm:text-[15px] font-bold py-3.5 sm:py-4 px-8 sm:px-10 rounded-xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
             >
               Join the next tour
               <span className="material-icons">arrow_forward</span>
             </Link>
-            <button className="w-full sm:w-auto bg-transparent border-2 border-gray-200 hover:border-primary text-gray-700 hover:text-primary font-bold py-3.5 px-8 rounded-xl transition-colors">
-              Contact me
-            </button>
+
           </div>
           <p className="mt-6 text-sm text-gray-400 flex items-center justify-center gap-1">
             <span className="material-icons text-xs">check_circle</span>

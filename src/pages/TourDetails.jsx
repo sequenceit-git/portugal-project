@@ -8,6 +8,7 @@ import SEO from "../components/SEO";
 import MeetingPoints from "../components/MeetingPoints";
 import TourItinerary from "../components/TourItinerary";
 import RecommendedTours from "../components/RecommendedTours";
+import { STATIC_ITINERARY_CONFIG } from "../components/StaticItineraryConfig";
 
 const TourDetails = () => {
   const { id } = useParams();
@@ -67,186 +68,29 @@ const TourDetails = () => {
         })()
       : [];
 
-  const defaultItinerarySteps = [
-    {
-      icon: "restart_alt",
-      title: "Miradouro da Graca",
-      subtitle: "Meet and panoramic viewpoint",
-    },
-    {
-      icon: "location_on",
-      title: "Lisbon Cathedral",
-      subtitle: "Historic center stop",
-    },
-    {
-      icon: "location_on",
-      title: "Sao Jorge Castle",
-      subtitle: "Old town skyline views",
-    },
-    {
-      icon: "location_on",
-      title: "LX Factory",
-      subtitle: "Creative district pass",
-    },
-    {
-      icon: "location_on",
-      title: "Baixa",
-      subtitle: "Photo stop and walk",
-    },
-    {
-      icon: "location_on",
-      title: "Jeronimos",
-      subtitle: "Monastery and Belem area",
-    },
-    {
-      icon: "location_on",
-      title: "Alfama",
-      subtitle: "Narrow streets and culture",
-    },
-    {
-      icon: "location_on",
-      title: "Bairro Alto",
-      subtitle: "Lively neighborhood vibes",
-    },
-    {
-      icon: "flag",
-      title: "Comercio Square",
-      subtitle: "Final stop by the river",
-    },
-  ];
+  /* ─────────────────────────────────────────────────────────────
+     DYNAMIC ITINERARY (Commented Out) — Kept for future use
+     
+     Previously parsed tour.journey field to generate itinerary steps.
+     Can be re-enabled by uncommenting below and updating AdminDashboard.
+  ───────────────────────────────────────────────────────────── */
+  // const defaultItinerarySteps = tour.journey
+  //   ? tour.journey
+  //       .split("\n")
+  //       .map((l) => l.trim())
+  //       .filter(Boolean)
+  //       .map((line, idx, arr) => {
+  //         const [title, subtitle = ""] = line.split("|").map((s) => s.trim());
+  //         let icon = "location_on";
+  //         if (idx === 0) icon = "restart_alt";
+  //         if (idx === arr.length - 1) icon = "flag";
+  //         return { icon, title, subtitle };
+  //       })
+  //   : [];
 
-  const itineraryByTourId = {
-    1: {
-      title: "Itinerary",
-      steps: [
-        {
-          icon: "restart_alt",
-          title: "ID1 Start - Graça Terrace",
-          subtitle: "[ID1] Meet point with city intro",
-        },
-        {
-          icon: "location_on",
-          title: "ID1 Stop - Lisbon Cathedral",
-          subtitle: "[ID1] Historic quarter orientation",
-        },
-        {
-          icon: "location_on",
-          title: "ID1 Stop - Sao Jorge Castle",
-          subtitle: "[ID1] Hilltop skyline panorama",
-        },
-        {
-          icon: "location_on",
-          title: "ID1 Stop - Alfama Alleys",
-          subtitle: "[ID1] Narrow streets and fado vibe",
-        },
-        {
-          icon: "flag",
-          title: "ID1 End - Comercio Square",
-          subtitle: "[ID1] Riverside finish",
-        },
-      ],
-    },
-    2: {
-      title: "Itinerary",
-      steps: [
-        {
-          icon: "restart_alt",
-          title: "ID2 Start - Cais do Sodre",
-          subtitle: "[ID2] Quick briefing by the river",
-        },
-        {
-          icon: "location_on",
-          title: "ID2 Stop - 25 de Abril View",
-          subtitle: "[ID2] Bridge and waterfront photos",
-        },
-        {
-          icon: "location_on",
-          title: "ID2 Stop - MAAT",
-          subtitle: "[ID2] Contemporary architecture stop",
-        },
-        {
-          icon: "location_on",
-          title: "ID2 Stop - Belem Tower",
-          subtitle: "[ID2] Monument and riverside walk",
-        },
-        {
-          icon: "location_on",
-          title: "ID2 Stop - Jeronimos",
-          subtitle: "[ID2] Monastery exterior and gardens",
-        },
-        {
-          icon: "flag",
-          title: "ID2 End - Pasteis de Belem",
-          subtitle: "[ID2] Sweet ending",
-        },
-      ],
-    },
-    3: {
-      title: "Itinerary",
-      steps: [
-        {
-          icon: "restart_alt",
-          title: "ID3 Start - Rossio Square",
-          subtitle: "[ID3] Meeting point at city center",
-        },
-        {
-          icon: "location_on",
-          title: "ID3 Stop - Cais do Sodre",
-          subtitle: "[ID3] Transit hub and riverfront",
-        },
-        {
-          icon: "location_on",
-          title: "ID3 Stop - Time Out Market",
-          subtitle: "[ID3] Food hall and local energy",
-        },
-        {
-          icon: "location_on",
-          title: "ID3 Stop - LX Factory",
-          subtitle: "[ID3] Creative district walkthrough",
-        },
-        {
-          icon: "location_on",
-          title: "ID3 Stop - Docas",
-          subtitle: "[ID3] Marina and promenade view",
-        },
-        {
-          icon: "flag",
-          title: "ID3 End - Praca do Imperio",
-          subtitle: "[ID3] Finish at Belem gardens",
-        },
-      ],
-    },
-    4: {
-      title: "Itinerary",
-      steps: [
-        {
-          icon: "restart_alt",
-          title: "ID4 Start - Restauradores",
-          subtitle: "[ID4] Start near Avenida da Liberdade",
-        },
-        {
-          icon: "location_on",
-          title: "ID4 Stop - Elevador da Gloria",
-          subtitle: "[ID4] Classic yellow funicular",
-        },
-        {
-          icon: "location_on",
-          title: "ID4 Stop - Sao Pedro Viewpoint",
-          subtitle: "[ID4] Wide city overlook",
-        },
-        {
-          icon: "location_on",
-          title: "ID4 Stop - Santa Catarina",
-          subtitle: "[ID4] Sunset-facing terrace",
-        },
-        {
-          icon: "flag",
-          title: "ID4 End - Bairro Alto",
-          subtitle: "[ID4] Evening atmosphere finish",
-        },
-      ],
-    },
-  };
+  // Now using static itinerary from lib/staticItinerary.js
+  const defaultItinerarySteps = [];
+  const itineraryByTourId = {};
 
   const galleryImages = [tour.title_image, ...parsedGallery].filter(
     (img, index, arr) => img && arr.indexOf(img) === index,
@@ -370,16 +214,18 @@ const TourDetails = () => {
                 <div className="bg-primary/5 p-3 sm:p-4 flex justify-between items-center border-b border-primary/10">
                   <div>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-xs text-slate-400 font-medium">From</span>
+                      <span className="text-xs text-slate-400 font-medium">
+                        From
+                      </span>
                       <span className="text-xl sm:text-2xl font-bold text-slate-900">
-                        €{tour.price}
+                        €{tour.price_1_person || "—"}
                       </span>
                       <span className="text-slate-500 text-xs sm:text-sm font-medium">
                         / person
                       </span>
                     </div>
                     <div className="text-xs text-slate-500 mt-0.5">
-                      Group discounts up to 30% off
+                      Pricing varies by group size
                     </div>
                   </div>
                   <div className="flex flex-col items-end">
@@ -596,8 +442,8 @@ const TourDetails = () => {
 
               <TourItinerary
                 tourId={id}
-                defaultTitle="Itinerary"
-                defaultSteps={defaultItinerarySteps}
+                defaultTitle={STATIC_ITINERARY_CONFIG.title}
+                defaultSteps={STATIC_ITINERARY_CONFIG.steps}
                 itineraryByTourId={itineraryByTourId}
               />
 
@@ -801,16 +647,18 @@ const TourDetails = () => {
                   <div className="bg-primary/5 p-3 sm:p-4 flex justify-between items-center border-b border-primary/10">
                     <div>
                       <div className="flex items-baseline gap-1">
-                        <span className="text-xs text-slate-400 font-medium">From</span>
+                        <span className="text-xs text-slate-400 font-medium">
+                          From
+                        </span>
                         <span className="text-xl sm:text-2xl font-bold text-slate-900">
-                          €{tour.price}
+                          €{tour.price_1_person || "—"}
                         </span>
                         <span className="text-slate-500 text-sm font-medium">
                           / person
                         </span>
                       </div>
                       <div className="text-xs text-slate-500 mt-0.5">
-                        Group discounts up to 30% off
+                        Pricing varies by group size
                       </div>
                     </div>
                     <div className="flex flex-col items-end">
@@ -916,7 +764,6 @@ const TourDetails = () => {
       </main>
 
       <Footer />
-
     </div>
   );
 };

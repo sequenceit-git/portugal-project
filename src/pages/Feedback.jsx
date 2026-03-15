@@ -92,10 +92,10 @@ const Feedback = () => {
           <span className="text-primary font-bold tracking-wider uppercase text-sm">
             Share Your Story
           </span>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 mt-3 mb-4">
+          <h1 className="text-2xl sm:text-2xl md:text-2xl font-extrabold text-slate-900 mt-3 mb-4">
             Share Your Experience
           </h1>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             Your review helps future travelers discover the best of Lisbon.
           </p>
         </div>
@@ -353,13 +353,13 @@ const Feedback = () => {
               key={c.title}
               className="text-center p-6 bg-white rounded-xl shadow-md border border-slate-100"
             >
-              <span className="material-icons text-5xl text-primary mb-4">
+              <span className="material-icons text-4xl text-primary mb-4">
                 {c.icon}
               </span>
-              <h3 className="text-lg font-bold text-slate-900 mb-2">
+              <h3 className="text-md font-bold text-slate-900 mb-2">
                 {c.title}
               </h3>
-              <p className="text-slate-600">{c.body}</p>
+              <p className="text-slate-600 text-sm">{c.body}</p>
             </div>
           ))}
         </div>
