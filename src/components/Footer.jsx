@@ -87,7 +87,14 @@ const Footer = () => {
                   About Us
                 </a>
               </li>
-
+              <li>
+                <a
+                  className="hover:text-primary transition-colors"
+                  href="/insurance-policy"
+                >
+                  Insurance Policy
+                </a>
+              </li>
               <li>
                 <a
                   className="hover:text-primary transition-colors"

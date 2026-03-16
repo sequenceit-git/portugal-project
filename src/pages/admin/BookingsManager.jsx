@@ -346,6 +346,16 @@ const BookingsManager = () => {
                                   </p>
                                 </div>
                               )}
+                              {b.cancellation_reason && (
+                                <div className="col-span-2 md:col-span-3 bg-red-50 p-2 rounded-lg mt-2">
+                                  <p className="text-xs font-bold text-red-500 uppercase tracking-wider">
+                                    Cancellation Reason
+                                  </p>
+                                  <p className="text-red-700 mt-0.5 font-semibold text-sm">
+                                    {b.cancellation_reason}
+                                  </p>
+                                </div>
+                              )}
                             </div>
                           </td>
                         </tr>
