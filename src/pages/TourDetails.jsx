@@ -213,14 +213,14 @@ const TourDetails = () => {
               <div className="lg:hidden bg-surface-light rounded-2xl shadow-xl border border-primary/10 overflow-hidden">
                 <div className="bg-primary/5 p-3 sm:p-4 flex justify-between items-center border-b border-primary/10">
                   <div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-xs text-slate-400 font-medium">
+                    <div className="flex flex-wrap items-baseline gap-1">
+                      <span className="text-sm font-medium text-slate-500">
                         From
                       </span>
-                      <span className="text-xl sm:text-2xl font-bold text-slate-900">
-                        €{tour.price_1_person || "—"}
+                      <span className="text-2xl font-bold text-slate-900">
+                        ${tour.price_1_person || "—"}
                       </span>
-                      <span className="text-slate-500 text-xs sm:text-sm font-medium">
+                      <span className="text-sm font-medium text-slate-500">
                         / person
                       </span>
                     </div>
@@ -265,13 +265,6 @@ const TourDetails = () => {
                         verified_user
                       </span>
                       Free cancellation up to 24h before
-                    </p>
-
-                    <p className="text-center text-xs text-slate-500 mt-3 flex items-center justify-center gap-1">
-                      <span className="material-icons text-sm text-blue-500">
-                        payment
-                      </span>
-                      Reserve now & pay later
                     </p>
                   </div>
                 </div>
@@ -646,14 +639,14 @@ const TourDetails = () => {
                 <div className="hidden lg:block bg-surface-light rounded-2xl shadow-xl border border-primary/10 overflow-hidden">
                   <div className="bg-primary/5 p-3 sm:p-4 flex justify-between items-center border-b border-primary/10">
                     <div>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-xs text-slate-400 font-medium">
+                      <div className="flex flex-wrap items-baseline gap-1">
+                        <span className="text-sm font-medium text-slate-500">
                           From
                         </span>
-                        <span className="text-xl sm:text-2xl font-bold text-slate-900">
-                          €{tour.price_1_person || "—"}
+                        <span className="text-2xl font-bold text-slate-900">
+                          ${tour.price_1_person || "—"}
                         </span>
-                        <span className="text-slate-500 text-sm font-medium">
+                        <span className="text-sm font-medium text-slate-500">
                           / person
                         </span>
                       </div>
@@ -679,7 +672,8 @@ const TourDetails = () => {
                           </h4>
                           <p className="text-xs text-blue-700 mt-1 leading-relaxed">
                             You are booking the guide exclusively for your
-                            group. The price adjusts based on group size.
+                            group. Tuktuk capacity is 6, so you can consider up
+                            to 6 persons in a group. The price adjusts based on group size.
                           </p>
                         </div>
                       </div>
@@ -721,14 +715,6 @@ const TourDetails = () => {
                           </span>
                           <span className="text-[11px] sm:text-xs">
                             Free cancellation up to 24h before
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-center gap-1">
-                          <span className="material-icons text-xs text-blue-500">
-                            payments
-                          </span>
-                          <span className="text-[11px] sm:text-xs">
-                            Reserve now & pay later
                           </span>
                         </div>
                       </div>

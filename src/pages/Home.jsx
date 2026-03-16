@@ -545,7 +545,7 @@ const Home = () => {
                           <p className="text-xs sm:text-sm font-bold text-gray-900 mb-2.5 sm:mb-3">
                             From{" "}
                             <span className="text-primary text-base sm:text-lg">
-                              €{Number(tour.price_1_person).toFixed(0)}
+                              ${Number(tour.price_1_person).toFixed(0)}
                             </span>
                             <span className="text-gray-400 font-normal text-xs sm:text-sm ml-1">
                               /person

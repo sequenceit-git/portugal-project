@@ -151,7 +151,7 @@ const TourPreviewPopup = ({ tour, isOpen, onClose }) => {
                   Starting Price
                 </p>
                 <p className="text-base sm:text-2xl font-bold text-primary">
-                  €{tour.price_1_person}
+                  ${tour.price_1_person}
                   <span className="text-[10px] sm:text-sm font-normal text-slate-600 ml-1">
                     /person
                   </span>

@@ -387,7 +387,7 @@ const TourModal = ({ tour, onClose, onSaved }) => {
             </h3>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <Field
-                label="1 Person (€)"
+                label="1 Person ($)"
                 field="price_1_person"
                 type="number"
                 placeholder="e.g. 60"
@@ -396,7 +396,7 @@ const TourModal = ({ tour, onClose, onSaved }) => {
                 set={set}
               />
               <Field
-                label="2 People (€/person)"
+                label="2 People ($/person)"
                 field="price_2_person"
                 type="number"
                 placeholder="e.g. 35"
@@ -405,7 +405,7 @@ const TourModal = ({ tour, onClose, onSaved }) => {
                 set={set}
               />
               <Field
-                label="3 People (€/person)"
+                label="3 People ($/person)"
                 field="price_3_person"
                 type="number"
                 placeholder="e.g. 30"
@@ -414,7 +414,7 @@ const TourModal = ({ tour, onClose, onSaved }) => {
                 set={set}
               />
               <Field
-                label="4 People (€/person)"
+                label="4 People ($/person)"
                 field="price_4_person"
                 type="number"
                 placeholder="e.g. 30"
@@ -423,7 +423,7 @@ const TourModal = ({ tour, onClose, onSaved }) => {
                 set={set}
               />
               <Field
-                label="5 People (€/person)"
+                label="5 People ($/person)"
                 field="price_5_person"
                 type="number"
                 placeholder="e.g. 25"
@@ -432,7 +432,7 @@ const TourModal = ({ tour, onClose, onSaved }) => {
                 set={set}
               />
               <Field
-                label="6+ People (€/person)"
+                label="6+ People ($/person)"
                 field="price_6_person"
                 type="number"
                 placeholder="e.g. 22"
@@ -443,7 +443,7 @@ const TourModal = ({ tour, onClose, onSaved }) => {
             </div>
             <p className="text-xs text-blue-700 mt-3 text-center">
               💡 For 6+ people, use the "6+ People" rate. Example: 7 people ×
-              €22/person = €154 total
+              $22/person = $154 total
             </p>
           </div>
 
@@ -797,7 +797,7 @@ const BookingsManager = () => {
           {
             icon: "payments",
             label: "Revenue (confirmed)",
-            value: `€${totalRevenue.toFixed(2)}`,
+            value: `$${totalRevenue.toFixed(2)}`,
             color: "bg-blue-100 text-blue-600",
           },
         ].map((s) => (
@@ -945,7 +945,7 @@ const BookingsManager = () => {
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           <p className="font-bold text-gray-900">
-                            €{Number(b.total_amount || 0).toFixed(2)}
+                            ${Number(b.total_amount || 0).toFixed(2)}
                           </p>
                           <p className="text-xs text-gray-400">
                             {b.payment_method}
@@ -1019,11 +1019,11 @@ const BookingsManager = () => {
                                 },
                                 {
                                   label: "Subtotal",
-                                  value: `€${Number(b.subtotal || 0).toFixed(2)}`,
+                                  value: `$${Number(b.subtotal || 0).toFixed(2)}`,
                                 },
                                 {
                                   label: "Service Fee",
-                                  value: `€${Number(b.service_fee || 0).toFixed(2)}`,
+                                  value: `$${Number(b.service_fee || 0).toFixed(2)}`,
                                 },
                                 {
                                   label: "Meeting Point",
@@ -1078,7 +1078,7 @@ const BookingsManager = () => {
                     </div>
                     <div className="text-right shrink-0">
                       <p className="font-extrabold text-gray-900">
-                        €{Number(b.total_amount || 0).toFixed(2)}
+                        ${Number(b.total_amount || 0).toFixed(2)}
                       </p>
                       <span
                         className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold capitalize ${STATUS_STYLE[b.status] || "bg-gray-100 text-gray-600"}`}
@@ -1153,11 +1153,11 @@ const BookingsManager = () => {
                         },
                         {
                           label: "Subtotal",
-                          value: `€${Number(b.subtotal || 0).toFixed(2)}`,
+                          value: `$${Number(b.subtotal || 0).toFixed(2)}`,
                         },
                         {
                           label: "Service Fee",
-                          value: `€${Number(b.service_fee || 0).toFixed(2)}`,
+                          value: `$${Number(b.service_fee || 0).toFixed(2)}`,
                         },
                         { label: "Payment", value: b.payment_method || "—" },
                         { label: "Language", value: b.language || "—" },
@@ -2286,7 +2286,7 @@ const TransactionsManager = () => {
         stripe_payment_intent: st.payment_intent_id,
         charge_id: st.charge_id,
         amount: Number(st.amount || 0),
-        currency: st.currency || "eur",
+        currency: st.currency || "usd",
         status,
         customer_name: st.customer_name || local?.customer_name || "—",
         customer_email:
@@ -2402,7 +2402,7 @@ const TransactionsManager = () => {
           {
             icon: "account_balance",
             label: "Total Revenue",
-            value: `€${totalRevenue.toFixed(2)}`,
+            value: `$${totalRevenue.toFixed(2)}`,
             color: "bg-green-100 text-green-600",
           },
           {
@@ -2414,13 +2414,13 @@ const TransactionsManager = () => {
           {
             icon: "hourglass_top",
             label: "Pending",
-            value: `€${totalPending.toFixed(2)}`,
+            value: `$${totalPending.toFixed(2)}`,
             color: "bg-amber-100 text-amber-600",
           },
           {
             icon: "replay",
             label: "Refunded",
-            value: `€${totalRefunded.toFixed(2)}`,
+            value: `$${totalRefunded.toFixed(2)}`,
             color: "bg-purple-100 text-purple-600",
           },
         ].map((s) => (
@@ -2456,7 +2456,7 @@ const TransactionsManager = () => {
               className="flex-1 flex flex-col items-center gap-1"
             >
               <span className="text-[10px] font-bold text-gray-500">
-                €{m.revenue > 0 ? m.revenue.toFixed(0) : "0"}
+                ${m.revenue > 0 ? m.revenue.toFixed(0) : "0"}
               </span>
               <div
                 className="w-full bg-primary/20 rounded-t-lg relative overflow-hidden transition-all"
@@ -2592,10 +2592,10 @@ const TransactionsManager = () => {
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           <p className="font-bold text-gray-900">
-                            €{Number(p.amount || 0).toFixed(2)}
+                            ${Number(p.amount || 0).toFixed(2)}
                           </p>
                           <p className="text-xs text-gray-400 uppercase">
-                            {p.currency || "eur"}
+                            {p.currency || "usd"}
                           </p>
                         </td>
                         <td className="px-4 py-3">
@@ -2775,7 +2775,7 @@ const TransactionsManager = () => {
                     </div>
                     <div className="text-right shrink-0">
                       <p className="font-extrabold text-gray-900">
-                        €{Number(p.amount || 0).toFixed(2)}
+                        ${Number(p.amount || 0).toFixed(2)}
                       </p>
                       <span
                         className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold capitalize ${PAYMENT_STATUS_STYLE[p.status] || "bg-gray-100 text-gray-600"}`}
@@ -3076,7 +3076,7 @@ const AdminDashboard = () => {
                 icon: "payments",
                 label: "Lowest Price",
                 value: tours.length
-                  ? "€" +
+                  ? "$" +
                     Math.min(
                       ...tours
                         .filter((t) => t.price_1_person)
@@ -3215,7 +3215,7 @@ const AdminDashboard = () => {
                         </td>
                         <td className="px-5 py-4 text-gray-600">
                           {tour.price_1_person
-                            ? `€${tour.price_1_person}–${tour.price_6_person}`
+                            ? `$${tour.price_1_person}–${tour.price_6_person}`
                             : "—"}
                         </td>
                         <td className="px-5 py-4">
@@ -3274,7 +3274,7 @@ const AdminDashboard = () => {
                       <p className="text-xs text-gray-400">
                         {tour.category} · {tour.duration}h ·{" "}
                         {tour.price_1_person
-                          ? `€${tour.price_1_person}–${tour.price_6_person}`
+                          ? `$${tour.price_1_person}–${tour.price_6_person}`
                           : "Free"}
                       </p>
                       <div className="flex gap-2 mt-2">
