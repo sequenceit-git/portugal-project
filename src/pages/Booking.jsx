@@ -41,11 +41,15 @@ const TIME_SLOTS = (() => {
 // Supported guide languages
 const ALL_LANGUAGES = [
   "English",
-  "Portuguese",
-  "Italian",
-  "French",
-  "Spanish",
-  "Audio Guides",
+  "Albanian",
+  "Arabic",
+  "Armenian",
+  "Azerbaijani",
+  "Bulgarian",
+  "Chinese",
+  "Croatian",
+  "Czech",
+  "Danish",
 ];
 
 // Build full calendar grid for a given year/month
@@ -79,7 +83,7 @@ const getTourPerPersonRate = (tour, travelerCount) => {
   return Number(tour.price_6_person) || 0;
 };
 
-// removed EUR_USD_RATE
+  // removed EUR_USD_RATE
 
 /* ── Meeting Points ──────────────────────────────────────── */
 const MEETING_POINTS = [

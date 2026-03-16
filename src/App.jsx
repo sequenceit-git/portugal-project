@@ -15,7 +15,7 @@ const GuideMap = lazy(() => import("./pages/GuideMap.jsx"));
 const Gallery = lazy(() => import("./pages/Gallery.jsx"));
 const Contact = lazy(() => import("./pages/Contact.jsx"));
 const Feedback = lazy(() => import("./pages/Feedback.jsx"));
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard.jsx"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard.jsx"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.jsx"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService.jsx"));
 
