@@ -234,7 +234,7 @@ const Home = () => {
                   ></path>
                 </svg>
               </span>
-              lut , Tour with Guide
+              , Tour with Guide
             </h1>
             <p className="text-sm sm:text-base lg:text-lg text-gray-600 mb-5 sm:mb-8 leading-relaxed">
               Skip the tourist traps. Discover the hidden gems, authentic
@@ -342,7 +342,7 @@ const Home = () => {
             Bem-vindo a Lisboa
           </span>
           <h2 className="mt-2 sm:mt-3 text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-1 leading-snug">
-            Not just a guide, but a friend in the city.
+            Explore Lisbon the Fun, Green & Memorable Way
           </h2>
           <div className="relative max-w-2xl sm:max-w-3xl mx-auto text-left px-0 sm:px-0">
             <span className="material-icons sm:hidden text-primary/25 text-lg mb-2 block">
@@ -351,17 +351,24 @@ const Home = () => {
             <span className="material-icons hidden sm:block absolute left-0 lg:-left-8 -top-5 sm:-top-4 text-xl sm:text-4xl text-primary/20 transform -scale-x-100">
               format_quote
             </span>
-            <p className="text-xs sm:text-base md:text-lg text-gray-600 font-light leading-6 sm:leading-relaxed mb-3 sm:mb-8 sm:mt-3 pl-0 sm:pl-0">
-              "Hi, I’m Mama, your local friend in Lisbon, and I created
-              Entertainment Mama to offer the smartest, greenest, and most fun
-              way to explore this beautiful city. With our 100% electric{" "}
-              <span className="font-semibold text-primary">TUK-TUKS</span>, we
-              easily navigate the charming streets of Alfama and the lively
-              hills of Bairro Alto, sharing real stories, local flavors, and
-              hidden gems along the way. No rehearsed scripts—just authentic
-              experiences, breathtaking viewpoints, and a tour fully tailored to
-              your interests, so you can relax and enjoy Lisbon like you’re
-              visiting an old friend."
+            <p className="relative text-xs sm:text-base md:text-lg text-gray-600 font-light leading-6 sm:leading-relaxed mb-3 sm:mb-8 sm:mt-3 pl-0 sm:pl-0">
+              Experience the beauty of Lisbon through a comfortable and
+              eco-friendly electric{" "}
+              <span className="font-semibold text-primary">TUK-TUK </span> tour,
+              designed to take you through the city’s most iconic landmarks and
+              hidden corners. From the historic streets of Alfama to the vibrant
+              hills and viewpoints of Bairro Alto, enjoy a smooth ride while
+              exploring Lisbon’s rich culture, architecture, and breathtaking
+              scenery. Perfect for couples seeking a romantic city experience,
+              friends traveling together, or groups looking for a fun and
+              convenient way to explore, these tours offer flexible routes,
+              comfortable rides, and special group discounts. With easy access
+              to Lisbon’s narrow streets and scenic viewpoints, every journey
+              becomes an unforgettable way to discover the city’s most
+              captivating attractions.
+              <span className="material-icons hidden sm:block absolute right-0 lg:-right-8 bottom-0 sm:bottom-0 text-xl sm:text-4xl text-primary/20">
+                format_quote
+              </span>
             </p>
             <div className="flex justify-center items-center mt-5 sm:mt-8 gap-2 sm:gap-3">
               <div className="hidden sm:block h-px w-16 bg-primary/30"></div>
@@ -369,7 +376,7 @@ const Home = () => {
                 className="text-base sm:text-2xl text-primary font-bold italic"
                 style={{ fontFamily: "cursive" }}
               >
-                Entertainment Mama
+                Your Friendly Local Guide to Lisbon
               </span>
               <div className="hidden sm:block h-px w-16 bg-primary/30"></div>
             </div>
@@ -377,7 +384,10 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="py-14 sm:py-20 bg-background-light" id="tours">
+      <section
+        className="py-14 sm:py-20 pb-4 sm:pb-6 bg-background-light"
+        id="tours"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section header */}
           <div className="flex flex-col md:flex-row justify-between items-end mb-8 sm:mb-12 gap-5 sm:gap-6">

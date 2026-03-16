@@ -44,7 +44,7 @@ const Footer = () => {
                   className="hover:text-primary transition-colors"
                   href="/tour-details/1"
                 >
-                  Belém & Alfama
+                  Alfama & the Viewpoints: Lisbon's Hilltop Charm
                 </a>
               </li>
 
@@ -53,13 +53,21 @@ const Footer = () => {
                   className="hover:text-primary transition-colors"
                   href="/tour-details/2"
                 >
-                  Alfama & the Viewpoints
+                  Extended Tour of Old Town: Lisbon's hilltop charm
                 </a>
               </li>
               <li>
                 <a
                   className="hover:text-primary transition-colors"
                   href="/tour-details/3"
+                >
+                  Belém & Alfama: The Complete Lisbon Experience
+                </a>
+              </li>
+              <li>
+                <a
+                  className="hover:text-primary transition-colors"
+                  href="/tour-details/4"
                 >
                   Lisbon: City Highlights Tuk-Tuk Tour with Guide
                 </a>
@@ -110,7 +118,7 @@ const Footer = () => {
                 <span className="material-icons text-primary text-sm mt-1">
                   phone
                 </span>
-                <span>+351 9203 377 914</span>
+                <span>+351 920 377 914</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="material-icons text-primary text-sm mt-1">
