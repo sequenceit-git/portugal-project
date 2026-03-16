@@ -194,7 +194,7 @@ const TourDetails = () => {
                     Language
                   </span>
                   <span className="text-slate-900 text-sm sm:text-base font-bold">
-                    English
+                    English, Portuguese, Italian, French, Spanish, Audio Guides.
                   </span>
                 </div>
                 <div className="flex flex-col items-center justify-center text-center p-2 border-l border-slate-100">
@@ -250,7 +250,10 @@ const TourDetails = () => {
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-slate-100">
                       <span className="text-sm text-slate-600">Language</span>
-                      <span className="font-bold text-slate-900">English</span>
+                      <span className="font-bold text-slate-900">
+                        English, Portuguese, Italian, French, Spanish, Audio
+                        Guides.
+                      </span>
                     </div>
                   </div>
                   <div className="mt-5 sm:mt-6">
@@ -673,7 +676,8 @@ const TourDetails = () => {
                           <p className="text-xs text-blue-700 mt-1 leading-relaxed">
                             You are booking the guide exclusively for your
                             group. Tuktuk capacity is 6, so you can consider up
-                            to 6 persons in a group. The price adjusts based on group size.
+                            to 6 persons in a group. The price adjusts based on
+                            group size.
                           </p>
                         </div>
                       </div>
@@ -693,8 +697,8 @@ const TourDetails = () => {
                       </div>
                       <div className="flex justify-between items-center py-2 border-b border-slate-100">
                         <span className="text-sm text-slate-600">Language</span>
-                        <span className="font-bold text-slate-900">
-                          English
+                        <span className="font-sm text-slate-900">
+                          English, Portuguese, Etc.
                         </span>
                       </div>
                     </div>
