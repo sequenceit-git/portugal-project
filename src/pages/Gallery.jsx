@@ -107,7 +107,7 @@ const Gallery = () => {
           <h1 className="mt-2 sm:mt-3 text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-1 leading-snug">
             Guest Moments Gallery
           </h1>
-          <p className="text-[10px] sm:text-[16px] text-gray-600 max-w-xl">
+          <p className="text-[10px] sm:text-[20px] text-gray-600 max-w-xl">
             Explore beautiful moments captured during our tours across Portugal.
             Real moments from real travelers.
           </p>
@@ -145,7 +145,7 @@ const Gallery = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-end justify-end p-4">
                   <div className="text-white text-right">
                     {item.description && (
-                      <p className="text-sm leading-relaxed mb-3 text-white/90">
+                      <p className="text-xs sm:text-sm leading-relaxed sm:leading-relaxed mb-3 text-white/90">
                         {item.description}
                       </p>
                     )}
@@ -231,7 +231,7 @@ const Gallery = () => {
                 </span>
               </div>
               {selectedImage.description && (
-                <p className="text-sm leading-relaxed mb-3">
+                <p className="text-xs sm:text-sm leading-relaxed mb-3">
                   {selectedImage.description}
                 </p>
               )}
