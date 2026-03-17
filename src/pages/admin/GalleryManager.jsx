@@ -22,6 +22,8 @@ const GalleryManager = () => {
 
   // Close dropdown on outside click
   useEffect(() => {
+    if (!tourDropdownOpen) return;
+
     const handler = (e) => {
       if (
         tourDropdownRef.current &&
@@ -30,9 +32,9 @@ const GalleryManager = () => {
         setTourDropdownOpen(false);
       }
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+    document.addEventListener("click", handler);
+    return () => document.removeEventListener("click", handler);
+  }, [tourDropdownOpen]);
 
   const fetchTourOptions = async () => {
     const { data } = await supabase.from("tours").select("name").order("name");
@@ -280,7 +282,10 @@ const GalleryManager = () => {
               {/* Trigger button */}
               <button
                 type="button"
-                onClick={() => setTourDropdownOpen((o) => !o)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setTourDropdownOpen((o) => !o);
+                }}
                 className="w-full flex items-center justify-between border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition bg-white text-left"
               >
                 <span
@@ -301,7 +306,8 @@ const GalleryManager = () => {
                     <button
                       key={name}
                       type="button"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setForm((f) => ({ ...f, tour_name: name }));
                         setTourDropdownOpen(false);
                       }}

@@ -13,6 +13,7 @@ import { STATIC_ITINERARY_CONFIG } from "../components/StaticItineraryConfig";
 const TourDetails = () => {
   const { id } = useParams();
   const [tour, setTour] = useState(null);
+  const [galleryImages, setGalleryImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showFullDescription, setShowFullDescription] = useState(false);
 
@@ -24,7 +25,20 @@ const TourDetails = () => {
         .eq("id", id)
         .single();
       if (error) console.error("error loading tour", error);
-      else setTour(data);
+      else {
+        setTour(data);
+        // Fetch gallery images tagged with this tour's name
+        if (data && data.name) {
+          const { data: galleryData, error: galleryError } = await supabase
+            .from("gallery")
+            .select("image_url")
+            .eq("tour_name", data.name)
+            .order("created_at", { ascending: false });
+          if (!galleryError && galleryData) {
+            setGalleryImages(galleryData.map((img) => img.image_url));
+          }
+        }
+      }
       setLoading(false);
     };
     load();
@@ -53,21 +67,6 @@ const TourDetails = () => {
   for (let i = 0; i < fullStars; i++) stars.push(<span key={i}>★</span>);
   if (halfStar) stars.push(<span key="half">☆</span>);
 
-  const parsedGallery = Array.isArray(tour.gallery)
-    ? tour.gallery
-    : typeof tour.gallery === "string" && tour.gallery.trim()
-      ? (() => {
-          try {
-            const parsed = JSON.parse(tour.gallery);
-            return Array.isArray(parsed)
-              ? parsed
-              : tour.gallery.split(",").map((item) => item.trim());
-          } catch {
-            return tour.gallery.split(",").map((item) => item.trim());
-          }
-        })()
-      : [];
-
   /* ─────────────────────────────────────────────────────────────
      DYNAMIC ITINERARY (Commented Out) — Kept for future use
      
@@ -92,10 +91,28 @@ const TourDetails = () => {
   const defaultItinerarySteps = [];
   const itineraryByTourId = {};
 
-  const galleryImages = [tour.title_image, ...parsedGallery].filter(
-    (img, index, arr) => img && arr.indexOf(img) === index,
-  );
-  const heroImage = galleryImages[0] || "";
+  const parsedGallery = Array.isArray(tour.gallery)
+    ? tour.gallery
+    : typeof tour.gallery === "string" && tour.gallery.trim()
+      ? (() => {
+          try {
+            const parsed = JSON.parse(tour.gallery);
+            return Array.isArray(parsed)
+              ? parsed
+              : tour.gallery.split(",").map((item) => item.trim());
+          } catch {
+            return tour.gallery.split(",").map((item) => item.trim());
+          }
+        })()
+      : [];
+
+  // Combine title image + hardcoded gallery + gallery table images, remove duplicates
+  const allImages = [
+    tour.title_image,
+    ...parsedGallery,
+    ...galleryImages,
+  ].filter((img, index, arr) => img && arr.indexOf(img) === index);
+  const heroImage = allImages[0] || "";
 
   return (
     <div className="scroll-smooth bg-background-light text-slate-900 font-display antialiased">
@@ -530,7 +547,7 @@ const TourDetails = () => {
               </section>
 
               <section>
-                <GalleryScroller images={galleryImages} />
+                <GalleryScroller images={allImages} />
               </section>
 
               <RecommendedTours currentTourId={id} limit={3} />
