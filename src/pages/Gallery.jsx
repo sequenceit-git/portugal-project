@@ -9,6 +9,16 @@ const Gallery = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [brokenImages, setBrokenImages] = useState(new Set());
 
+  // Truncate tour name to 3 words with ellipsis
+  const truncateTourName = (name) => {
+    if (!name) return "";
+    const words = name.split(" ");
+    if (words.length > 3) {
+      return words.slice(0, 3).join(" ") + "...";
+    }
+    return name;
+  };
+
   useEffect(() => {
     const loadGallery = async () => {
       try {
@@ -137,7 +147,7 @@ const Gallery = () => {
                 {/* Tag Badge */}
                 <div className="absolute top-3 left-3 z-10">
                   <span className="inline-block bg-orange-100 text-orange-700 border border-orange-200 text-[9px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full uppercase tracking-wide shadow-md">
-                    {item.tour_name}
+                    {truncateTourName(item.tour_name)}
                   </span>
                 </div>
 
@@ -227,7 +237,7 @@ const Gallery = () => {
             <div className="absolute bottom-6 left-4 right-4 bg-black/60 backdrop-blur-sm rounded-xl p-6 text-white max-w-2xl mx-auto z-40">
               <div className="mb-3">
                 <span className="inline-block bg-orange-100 text-orange-700 border border-orange-200 text-[9px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full uppercase tracking-wide mb-2">
-                  {selectedImage.tour_name}
+                  {truncateTourName(selectedImage.tour_name)}
                 </span>
               </div>
               {selectedImage.description && (

@@ -210,7 +210,7 @@ const TourDetails = () => {
                 </div>
               </div>
 
-              <div className="lg:hidden bg-surface-light rounded-2xl shadow-xl border border-primary/10 overflow-hidden">
+              <div className="lg:hidden bg-surface-light rounded-2xl shadow-xl border border-primary/10 overflow-hidden hidden">
                 <div className="bg-primary/5 p-3 sm:p-4 flex justify-between items-center border-b border-primary/10">
                   <div>
                     <div className="flex flex-wrap items-baseline gap-1">
@@ -245,14 +245,13 @@ const TourDetails = () => {
                     <div className="flex justify-between items-center py-2 border-b border-slate-100">
                       <span className="text-sm text-slate-600">Guide</span>
                       <span className="font-bold text-slate-900">
-                        Entertainment Mama
+                        Lisbon Guide
                       </span>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-slate-100">
                       <span className="text-sm text-slate-600">Language</span>
-                      <span className="font-bold text-slate-900">
-                        English, Portuguese, Italian, French, Spanish, Audio
-                        Guides.
+                      <span className="font-bold text-slate-900 text-sm sm:text-base">
+                        English, Portuguese, Etc.
                       </span>
                     </div>
                   </div>
@@ -460,6 +459,70 @@ const TourDetails = () => {
                       <p className="text-xs text-blue-700 mt-1">
                         Lisbon is hilly and the cobblestones can be slippery.
                         Heels are not recommended for this tour.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section className="lg:hidden">
+                <div className="bg-surface-light rounded-2xl shadow-xl border border-primary/10 overflow-hidden">
+                  <div className="bg-primary/5 p-3 sm:p-4 flex justify-between items-center border-b border-primary/10">
+                    <div>
+                      <div className="flex flex-wrap items-baseline gap-1">
+                        <span className="text-sm font-medium text-slate-500">
+                          From
+                        </span>
+                        <span className="text-2xl font-bold text-slate-900">
+                          ${tour.price_1_person || "—"}
+                        </span>
+                        <span className="text-sm font-medium text-slate-500">
+                          / person
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-500 mt-0.5">
+                        Pricing varies by group size
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className="bg-green-100 text-green-700 text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-bold mb-1">
+                        Flexible Booking
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-4 sm:p-5">
+                    <div className="space-y-3 sm:space-y-4">
+                      <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                        <span className="text-sm text-slate-600">Duration</span>
+                        <span className="font-bold text-slate-900">
+                          {tour.duration} Hours
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                        <span className="text-sm text-slate-600">Guide</span>
+                        <span className="font-bold text-slate-900">
+                          Lisbon Guide
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                        <span className="text-sm text-slate-600">Language</span>
+                        <span className="font-bold text-slate-900 text-sm sm:text-base">
+                          English, Portuguese, Etc.
+                        </span>
+                      </div>
+                    </div>
+                    <div className="mt-5 sm:mt-6">
+                      <Link
+                        className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm sm:text-base shadow-xl shadow-primary/30 hover:bg-orange-600 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group"
+                        to={`/booking?tourId=${id}`}
+                      >
+                        Proceed to Booking
+                      </Link>
+                      <p className="text-center text-xs text-slate-500 mt-3 flex items-center justify-center gap-1">
+                        <span className="material-icons text-sm text-green-500">
+                          verified_user
+                        </span>
+                        Free cancellation up to 24h before
                       </p>
                     </div>
                   </div>
@@ -692,12 +755,12 @@ const TourDetails = () => {
                       <div className="flex justify-between items-center py-2 border-b border-slate-100">
                         <span className="text-sm text-slate-600">Guide</span>
                         <span className="font-bold text-slate-900">
-                          Entertainment Mama
+                          Lisbon Guide
                         </span>
                       </div>
-                      <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 border-b border-slate-100 gap-2 sm:gap-0">
                         <span className="text-sm text-slate-600">Language</span>
-                        <span className="font-sm text-slate-900">
+                        <span className="font-bold text-slate-900 text-right sm:text-right text-sm sm:text-base">
                           English, Portuguese, Etc.
                         </span>
                       </div>

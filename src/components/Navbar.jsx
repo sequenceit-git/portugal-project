@@ -15,12 +15,12 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 z-50 w-full bg-white shadow-sm">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <NavLink
             to="/"
-            className="flex-shrink-0 flex items-center h-16 overflow-hidden"
+            className="flex-shrink-0 flex items-center -ml-4 sm:-ml-6 lg:-ml-8"
             onClick={() => setIsOpen(false)}
           >
               <img
