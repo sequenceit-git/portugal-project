@@ -95,7 +95,7 @@ const RecommendedTours = ({ currentTourId, limit = 6 }) => {
       const { data, error } = await supabase
         .from("tours")
         .select(
-          "id,name,category,duration,people,guide_language,details,activity,rating,review_count,price,title_image",
+          "id,name,category,duration,people,guide_language,details,activity,rating,review_count,price_1_person,title_image",
         )
         .neq("id", currentTourId)
         .order("created_at", { ascending: true })

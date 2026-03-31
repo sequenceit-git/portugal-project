@@ -3,5 +3,6 @@ echo "Note: You need SUPABASE_DB_PASSWORD to push."
 export SUPABASE_ACCESS_TOKEN=sbp_d391f1e365a196fa55670177d630c9a9cbf24820
 npx supabase link --project-ref zgwtpnrggmmvuukcikha
 npx supabase db push
+npx supabase functions deploy create-checkout
 npx supabase functions deploy cancel-booking
 npx supabase functions deploy stripe-webhook
