@@ -178,18 +178,6 @@ Deno.serve(async (req: Request) => {
       cancel_url: `${redirectBase}/booking/cancel?booking_id=${bookingId}`,
     });
 
-    // Insert payment record (pending)
-    await supabase.from("payments").insert({
-      booking_id: bookingId,
-      stripe_session_id: session.id,
-      amount: serverTotal,
-      currency: "eur",
-      status: "pending",
-      customer_email: customerEmail,
-      customer_name: customerName || null,
-      tour_name: tourName,
-    });
-
     // Update booking with stripe session id
     await supabase
       .from("bookings")

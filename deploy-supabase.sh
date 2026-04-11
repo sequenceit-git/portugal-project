@@ -6,3 +6,4 @@ npx supabase db push
 npx supabase functions deploy create-checkout
 npx supabase functions deploy cancel-booking
 npx supabase functions deploy stripe-webhook
+npx supabase functions deploy admin-confirm-booking

@@ -68,28 +68,34 @@ Deno.serve(async (req: Request) => {
 
       console.log(`Checkout completed for booking ${bookingId}, session ${sessionId}`);
 
-      // Update payment record
-      await supabase
+      // Update booking status using stripe_session_id
+      const { error: sessionUpdateError } = await supabase
         .from("bookings")
         .update({
           payment_status: "paid",
           status: "confirmed",
-          stripe_payment_intent: typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id || null,
         })
         .eq("stripe_session_id", sessionId);
+      
+      if (sessionUpdateError) {
+        console.error("Failed to update booking via session_id:", sessionUpdateError);
+      }
 
-      // Update booking status
+      // Update booking status using explicit bookingId (fallback)
       if (bookingId) {
-        await supabase
+        const { error: idUpdateError } = await supabase
           .from("bookings")
           .update({
             status: "confirmed",
             payment_status: "paid",
           })
           .eq("id", parseInt(bookingId));
+        if (idUpdateError) {
+          console.error("Failed to update booking via bookingId:", idUpdateError);
+        }
       }
 
-      // Try to get receipt URL from the charge
+      // Now fetch receipt URL safely without risking the whole webhook if the field is missing
       if (session.payment_intent) {
         try {
           const piId =
@@ -104,6 +110,7 @@ Deno.serve(async (req: Request) => {
                 : pi.latest_charge.id;
             const charge = await stripe.charges.retrieve(chargeId);
             if (charge.receipt_url) {
+              // Ignore errors if the newly-added DB column doesn't exist yet
               await supabase
                 .from("bookings")
                 .update({ receipt_url: charge.receipt_url })

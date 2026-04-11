@@ -20,39 +20,20 @@ const BookingSuccess = () => {
 
       // Helper: try loading payment data (may need retries while Stripe syncs)
       const fetchPayment = async () => {
-        // 1) Try the Stripe Sync Engine view (most accurate, real-time Stripe data)
-        const { data: stripeData } = await supabase
-          .from("stripe_transactions")
-          .select("*")
-          .eq("session_id", sessionId)
-          .maybeSingle();
-
-        if (stripeData && stripeData.payment_status === "paid") {
-          return {
-            amount: Number(stripeData.amount || 0),
-            status: "paid",
-            customer_email: stripeData.customer_email,
-            customer_name: stripeData.customer_name,
-            booking_id: stripeData.booking_id,
-            tour_name: stripeData.tour_name,
-          };
-        }
-
-        // 2) Fall back to local payments table (written by create-checkout)
-        const { data: paymentData } = await supabase
-          .from("payments")
+        const { data: bookingData } = await supabase
+          .from("bookings")
           .select("*")
           .eq("stripe_session_id", sessionId)
           .maybeSingle();
 
-        if (paymentData) {
+        if (bookingData) {
           return {
-            amount: Number(paymentData.total_amount || 0),
-            status: paymentData.payment_status === 'paid' ? 'paid' : paymentData.payment_status === 'failed' ? 'failed' : 'pending',
-            customer_email: paymentData.email,
-            customer_name: paymentData.first_name + (paymentData.last_name ? ' ' + paymentData.last_name : ''),
-            booking_id: paymentData.id,
-            tour_name: paymentData.tour_name,
+            amount: Number(bookingData.total_amount || 0),
+            status: bookingData.payment_status === 'paid' ? 'paid' : bookingData.payment_status === 'failed' ? 'failed' : 'pending',
+            customer_email: bookingData.email,
+            customer_name: bookingData.first_name + (bookingData.last_name ? ' ' + bookingData.last_name : ''),
+            booking_id: bookingData.id,
+            tour_name: bookingData.tour_name,
           };
         }
 
