@@ -329,7 +329,7 @@ const TourModal = ({ tour, onClose, onSaved }) => {
             </div>
             <p className="text-xs text-blue-700 mt-3 text-center">
               💡 For 6+ people, use the "6+ People" rate. Example: 7 people ×
-              $22/person = $154 total
+              €22/person = €154 total
             </p>
           </div>
 

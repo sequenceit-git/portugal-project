@@ -1,0 +1,19 @@
+
+                <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 30px; border-radius: 12px;">
+  <div style="text-align: center; margin-bottom: 20px;">
+    <img src="${Deno.env.get("SITE_URL") || "https://tukinlisbon.com"}/assets/logo/logo.png" alt="Tuk in Lisbon" style="max-height: 50px; display: inline-block;" onerror="this.style.display='none'" />
+  </div>
+  
+  <div style="background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 4px solid #ea580c;">
+    <h2 style="color: #111827; margin-top: 0;">New Booking Alert</h2>
+    <p style="color: #6b7280;">A new booking has just been confirmed via Stripe payment.</p>
+    <p style="background-color: #fff7ed; color: #ea580c; display: inline-block; padding: 6px 12px; border-radius: 6px; font-weight: bold; margin-bottom: 20px;">Booking ID: #${b.id}</p>
+    
+    ${bookingDetailsHtml}
+    
+    <div style="text-align: center; margin-top: 30px;">
+      <a href="${Deno.env.get("SITE_URL") || "https://tukinlisbon.com"}/admin" style="background-color: #111827; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Go to Admin Dashboard</a>
+    </div>
+  </div>
+</div>
+              

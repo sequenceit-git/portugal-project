@@ -47,11 +47,11 @@ const BookingSuccess = () => {
 
         if (paymentData) {
           return {
-            amount: Number(paymentData.amount || 0),
-            status: paymentData.status,
-            customer_email: paymentData.customer_email,
-            customer_name: paymentData.customer_name,
-            booking_id: paymentData.booking_id,
+            amount: Number(paymentData.total_amount || 0),
+            status: paymentData.payment_status === 'paid' ? 'paid' : paymentData.payment_status === 'failed' ? 'failed' : 'pending',
+            customer_email: paymentData.email,
+            customer_name: paymentData.first_name + (paymentData.last_name ? ' ' + paymentData.last_name : ''),
+            booking_id: paymentData.id,
             tour_name: paymentData.tour_name,
           };
         }

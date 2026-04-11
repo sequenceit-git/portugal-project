@@ -189,7 +189,7 @@ const Booking = () => {
   const total = subtotal; // no service fee
 
   // Currency display helpers
-  const sym = "$";
+  const sym = "€";
   const toDisplay = (usd) => usd.toFixed(2);
 
   // Cancellation date/time helper
@@ -255,10 +255,6 @@ const Booking = () => {
           booking_date: selDate,
           booking_time: selTime,
           language: selectedLanguages.join(", "),
-          adults: travelerCount,
-          youth: 0,
-          infants: 0,
-          seniors: 0,
           total_guests: travelerCount,
           first_name: form.firstName,
           last_name: form.lastName || null,
@@ -1043,7 +1039,7 @@ const Booking = () => {
                       {/* Price header */}
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                          Price (USD)
+                          Price (EUR)
                         </span>
                       </div>
 

@@ -45,7 +45,7 @@ const TransactionsManager = () => {
         *,
         booking:bookings (
           id, tour_id, tour_name, booking_date, booking_time,
-          language, adults, youth, infants, seniors, total_guests,
+          language, total_guests,
           first_name, last_name, email, phone, special_requests,
           subtotal, service_fee, total_amount, status
         )
@@ -197,7 +197,7 @@ const TransactionsManager = () => {
           {
             icon: "account_balance",
             label: "Total Revenue",
-            value: `$${totalRevenue.toFixed(2)}`,
+            value: `€${totalRevenue.toFixed(2)}`,
             color: "bg-green-100 text-green-600",
           },
           {
@@ -209,13 +209,13 @@ const TransactionsManager = () => {
           {
             icon: "hourglass_top",
             label: "Pending",
-            value: `$${totalPending.toFixed(2)}`,
+            value: `€${totalPending.toFixed(2)}`,
             color: "bg-amber-100 text-amber-600",
           },
           {
             icon: "replay",
             label: "Refunded",
-            value: `$${totalRefunded.toFixed(2)}`,
+            value: `€${totalRefunded.toFixed(2)}`,
             color: "bg-purple-100 text-purple-600",
           },
         ].map((s) => (
@@ -387,10 +387,10 @@ const TransactionsManager = () => {
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           <p className="font-bold text-gray-900">
-                            ${Number(p.amount || 0).toFixed(2)}
+                            €{Number(p.amount || 0).toFixed(2)}
                           </p>
                           <p className="text-xs text-gray-400 uppercase">
-                            {p.currency || "usd"}
+                            {p.currency || "eur"}
                           </p>
                         </td>
                         <td className="px-4 py-3">
@@ -480,7 +480,7 @@ const TransactionsManager = () => {
                                 {
                                   label: "Guests",
                                   value: p.booking
-                                    ? `${p.booking.adults || 0}A · ${p.booking.youth || 0}Y · ${p.booking.seniors || 0}S · ${p.booking.infants || 0}I (${p.booking.total_guests || 0} total)`
+                                    ? `${p.booking.total_guests || 0} Travelers`
                                     : "—",
                                 },
                                 {
@@ -570,7 +570,7 @@ const TransactionsManager = () => {
                     </div>
                     <div className="text-right shrink-0">
                       <p className="font-extrabold text-gray-900">
-                        ${Number(p.amount || 0).toFixed(2)}
+                        €{Number(p.amount || 0).toFixed(2)}
                       </p>
                       <span
                         className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold capitalize ${PAYMENT_STATUS_STYLE[p.status] || "bg-gray-100 text-gray-600"}`}

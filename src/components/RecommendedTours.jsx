@@ -44,7 +44,7 @@ const RecommendedTourCard = ({ tour }) => (
       {/* Price pill on image */}
       {tour.price_1_person && (
         <div className="absolute bottom-3 right-3 bg-primary text-white px-2.5 py-1 rounded-full text-[10px] font-extrabold">
-          From ${Number(tour.price_1_person).toFixed(0)}/person
+          From €{Number(tour.price_1_person).toFixed(0)}/person
         </div>
       )}
     </div>

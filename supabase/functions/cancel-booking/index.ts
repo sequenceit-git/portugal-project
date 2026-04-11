@@ -30,7 +30,7 @@ Deno.serve(async (req: Request) => {
     // Fetch booking details
     const { data: booking, error: bookingErr } = await supabase
       .from("bookings")
-      .select("*, payments(stripe_payment_intent, status)")
+      .select("*, stripe_payment_intent, payment_status")
       .eq("id", bookingId)
       .single();
 
@@ -64,10 +64,8 @@ Deno.serve(async (req: Request) => {
     }
 
     // Now issue refund if paid
-    const payment = booking.payments && booking.payments.length > 0 ? booking.payments[0] : null;
     let refunded = false;
-
-    if (payment && payment.stripe_payment_intent && payment.status === "paid") {
+  if (booking.stripe_payment_intent && booking.payment_status === "paid") {
       const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
       if (!stripeSecretKey) {
           throw new Error("Payment service unavailable - missing API key");

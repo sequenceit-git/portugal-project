@@ -159,7 +159,7 @@ Deno.serve(async (req: Request) => {
       line_items: [
         {
           price_data: {
-            currency: "usd",
+            currency: "eur",
             product_data: {
               name: tourName,
               description: `${paxCount} guest(s) × $${perPersonRate}/person · ${bookingDate || ""} · ${bookingTime || ""} · Free cancellation up to 24h before`,
@@ -183,7 +183,7 @@ Deno.serve(async (req: Request) => {
       booking_id: bookingId,
       stripe_session_id: session.id,
       amount: serverTotal,
-      currency: "usd",
+      currency: "eur",
       status: "pending",
       customer_email: customerEmail,
       customer_name: customerName || null,

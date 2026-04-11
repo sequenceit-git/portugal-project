@@ -235,7 +235,7 @@ const TourDetails = () => {
                         From
                       </span>
                       <span className="text-2xl font-bold text-slate-900">
-                        ${tour.price_1_person || "—"}
+                        €{tour.price_1_person || "—"}
                       </span>
                       <span className="text-sm font-medium text-slate-500">
                         / person
@@ -491,7 +491,7 @@ const TourDetails = () => {
                           From
                         </span>
                         <span className="text-2xl font-bold text-slate-900">
-                          ${tour.price_1_person || "—"}
+                          €{tour.price_1_person || "—"}
                         </span>
                         <span className="text-sm font-medium text-slate-500">
                           / person
@@ -727,7 +727,7 @@ const TourDetails = () => {
                           From
                         </span>
                         <span className="text-2xl font-bold text-slate-900">
-                          ${tour.price_1_person || "—"}
+                          €{tour.price_1_person || "—"}
                         </span>
                         <span className="text-sm font-medium text-slate-500">
                           / person

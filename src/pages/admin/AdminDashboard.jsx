@@ -7,7 +7,6 @@ import DeleteConfirm from "./DeleteConfirm";
 import BookingsManager from "./BookingsManager";
 import ReviewsManager from "./ReviewsManager";
 import GalleryManager from "./GalleryManager";
-import TransactionsManager from "./TransactionsManager";
 
 /* ─────────────────────────────────────────────────────────────
    Badge chip helper
@@ -113,11 +112,6 @@ const AdminDashboard = () => {
                   icon: "confirmation_number",
                   label: "Bookings",
                 },
-                {
-                  key: "transactions",
-                  icon: "receipt_long",
-                  label: "Transactions",
-                },
                 { key: "tours", icon: "map", label: "Tours" },
                 { key: "reviews", icon: "rate_review", label: "Reviews" },
                 { key: "gallery", icon: "photo_library", label: "Gallery" },
@@ -187,7 +181,6 @@ const AdminDashboard = () => {
       <div className="sm:hidden flex gap-1 bg-white border-b border-gray-200 px-2 py-2 overflow-x-auto scrollbar-none">
         {[
           { key: "bookings", icon: "confirmation_number", label: "Bookings" },
-          { key: "transactions", icon: "receipt_long", label: "Transactions" },
           { key: "tours", icon: "map", label: "Tours" },
           { key: "reviews", icon: "rate_review", label: "Reviews" },
           { key: "gallery", icon: "photo_library", label: "Gallery" },
@@ -210,12 +203,6 @@ const AdminDashboard = () => {
       {activeTab === "bookings" && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <BookingsManager />
-        </div>
-      )}
-      {/* ── Transactions Tab */}
-      {activeTab === "transactions" && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <TransactionsManager />
         </div>
       )}
       {/* ── Tours Tab */}
@@ -245,7 +232,7 @@ const AdminDashboard = () => {
                 icon: "payments",
                 label: "Lowest Price",
                 value: tours.length
-                  ? "$" +
+                  ? "€" +
                     Math.min(
                       ...tours
                         .filter((t) => t.price_1_person)
@@ -384,7 +371,7 @@ const AdminDashboard = () => {
                         </td>
                         <td className="px-5 py-4 text-gray-600">
                           {tour.price_1_person
-                            ? `$${tour.price_1_person}–${tour.price_6_person}`
+                            ? `€${tour.price_1_person}–€${tour.price_6_person}`
                             : "—"}
                         </td>
                         <td className="px-5 py-4">
@@ -443,7 +430,7 @@ const AdminDashboard = () => {
                       <p className="text-xs text-gray-400">
                         {tour.category} · {tour.duration}h ·{" "}
                         {tour.price_1_person
-                          ? `$${tour.price_1_person}–${tour.price_6_person}`
+                          ? `€${tour.price_1_person}–€${tour.price_6_person}`
                           : "Free"}
                       </p>
                       <div className="flex gap-2 mt-2">
