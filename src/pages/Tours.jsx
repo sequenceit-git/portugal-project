@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
+import { CartContext } from "../lib/CartContext";
 import Footer from "../components/Footer";
 import SEO from "../components/SEO";
+import TourPreviewModal from "../components/TourPreviewModal";
 
 /* ── Badge colour mapping ──────────────────────────────────── */
 const badgeClass = {
@@ -50,135 +52,128 @@ const Stars = ({ rating }) => {
 };
 
 /* ── Beautiful Tour Card ────────────────────────────────────── */
-const TourCard = ({ tour }) => (
-  <div className="group relative rounded-2xl overflow-hidden shadow-lg cursor-pointer flex flex-col bg-white border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-    {/* Image */}
-    <div className="relative h-56 overflow-hidden">
-      <img
-        src={tour.title_image}
-        alt={tour.name}
-        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-        loading="lazy"
-        decoding="async"
-        width="480"
-        height="224"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+const TourCard = ({ tour, onAddToCartClick }) => {
 
-      {/* Badge */}
-      {tour.badge && (
-        <div
-          className={`absolute top-3.5 left-3.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wide shadow ${badgeClass[tour.badge_color] || badgeClass.primary}`}
-        >
-          {tour.badge}
-        </div>
-      )}
-      <div className="absolute top-3.5 right-3.5 bg-white/90 backdrop-blur-sm px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide text-gray-900">
-        {tour.category || "Tuk-Tuk"}
-      </div>
-
-      {/* Rating pill on image */}
-      <div className="absolute bottom-3.5 left-3.5 flex items-center gap-1 bg-black/50 backdrop-blur-sm text-white px-2.5 py-1 rounded-full text-[11px] font-semibold">
-        <span className="material-icons text-yellow-400 text-sm">star</span>
-        {Number(tour.rating).toFixed(1)}
-        <span className="text-white/70">({tour.review_count})</span>
-      </div>
-
-      {/* Price pill on image */}
-      {tour.price_1_person && (
-        <div className="absolute bottom-3.5 right-3.5 bg-primary text-white px-2.5 py-1 rounded-full text-[11px] font-extrabold">
-          From ${Number(tour.price_1_person).toFixed(0)}/person
-        </div>
-      )}
-    </div>
-
-    {/* Body */}
-    <div className="flex flex-col flex-1 p-5">
-      {/* Meta row */}
-      <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-gray-500 mb-2.5">
-        <span className="flex items-center gap-1">
-          <span className="material-icons text-primary text-base">
-            schedule
-          </span>
-          {tour.duration} {tour.duration === 1 ? "Hour" : "Hours"}
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="material-icons text-primary text-base">
-            language
-          </span>
-          {tour.guide_language || "English"}
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="material-icons text-primary text-base">eco</span>
-          Electric
-        </span>
-      </div>
-
-      {/* Title */}
-      <h3 className="text-lg sm:text-xl font-extrabold text-gray-900 mb-1 leading-snug">
-        {tour.name}
-        {tour.subtitle && (
-          <span className="block text-primary text-sm sm:text-base font-semibold mt-0.5">
-            {tour.subtitle}
-          </span>
+  return (
+    <div className="group relative rounded-2xl overflow-hidden shadow-lg cursor-pointer flex flex-col bg-white border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+      {/* Image */}
+      <div className="relative h-56 overflow-hidden">
+        <img
+          src={tour.title_image}
+          alt={tour.name}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          loading="lazy"
+          decoding="async"
+          width="480"
+          height="224"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        {tour.badge && (
+          <div
+            className={`absolute top-3.5 left-3.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wide shadow ${badgeClass[tour.badge_color] || badgeClass.primary}`}
+          >
+            {tour.badge}
+          </div>
         )}
-      </h3>
-
-      {/* Description */}
-      <p className="text-gray-600 text-xs sm:text-sm leading-relaxed flex-1 mb-3.5 line-clamp-3">
-        {tour.details}
-      </p>
-
-      {/* Highlights */}
-      {tour.highlights && tour.highlights.length > 0 && (
-        <ul className="flex flex-wrap gap-1.5 mb-3.5">
-          {tour.highlights.slice(0, 4).map((h) => (
-            <li
-              key={h}
-              className="text-[10px] sm:text-[11px] font-medium bg-gray-100 text-gray-700 border border-gray-200 px-2 py-0.5 rounded-full"
-            >
-              {h}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {/* Meeting point */}
-      {tour.meeting_point && (
-        <div className="flex items-start gap-2 text-[11px] sm:text-xs text-gray-500 bg-gray-50 rounded-lg px-2.5 py-1.5 mb-3.5">
-          <span className="material-icons text-primary text-sm mt-0.5">
-            location_on
+        <div className="absolute top-3.5 right-3.5 bg-white/90 backdrop-blur-sm px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide text-gray-900">
+          {tour.category || "Tuk-Tuk"}
+        </div>
+        <div className="absolute bottom-3.5 left-3.5 flex items-center gap-1 bg-black/50 backdrop-blur-sm text-white px-2.5 py-1 rounded-full text-[11px] font-semibold">
+          <span className="material-icons text-yellow-400 text-sm">star</span>
+          {Number(tour.rating).toFixed(1)}
+          <span className="text-white/70">({tour.review_count})</span>
+        </div>
+        {tour.price_1_person && (
+          <div className="absolute bottom-3.5 right-3.5 bg-primary text-white px-2.5 py-1 rounded-full text-[11px] font-extrabold">
+            From ${Number(tour.price_1_person).toFixed(0)}/person
+          </div>
+        )}
+      </div>
+      {/* Body */}
+      <div className="flex flex-col flex-1 p-5">
+        <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-gray-500 mb-2.5">
+          <span className="flex items-center gap-1">
+            <span className="material-icons text-primary text-base">schedule</span>
+            {tour.duration} {tour.duration === 1 ? "Hour" : "Hours"}
           </span>
-          <span>{tour.meeting_point}</span>
+          <span className="flex items-center gap-1">
+            <span className="material-icons text-primary text-base">language</span>
+            {tour.guide_language || "English"}
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="material-icons text-primary text-base">eco</span>
+            Electric
+          </span>
         </div>
-      )}
-
-      {!tour.meeting_point && (
-        <div className="flex items-center gap-2 text-[11px] sm:text-xs text-gray-500 mb-3.5">
-          <span className="material-icons text-primary text-sm">near_me</span>
-          <span>Flexible pickup area — details on booking</span>
+        <h3 className="text-lg sm:text-xl font-extrabold text-gray-900 mb-1 leading-snug">
+          {tour.name}
+          {tour.subtitle && (
+            <span className="block text-primary text-sm sm:text-base font-semibold mt-0.5">
+              {tour.subtitle}
+            </span>
+          )}
+        </h3>
+        <p className="text-gray-600 text-xs sm:text-sm leading-relaxed flex-1 mb-3.5 line-clamp-3">
+          {tour.details}
+        </p>
+        {tour.highlights && tour.highlights.length > 0 && (
+          <ul className="flex flex-wrap gap-1.5 mb-3.5">
+            {tour.highlights.slice(0, 4).map((h) => (
+              <li
+                key={h}
+                className="text-[10px] sm:text-[11px] font-medium bg-gray-100 text-gray-700 border border-gray-200 px-2 py-0.5 rounded-full"
+              >
+                {h}
+              </li>
+            ))}
+          </ul>
+        )}
+        {tour.meeting_point && (
+          <div className="flex items-start gap-2 text-[11px] sm:text-xs text-gray-500 bg-gray-50 rounded-lg px-2.5 py-1.5 mb-3.5">
+            <span className="material-icons text-primary text-sm mt-0.5">location_on</span>
+            <span>{tour.meeting_point}</span>
+          </div>
+        )}
+        {!tour.meeting_point && (
+          <div className="flex items-center gap-2 text-[11px] sm:text-xs text-gray-500 mb-3.5">
+            <span className="material-icons text-primary text-sm">near_me</span>
+            <span>Flexible pickup area — details on booking</span>
+          </div>
+        )}
+        {/* Add to Cart Button */}
+        <div className="mt-auto flex flex-row gap-2">
+          {/* <Link
+            to={`/tour-details/${tour.id}`}
+            className="w-full sm:flex-1 inline-flex items-center justify-center gap-1.5 bg-white border-2 border-primary hover:bg-primary/5 text-primary font-bold text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-3 rounded-xl transition-all"
+          >
+            View Details
+            <span className="material-icons text-sm">arrow_forward</span>
+          </Link> */}
+          <button
+            onClick={() => onAddToCartClick(tour)}
+            className="w-full sm:flex-1 inline-flex items-center justify-center gap-1.5 bg-primary hover:bg-primary-dark text-white font-bold text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-3 rounded-xl transition-all hover:-translate-y-0.5 shadow-lg shadow-primary/20"
+          >
+            <span className="material-icons text-sm">add_shopping_cart</span>
+            <span>Add to Cart</span>
+          </button>
         </div>
-      )}
-
-      {/* CTA Button */}
-      <div className="mt-auto">
-        <Link
-          to={`/tour-details/${tour.id}`}
-          className="w-full bg-primary hover:bg-primary-dark text-white font-bold text-xs sm:text-sm px-3.5 py-2.5 rounded-xl transition-all hover:-translate-y-0.5 shadow-lg shadow-primary/20 flex items-center justify-center gap-1.5"
-        >
-          Book Now
-          <span className="material-icons text-base">arrow_forward</span>
-        </Link>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 /* ── Page Component ─────────────────────────────────────────── */
 const Tours = () => {
+  const { addToCart } = useContext(CartContext);
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("all");
+  const [selectedTour, setSelectedTour] = useState(null);
+  const [adding, setAdding] = useState(false);
+
+  const closeModal = () => {
+    setSelectedTour(null);
+  };
 
   useEffect(() => {
     const loadTours = async () => {
@@ -197,7 +192,36 @@ const Tours = () => {
       setLoading(false);
     };
     loadTours();
+
+    // Cleanup: close modal on unmount
+    return () => closeModal();
   }, []);
+
+  const handleAddToCartClick = (tour) => {
+    setSelectedTour(tour);
+  };
+
+  const handleAddToCart = () => {
+    if (!selectedTour) return;
+    setAdding(true);
+    addToCart({
+      tourId: selectedTour.id,
+      tourName: selectedTour.name,
+      price: Number(selectedTour.price_1_person) || 0,
+      image: selectedTour.title_image,
+      duration: selectedTour.duration,
+      rating: selectedTour.rating,
+      reviewCount: selectedTour.review_count,
+      category: selectedTour.category,
+      details: selectedTour.details,
+      guideLanguage: selectedTour.guide_language,
+    });
+    setTimeout(() => {
+      setAdding(false);
+      closeModal();
+      // Stay on Tours page - don't navigate away
+    }, 600);
+  };
 
   const filters = [
     { key: "all", label: "All Tours" },
@@ -301,11 +325,20 @@ const Tours = () => {
           ) : (
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {filtered.map((tour) => (
-                <TourCard key={tour.id} tour={tour} />
+                <TourCard key={tour.id} tour={tour} onAddToCartClick={handleAddToCartClick} />
               ))}
             </div>
           )}
         </div>
+
+        {/* Tour Preview Modal */}
+        <TourPreviewModal
+          tour={selectedTour}
+          isOpen={!!selectedTour}
+          onClose={closeModal}
+          onAddToCart={handleAddToCart}
+          loading={adding}
+        />
       </section>
 
       <Footer />

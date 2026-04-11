@@ -1,6 +1,7 @@
-import { lazy, Suspense, useState, useEffect } from "react";
+import { lazy, Suspense, useState, useEffect, useContext } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
+import { CartContext } from "./lib/CartContext.jsx";
 
 // Route-level code splitting — each page loads only when navigated to
 const Home = lazy(() => import("./pages/Home.jsx"));
@@ -16,6 +17,7 @@ const GuideMap = lazy(() => import("./pages/GuideMap.jsx"));
 const Gallery = lazy(() => import("./pages/Gallery.jsx"));
 const Contact = lazy(() => import("./pages/Contact.jsx"));
 const Feedback = lazy(() => import("./pages/Feedback.jsx"));
+const Cart = lazy(() => import("./pages/Cart.jsx"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard.jsx"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.jsx"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService.jsx"));
@@ -93,7 +95,30 @@ const PageLoader = () => (
   </div>
 );
 
-const WHATSAPP_PAGES = ["/", "/tours", "/booking"];
+const CartButton = () => {
+  const { cart } = useContext(CartContext);
+  const cartCount = cart.length;
+
+  return (
+    <a
+      href="/cart"
+      aria-label="Shopping Cart"
+      className="fixed bottom-24 right-6 z-40 group flex items-center gap-3"
+    >
+      <span className="opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-200 bg-gray-900 text-white text-sm font-semibold px-3 py-1.5 rounded-lg shadow-lg whitespace-nowrap pointer-events-none">
+        {cartCount} {cartCount === 1 ? "item" : "items"}
+      </span>
+      <div className="relative w-14 h-14 rounded-full bg-primary shadow-xl shadow-primary/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-transform duration-200">
+        <span className="material-icons text-white text-2xl">shopping_cart</span>
+        {cartCount > 0 && (
+          <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
+            {cartCount > 9 ? "9+" : cartCount}
+          </span>
+        )}
+      </div>
+    </a>
+  );
+};
 
 const WhatsAppButton = () => (
   <a
@@ -101,7 +126,7 @@ const WhatsAppButton = () => (
     target="_blank"
     rel="noopener noreferrer"
     aria-label="Chat with us on WhatsApp"
-    className="fixed bottom-6 right-6 z-50 group flex items-center gap-3"
+    className="fixed bottom-6 right-6 z-40 group flex items-center gap-3"
   >
     <span className="opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-200 bg-gray-900 text-white text-sm font-semibold px-3 py-1.5 rounded-lg shadow-lg whitespace-nowrap pointer-events-none">
       Chat with us
@@ -123,8 +148,6 @@ const App = () => {
   const isAdmin = location.pathname.startsWith("/admin");
   const isHome = location.pathname === "/";
   const isTourDetails = location.pathname.startsWith("/tour-details/");
-  const showWhatsApp =
-    WHATSAPP_PAGES.includes(location.pathname) || isTourDetails;
 
   const [showSplash, setShowSplash] = useState(
     () => !sessionStorage.getItem("splashShown"),
@@ -156,6 +179,7 @@ const App = () => {
               <Route path="/gallery" element={<Gallery />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/feedback" element={<Feedback />} />
+              <Route path="/cart" element={<Cart />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
@@ -164,7 +188,8 @@ const App = () => {
             </Routes>
           </Suspense>
         </main>
-        {showWhatsApp && <WhatsAppButton />}
+        {!isAdmin && <CartButton />}
+        {!isAdmin && <WhatsAppButton />}
       </div>
     </>
   );

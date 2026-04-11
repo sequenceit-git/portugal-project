@@ -145,11 +145,11 @@ const Gallery = () => {
                 />
 
                 {/* Tag Badge */}
-                <div className="absolute top-3 left-3 z-10">
+                {/* <div className="absolute top-3 left-3 z-10">
                   <span className="inline-block bg-orange-100 text-orange-700 border border-orange-200 text-[9px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full uppercase tracking-wide shadow-md">
                     {truncateTourName(item.tour_name)}
                   </span>
-                </div>
+                </div> */}
 
                 {/* Hover Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-end justify-end p-4">

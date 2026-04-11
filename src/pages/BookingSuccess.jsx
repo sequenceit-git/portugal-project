@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
+import { CartContext } from "../lib/CartContext";
 import Footer from "../components/Footer";
 import SEO from "../components/SEO";
 
 const BookingSuccess = () => {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
+  const { cart, removeFromCart } = useContext(CartContext);
   const [session, setSession] = useState(null);
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -97,6 +99,16 @@ const BookingSuccess = () => {
 
           if (bookingData) {
             setBooking(bookingData);
+
+            // Remove the booked tour from cart
+            if (bookingData.tour_id) {
+              const cartItemToRemove = cart.find(
+                (item) => item.tourId === bookingData.tour_id
+              );
+              if (cartItemToRemove) {
+                removeFromCart(cartItemToRemove.id);
+              }
+            }
           }
         }
       } catch (err) {
@@ -105,7 +117,7 @@ const BookingSuccess = () => {
       setLoading(false);
     };
     load();
-  }, [sessionId]);
+  }, [sessionId, cart, removeFromCart]);
 
   if (loading) {
     return (

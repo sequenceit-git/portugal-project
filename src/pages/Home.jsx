@@ -2,8 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import Footer from "../components/Footer";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
-import TourPreviewPopup from "../components/TourPreviewPopup";
+import TourPreviewModal from "../components/TourPreviewModal";
 import SEO from "../components/SEO";
+import { useContext } from "react";
+import { CartContext } from "../lib/CartContext";
 
 // Carousel helpers for tours
 const carouselStep = 500; // px to scroll per arrow
@@ -120,6 +122,7 @@ const Home = () => {
 
   const [selectedTour, setSelectedTour] = useState(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const { addToCart } = useContext(CartContext);
   const reviewCarouselRef = useRef(null);
   const isReviewDraggingRef = useRef(false);
   const reviewDragStartXRef = useRef(0);
@@ -571,15 +574,18 @@ const Home = () => {
                             </span>
                             <span>Preview</span>
                           </button>
-                          <Link
-                            to={`/tour-details/${tour.id}`}
+                          <button
+                            onClick={() => {
+                              setSelectedTour(tour);
+                              setIsPreviewOpen(true);
+                            }}
                             className="w-full sm:flex-1 inline-flex items-center justify-center gap-1.5 bg-primary hover:bg-primary-dark text-white font-bold text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-3 rounded-xl transition-all hover:-translate-y-0.5 shadow-lg shadow-primary/20"
                           >
-                            Book
+                            Add to Cart
                             <span className="material-icons text-sm">
-                              arrow_forward
+                              add_shopping_cart
                             </span>
-                          </Link>
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -828,11 +834,10 @@ const Home = () => {
                 </span>
               </div>
               <h3 className="text-sm sm:text-lg font-bold text-gray-900 mb-1.5 sm:mb-2.5 leading-snug">
-                Tailored to You
+                10% Group Discount
               </h3>
               <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                Want more food stops? Interested in history? I customize the
-                route on the fly to match your interests.
+                Book for 2+ people and enjoy an exclusive 10% discount on your total tour price. More guests, bigger savings!
               </p>
             </div>
             <div className="bg-white p-3 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
@@ -876,10 +881,26 @@ const Home = () => {
       </section> */}
 
       <Footer />
-      <TourPreviewPopup
+      <TourPreviewModal
         tour={selectedTour}
         isOpen={isPreviewOpen}
         onClose={handleClosePreview}
+        onAddToCart={() => {
+          if (!selectedTour) return;
+          addToCart({
+            tourId: selectedTour.id,
+            tourName: selectedTour.name,
+            price: Number(selectedTour.price_1_person) || 0,
+            image: selectedTour.title_image,
+            duration: selectedTour.duration,
+            rating: selectedTour.rating,
+            reviewCount: selectedTour.review_count,
+            category: selectedTour.category,
+            details: selectedTour.details,
+            guideLanguage: selectedTour.guide_language,
+          });
+          setIsPreviewOpen(false);
+        }}
       />
     </div>
   );
