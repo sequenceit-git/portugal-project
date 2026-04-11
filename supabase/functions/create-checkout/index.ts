@@ -16,20 +16,17 @@ const ALLOWED_ORIGINS = [
 const SITE_URL =
   Deno.env.get("SITE_URL") || "https://tukinlisbon.com"; // fallback for success/cancel
 
-// ── Group discount pricing ──────────────────────────────────
-const GROUP_DISCOUNTS = [
-  { min: 6, pct: 0.30 },  // 6+ → 30% off
-  { min: 5, pct: 0.25 },  // 5   → 25% off
-  { min: 4, pct: 0.20 },  // 4   → 20% off
-  { min: 3, pct: 0.15 },  // 3   → 15% off
-  { min: 2, pct: 0.10 },  // 2   → 10% off
-];
-
-function getPerPersonRate(count: number, basePrice: number): number {
-  const tier = GROUP_DISCOUNTS.find((t) => count >= t.min);
-  if (!tier) return basePrice; // 1 person → full price
-  return Math.round(basePrice * (1 - tier.pct) * 100) / 100;
-}
+// ── Tour-Specific Per-Person Pricing ────────────────────────
+const getTourPerPersonRate = (tour: any, travelerCount: number) => {
+  if (!tour) return 0;
+  const count = Math.max(1, travelerCount);
+  if (count === 1) return Number(tour.price_1_person) || 0;
+  if (count === 2) return Number(tour.price_2_person) || 0;
+  if (count === 3) return Number(tour.price_3_person) || 0;
+  if (count === 4) return Number(tour.price_4_person) || 0;
+  if (count === 5) return Number(tour.price_5_person) || 0;
+  return Number(tour.price_6_person) || 0;
+};
 
 function getCorsHeaders(req: Request) {
   const origin = req.headers.get("origin") || "";
@@ -65,10 +62,15 @@ Deno.serve(async (req: Request) => {
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    // Supabase client with service role key (server-side, bypasses RLS)
+    // Supabase client with user access token to adhere to RLS
+    const authHeader = req.headers.get("Authorization");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      global: {
+        headers: { Authorization: authHeader || "" },
+      },
+    });
 
     const body = await req.json();
     const {
@@ -103,31 +105,30 @@ Deno.serve(async (req: Request) => {
     }
 
     let tourName = booking.tour_name || "Tour Booking";
-    let tourBasePrice = 0;
+    let perPersonRate = 0;
+    const paxCount = booking.total_guests || passengers || 1;
 
     // Resolve tour name and base price from the database
     if (booking.tour_id) {
       const { data: tour } = await supabase
         .from("tours")
-        .select("name, price")
+        .select("name, price_1_person, price_2_person, price_3_person, price_4_person, price_5_person, price_6_person")
         .eq("id", booking.tour_id)
         .single();
       if (tour) {
         tourName = tour.name || tourName;
-        tourBasePrice = Number(tour.price) || 0;
+        perPersonRate = getTourPerPersonRate(tour, paxCount);
       }
     }
 
-    if (tourBasePrice <= 0) {
+    if (perPersonRate <= 0) {
       return new Response(
         JSON.stringify({ error: "Tour price not found" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    // Calculate the server-side total using group discount pricing
-    const paxCount = booking.total_guests || passengers || 1;
-    const perPersonRate = getPerPersonRate(paxCount, tourBasePrice);
+    // Calculate the server-side total
     const serverTotal = perPersonRate * paxCount; // no service fee
 
     // ── Determine redirect URLs (hardcoded allowed origins) ──
@@ -143,15 +144,25 @@ Deno.serve(async (req: Request) => {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
+      submit_type: "book",
       customer_email: customerEmail,
+      customer_creation: "always",
       expires_at: expiresAt,
+      payment_intent_data: {
+        receipt_email: customerEmail,
+      },
+      custom_text: {
+        submit: {
+          message: "You can cancel for free up to 24 hours before your tour starts.",
+        },
+      },
       line_items: [
         {
           price_data: {
             currency: "usd",
             product_data: {
               name: tourName,
-              description: `${paxCount} guest(s) × $${perPersonRate}/person · ${bookingDate || ""} · ${bookingTime || ""}`,
+              description: `${paxCount} guest(s) × $${perPersonRate}/person · ${bookingDate || ""} · ${bookingTime || ""} · Free cancellation up to 24h before`,
             },
             unit_amount: Math.round(serverTotal * 100), // Stripe uses cents
           },

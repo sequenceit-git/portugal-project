@@ -234,7 +234,7 @@ const Home = () => {
                   ></path>
                 </svg>
               </span>
-              lut , Tour with Guide
+              , Tour with Guide
             </h1>
             <p className="text-sm sm:text-base lg:text-lg text-gray-600 mb-5 sm:mb-8 leading-relaxed">
               Skip the tourist traps. Discover the hidden gems, authentic
@@ -291,7 +291,7 @@ const Home = () => {
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuASX5uH6Zpnj-PoHiliVRUoefOIug-qIttn3s9XO3VcLq49CTcOjk9MbS1k-ZbRIf-N2fxiWCZvoEvneuJtFBgVu9z39uYhZ_ywH_aI7kUzGE-c-wWLbO_BTbdy4ny9dlXrj0gE_3PI7SbG8ZvODTne0D1nlAuYiEfqct70dQ85ZUZqBISmr-KJLHQKe2kWzgFL3UD4a7qtd8RvdXX15g9dc9X7i92RfWmtjNEhI-wY2r-eOSg_IW8FjjWpfEVp_wHl3V28pIFv1A"
                 />
                 <div className="w-10 h-10 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-xs font-bold">
-                  +2k
+                  1k+
                 </div>
               </div>
               <p>Happy travelers guided this year.</p>
@@ -310,10 +310,8 @@ const Home = () => {
                 src="https://zgwtpnrggmmvuukcikha.supabase.co/storage/v1/object/sign/test/eduardo-goody-0Iu7mKa1sPw-unsplash.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV80ZDkzZTdkMi1jYmUyLTRjNDYtYWQwYS1lMjk0YzRlNDhiZTEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ0ZXN0L2VkdWFyZG8tZ29vZHktMEl1N21LYTFzUHctdW5zcGxhc2guanBnIiwiaWF0IjoxNzcyNjQ2NzcxLCJleHAiOjM3NDUwMTA0ODM1NzF9.ordlTYzFyd_R0XKnqkcHWZCOM1ggR7DbtyBO7qClhgQ"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-              <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 text-white">
-                <p className="font-bold text-xl sm:text-xl ">
-                  Entertainment Mama
-                </p>
+              <div className="absolute bottom-4 sm:bottom-6 right-4 sm:right-6 text-white">
+                <p className="font-bold text-xl sm:text-xl ">Lisbon Guide</p>
                 <p className="text-xs sm:text-sm opacity-90">
                   Your Lisbon Insider
                 </p>
@@ -336,13 +334,16 @@ const Home = () => {
         </div>
       </header>
 
-      <section className="py-12 sm:py-16 lg:py-24 bg-white" id="about">
+      <section
+        className="py-12 sm:py-16 lg:py-24 bg-white scroll-mt-24 px-3 sm:px-0"
+        id="about"
+      >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="text-primary font-bold tracking-wider uppercase text-[11px] sm:text-sm">
             Bem-vindo a Lisboa
           </span>
           <h2 className="mt-2 sm:mt-3 text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-1 leading-snug">
-            Not just a guide, but a friend in the city.
+            Explore Lisbon the Fun, Green & Memorable Way
           </h2>
           <div className="relative max-w-2xl sm:max-w-3xl mx-auto text-left px-0 sm:px-0">
             <span className="material-icons sm:hidden text-primary/25 text-lg mb-2 block">
@@ -351,17 +352,24 @@ const Home = () => {
             <span className="material-icons hidden sm:block absolute left-0 lg:-left-8 -top-5 sm:-top-4 text-xl sm:text-4xl text-primary/20 transform -scale-x-100">
               format_quote
             </span>
-            <p className="text-xs sm:text-base md:text-lg text-gray-600 font-light leading-6 sm:leading-relaxed mb-3 sm:mb-8 sm:mt-3 pl-0 sm:pl-0">
-              "Hi, I’m Mama, your local friend in Lisbon, and I created
-              Entertainment Mama to offer the smartest, greenest, and most fun
-              way to explore this beautiful city. With our 100% electric{" "}
-              <span className="font-semibold text-primary">TUK-TUKS</span>, we
-              easily navigate the charming streets of Alfama and the lively
-              hills of Bairro Alto, sharing real stories, local flavors, and
-              hidden gems along the way. No rehearsed scripts—just authentic
-              experiences, breathtaking viewpoints, and a tour fully tailored to
-              your interests, so you can relax and enjoy Lisbon like you’re
-              visiting an old friend."
+            <p className="relative text-xs sm:text-base md:text-lg text-gray-600 font-light leading-6 sm:leading-relaxed mb-3 sm:mb-8 sm:mt-3 pl-0 sm:pl-0">
+              Experience the beauty of Lisbon through a comfortable and
+              eco-friendly electric{" "}
+              <span className="font-semibold text-primary">TUK-TUK </span> tour,
+              designed to take you through the city’s most iconic landmarks and
+              hidden corners. From the historic streets of Alfama to the vibrant
+              hills and viewpoints of Bairro Alto, enjoy a smooth ride while
+              exploring Lisbon’s rich culture, architecture, and breathtaking
+              scenery. Perfect for couples seeking a romantic city experience,
+              friends traveling together, or groups looking for a fun and
+              convenient way to explore, these tours offer flexible routes,
+              comfortable rides, and special group discounts. With easy access
+              to Lisbon’s narrow streets and scenic viewpoints, every journey
+              becomes an unforgettable way to discover the city’s most
+              captivating attractions.
+              <span className="material-icons hidden sm:block absolute right-0 lg:-right-8 bottom-0 sm:bottom-0 text-xl sm:text-4xl text-primary/20">
+                format_quote
+              </span>
             </p>
             <div className="flex justify-center items-center mt-5 sm:mt-8 gap-2 sm:gap-3">
               <div className="hidden sm:block h-px w-16 bg-primary/30"></div>
@@ -369,7 +377,7 @@ const Home = () => {
                 className="text-base sm:text-2xl text-primary font-bold italic"
                 style={{ fontFamily: "cursive" }}
               >
-                Entertainment Mama
+                Your Friendly Local Guide to Lisbon
               </span>
               <div className="hidden sm:block h-px w-16 bg-primary/30"></div>
             </div>
@@ -377,7 +385,10 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="py-14 sm:py-20 bg-background-light" id="tours">
+      <section
+        className="py-14 sm:py-20 pb-4 sm:pb-6 bg-background-light scroll-mt-24"
+        id="tours"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section header */}
           <div className="flex flex-col md:flex-row justify-between items-end mb-8 sm:mb-12 gap-5 sm:gap-6">
@@ -385,10 +396,8 @@ const Home = () => {
               <span className="text-primary font-bold tracking-wider uppercase text-[10px] sm:text-sm">
                 Tuk-Tuk Experiences
               </span>
-              <h2 className="mt-1.5 sm:mt-2 text-2xl sm:text-3xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">
-                <h2 className="mt-2 sm:mt-3 text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-1 leading-snug">
-                  Choose Your Adventure
-                </h2>
+              <h2 className="mt-2 sm:mt-3 text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-1 leading-snug">
+                Choose Your Adventure
               </h2>
               <p className="text-[10px] sm:text-[16px] text-gray-600 max-w-xl">
                 Four handcrafted routes through the soul of Lisbon — each one
@@ -449,7 +458,7 @@ const Home = () => {
               </button>
               <div
                 ref={tourCarouselRef}
-                className="flex gap-4 sm:gap-6 lg:gap-8 overflow-x-auto scroll-smooth snap-x snap-mandatory select-none scrollbar-hide"
+                className="flex gap-4 sm:gap-6 lg:gap-8 overflow-x-auto scroll-smooth snap-x snap-mandatory select-none scrollbar-hide pb-4 sm:pb-8"
                 style={{
                   WebkitOverflowScrolling: "touch",
                   cursor: "grab",
@@ -545,7 +554,7 @@ const Home = () => {
                           <p className="text-xs sm:text-sm font-bold text-gray-900 mb-2.5 sm:mb-3">
                             From{" "}
                             <span className="text-primary text-base sm:text-lg">
-                              €{Number(tour.price_1_person).toFixed(0)}
+                              ${Number(tour.price_1_person).toFixed(0)}
                             </span>
                             <span className="text-gray-400 font-normal text-xs sm:text-sm ml-1">
                               /person

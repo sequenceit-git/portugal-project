@@ -41,15 +41,11 @@ const TIME_SLOTS = (() => {
 // Supported guide languages
 const ALL_LANGUAGES = [
   "English",
-  "Albanian",
-  "Arabic",
-  "Armenian",
-  "Azerbaijani",
-  "Bulgarian",
-  "Chinese",
-  "Croatian",
-  "Czech",
-  "Danish",
+  "Portuguese",
+  "Italian",
+  "French",
+  "Spanish",
+  "Audio Guides",
 ];
 
 // Build full calendar grid for a given year/month
@@ -83,8 +79,7 @@ const getTourPerPersonRate = (tour, travelerCount) => {
   return Number(tour.price_6_person) || 0;
 };
 
-// EUR/USD conversion rate (approximate)
-const EUR_USD_RATE = 0.92;
+// removed EUR_USD_RATE
 
 /* ── Meeting Points ──────────────────────────────────────── */
 const MEETING_POINTS = [
@@ -128,9 +123,6 @@ const Booking = () => {
   const [tour, setTour] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Currency toggle: "USD" or "EUR"
-  const [currency, setCurrency] = useState("USD");
-
   // Step selections
   const today = new Date();
   const [calYear, setCalYear] = useState(today.getFullYear());
@@ -149,9 +141,6 @@ const Booking = () => {
 
   // Meeting point selection
   const [meetingPointId, setMeetingPointId] = useState(MEETING_POINTS[0].id);
-
-  // Payment mode: "pay_now" or "reserve"
-  const [paymentMode, setPaymentMode] = useState("pay_now");
 
   // Step 2 – contact
   const [form, setForm] = useState({
@@ -200,9 +189,8 @@ const Booking = () => {
   const total = subtotal; // no service fee
 
   // Currency display helpers
-  const sym = currency === "EUR" ? "€" : "$";
-  const toDisplay = (usd) =>
-    currency === "EUR" ? (usd * EUR_USD_RATE).toFixed(2) : usd.toFixed(2);
+  const sym = "$";
+  const toDisplay = (usd) => usd.toFixed(2);
 
   // Cancellation date/time helper
   const getCancelDeadline = () => {
@@ -256,8 +244,8 @@ const Booking = () => {
     setSubmitting(true);
     try {
       // 1. Save booking to Supabase (pending or reserved)
-      const bookingStatus = paymentMode === "reserve" ? "reserved" : "pending";
-      const paymentStatus = paymentMode === "reserve" ? "reserved" : "unpaid";
+      const bookingStatus = "pending";
+      const paymentStatus = "unpaid";
 
       const { data: bookingData, error } = await supabase
         .from("bookings")
@@ -281,7 +269,7 @@ const Booking = () => {
             MEETING_POINTS.find((m) => m.id === meetingPointId) ||
             MEETING_POINTS[0]
           ).name,
-          payment_method: paymentMode === "reserve" ? "pay_later" : "stripe",
+          payment_method: "stripe",
           subtotal: parseFloat(subtotal.toFixed(2)),
           service_fee: 0,
           total_amount: parseFloat(total.toFixed(2)),
@@ -302,13 +290,6 @@ const Booking = () => {
           return;
         }
         throw error;
-      }
-
-      // Reserve now & pay later — show confirmation without payment
-      if (paymentMode === "reserve") {
-        setSubmitted(true);
-        setSubmitting(false);
-        return;
       }
 
       // 2. Create Stripe Checkout Session via Supabase Edge Function
@@ -348,17 +329,14 @@ const Booking = () => {
       <div className="min-h-screen bg-background-light flex flex-col items-center justify-center px-4 text-center gap-6">
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
           <span className="material-icons text-green-500 text-4xl">
-            {paymentMode === "reserve" ? "event_available" : "check_circle"}
+            check_circle
           </span>
         </div>
         <h1 className="text-3xl font-extrabold text-gray-900">
-          {paymentMode === "reserve"
-            ? "Reservation Confirmed!"
-            : "Booking Confirmed!"}
+          Booking Confirmed!
         </h1>
         <p className="text-gray-500 max-w-md">
-          Thank you, <strong>{form.firstName}</strong>! Your{" "}
-          {paymentMode === "reserve" ? "reservation" : "booking"} for{" "}
+          Thank you, <strong>{form.firstName}</strong>! Your booking for{" "}
           <strong>{tour?.name}</strong> on{" "}
           <strong>
             {selDate &&
@@ -378,13 +356,6 @@ const Booking = () => {
             </>
           )}
           Confirmation sent to <strong>{form.email}</strong>.
-          {paymentMode === "reserve" && (
-            <span className="block mt-2 text-sm text-amber-600">
-              💡 Your spot is reserved — no payment needed today. You can pay
-              closer to the tour date. Free cancellation up to 24 hours before
-              the tour.
-            </span>
-          )}
         </p>
         <Link
           to="/tours"
@@ -948,96 +919,22 @@ const Booking = () => {
                 </h2>
               </div>
               <div className="p-4 sm:p-6 space-y-4">
-                {/* Pay now option */}
-                <button
-                  type="button"
-                  onClick={() => setPaymentMode("pay_now")}
-                  className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl border-2 transition-all ${
-                    paymentMode === "pay_now"
-                      ? "border-primary bg-primary/5"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                      paymentMode === "pay_now"
-                        ? "border-primary"
-                        : "border-gray-300"
-                    }`}
-                  >
-                    {paymentMode === "pay_now" && (
-                      <div className="w-3 h-3 rounded-full bg-primary" />
-                    )}
-                  </div>
-                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
-                    <span className="material-icons text-primary text-2xl">
-                      credit_card
+                <div className="flex flex-wrap items-center gap-3 pt-1">
+                  {[
+                    "Visa",
+                    "Mastercard",
+                    "Amex",
+                    "Apple Pay",
+                    "Google Pay",
+                  ].map((m) => (
+                    <span
+                      key={m}
+                      className="bg-gray-100 text-gray-600 text-xs font-semibold px-3 py-1.5 rounded-lg"
+                    >
+                      {m}
                     </span>
-                  </div>
-                  <div className="text-left">
-                    <p className="font-bold text-gray-900">Pay with Stripe</p>
-                    <p className="text-sm text-gray-500">
-                      Pay now with credit card, Apple Pay, Google Pay, or more
-                      via Stripe's secure checkout.
-                    </p>
-                  </div>
-                </button>
-
-                {/* Reserve now & pay later option */}
-                <button
-                  type="button"
-                  onClick={() => setPaymentMode("reserve")}
-                  className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl border-2 transition-all ${
-                    paymentMode === "reserve"
-                      ? "border-green-500 bg-green-50"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                      paymentMode === "reserve"
-                        ? "border-green-500"
-                        : "border-gray-300"
-                    }`}
-                  >
-                    {paymentMode === "reserve" && (
-                      <div className="w-3 h-3 rounded-full bg-green-500" />
-                    )}
-                  </div>
-                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center shrink-0">
-                    <span className="material-icons text-green-600 text-2xl">
-                      event_available
-                    </span>
-                  </div>
-                  <div className="text-left">
-                    <p className="font-bold text-gray-900">
-                      Reserve now & pay later
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Keep your travel plans flexible — book your spot and pay
-                      nothing today.
-                    </p>
-                  </div>
-                </button>
-
-                {paymentMode === "pay_now" && (
-                  <div className="flex flex-wrap items-center gap-3 pt-1">
-                    {[
-                      "Visa",
-                      "Mastercard",
-                      "Amex",
-                      "Apple Pay",
-                      "Google Pay",
-                    ].map((m) => (
-                      <span
-                        key={m}
-                        className="bg-gray-100 text-gray-600 text-xs font-semibold px-3 py-1.5 rounded-lg"
-                      >
-                        {m}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                  ))}
+                </div>
 
                 {/* Free cancellation notice */}
                 <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
@@ -1084,23 +981,14 @@ const Booking = () => {
             <button
               type="submit"
               disabled={!selDate || !selTime || travelerCount < 1 || submitting}
-              className={`w-full ${
-                paymentMode === "reserve"
-                  ? "bg-green-600 hover:bg-green-700 shadow-green-600/25"
-                  : "bg-primary hover:bg-primary-dark shadow-primary/25"
-              } disabled:opacity-50 text-white font-bold text-base sm:text-lg py-3.5 sm:py-4 rounded-2xl shadow-xl transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2`}
+              className={`w-full bg-primary hover:bg-primary-dark shadow-primary/25 disabled:opacity-50 text-white font-bold text-base sm:text-lg py-3.5 sm:py-4 rounded-2xl shadow-xl transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2`}
             >
               {submitting ? (
                 <>
                   <span className="material-icons animate-spin text-base">
                     sync
                   </span>
-                  {paymentMode === "reserve" ? "Reserving…" : "Saving…"}
-                </>
-              ) : paymentMode === "reserve" ? (
-                <>
-                  <span className="material-icons">event_available</span>Reserve
-                  Now — Pay Later
+                  Saving…
                 </>
               ) : (
                 <>
@@ -1152,35 +1040,11 @@ const Booking = () => {
                       </div>
                     </div>
                     <div className="p-4 sm:p-5 space-y-3 sm:space-y-4">
-                      {/* Currency toggle */}
+                      {/* Price header */}
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                          Price
+                          Price (USD)
                         </span>
-                        <div className="flex bg-gray-100 rounded-full p-0.5">
-                          <button
-                            type="button"
-                            onClick={() => setCurrency("USD")}
-                            className={`px-3 py-1 text-xs font-bold rounded-full transition-all ${
-                              currency === "USD"
-                                ? "bg-white text-gray-900 shadow-sm"
-                                : "text-gray-500 hover:text-gray-700"
-                            }`}
-                          >
-                            $ USD
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setCurrency("EUR")}
-                            className={`px-3 py-1 text-xs font-bold rounded-full transition-all ${
-                              currency === "EUR"
-                                ? "bg-white text-gray-900 shadow-sm"
-                                : "text-gray-500 hover:text-gray-700"
-                            }`}
-                          >
-                            € EUR
-                          </button>
-                        </div>
                       </div>
 
                       {/* Quick info */}
@@ -1291,12 +1155,6 @@ const Booking = () => {
                         color: "text-green-500",
                         text: "Free cancellation up to 24h before",
                         sub: "Cancel up to 24 hours in advance for a full refund",
-                      },
-                      {
-                        icon: "payments",
-                        color: "text-blue-500",
-                        text: "Reserve now & pay later",
-                        sub: "Keep your travel plans flexible — pay nothing today",
                       },
                       {
                         icon: "person",

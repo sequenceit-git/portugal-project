@@ -168,10 +168,16 @@ const BookingSuccess = () => {
 
         {session && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 w-full max-w-sm space-y-3">
+            <div className="flex justify-between text-sm border-b border-gray-100 pb-3">
+              <span className="text-gray-400">Booking ID</span>
+              <span className="font-bold text-gray-900">
+                #{session.metadata.booking_id}
+              </span>
+            </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">Amount Paid</span>
               <span className="font-bold text-gray-900">
-                €{session.amount_total?.toFixed(2)}
+                ${session.amount_total?.toFixed(2)}
               </span>
             </div>
             <div className="flex justify-between text-sm">
