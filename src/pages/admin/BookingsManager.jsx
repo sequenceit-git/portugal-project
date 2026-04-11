@@ -73,6 +73,21 @@ const BookingsManager = () => {
         setLoading(false);
         return;
       }
+    } else if (status === "cancelled") {
+      const reason = window.prompt("Please provide a reason for cancelling this booking:");
+      if (!reason || reason.trim() === "") {
+        setLoading(false);
+        return; // Admin clicked cancel or left empty
+      }
+      const { data, error } = await supabase.functions.invoke("cancel-booking", {
+        body: { bookingId: id, reason, isAdmin: true }
+      });
+      
+      if (error) {
+        alert("Cancellation failed: " + error.message);
+        setLoading(false);
+        return;
+      }
     } else {
       const { error } = await supabase
         .from("bookings")

@@ -14,7 +14,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { bookingId, reason } = await req.json();
+    const { bookingId, reason, isAdmin } = await req.json();
 
     if (!bookingId || !reason) {
       return new Response(JSON.stringify({ error: "Booking ID and reason are required" }), {
@@ -56,7 +56,7 @@ Deno.serve(async (req: Request) => {
     
     const hoursDifference = (tourDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
 
-    if (hoursDifference < 24) {
+    if (!isAdmin && hoursDifference < 24) {
       return new Response(JSON.stringify({ error: "Cancellations are only allowed up to 24 hours before the tour start time." }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -142,6 +142,41 @@ Deno.serve(async (req: Request) => {
         } else {
           console.log(`Successfully sent cancellation email to ${booking.email}`);
         }
+
+        // Notify Admin as well
+        const adminEmail = "tukinlisbon2@gmail.com";
+        const adminHtmlEmail = `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #374151;">
+            <h2 style="color: #ef4444;">Booking Cancelled Alert</h2>
+            <p>A booking has been cancelled ${isAdmin ? 'by an Admin' : 'by the Customer'}.</p>
+            <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #f3f4f6;">
+              <p style="margin: 0 0 10px 0;"><strong>Booking ID:</strong> #${booking.id}</p>
+              <p style="margin: 0 0 10px 0;"><strong>Customer:</strong> ${booking.first_name} ${booking.last_name || ''} (${booking.email})</p>
+              <p style="margin: 0 0 10px 0;"><strong>Tour:</strong> ${booking.tour_name}</p>
+              <p style="margin: 0 0 10px 0;"><strong>Date & Time:</strong> ${booking.booking_date} at ${booking.booking_time}</p>
+              <p style="margin: 0 0 10px 0;"><strong>Reason:</strong> ${reason}</p>
+              <p style="margin: 0;"><strong>Refund Issued:</strong> ${refunded ? 'Yes' : 'No / N/A'}</p>
+            </div>
+            <div style="margin-top: 30px; text-align: center;">
+              <a href="${Deno.env.get("SITE_URL") || "https://tukinlisbon.com"}/admin" style="background-color: #111827; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Go to Admin Dashboard</a>
+            </div>
+          </div>
+        `;
+        
+        await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${resendKey}`
+          },
+          body: JSON.stringify({
+            from: "Tuk in Lisbon <bookings@tukinlisbon.com>",
+            to: [adminEmail],
+            subject: `ALERT: Cancellation - ${booking.tour_name || "Tour"} - #${booking.id}`,
+            html: adminHtmlEmail,
+          })
+        });
+
       } catch (mailError) {
         console.error("Error sending cancellation email:", mailError);
       }
