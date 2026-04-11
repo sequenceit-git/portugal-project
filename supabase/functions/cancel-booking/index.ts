@@ -77,7 +77,7 @@ Deno.serve(async (req: Request) => {
 
       try {
         await stripe.refunds.create({
-          payment_intent: payment.stripe_payment_intent,
+          payment_intent: booking.stripe_payment_intent,
         });
         refunded = true;
       } catch (stripeErr) {
