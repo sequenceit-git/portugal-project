@@ -101,7 +101,7 @@ Deno.serve(async (req: Request) => {
       .eq("id", bookingId);
 
     // Send Cancellation Email via Resend
-    const resendKey = Deno.env.get("RESEND_API_KEY");
+    const resendKey = Deno.env.get("RESEND_API_KEY") || Deno.env.get("Resend_API_Key");
     if (resendKey && booking.email) {
       const htmlEmail = `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #374151;">

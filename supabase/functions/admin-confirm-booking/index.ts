@@ -115,7 +115,7 @@ Deno.serve(async (req: Request) => {
       const pdfBase64 = encodeBase64(pdfBytes);
 
       // 2. Send Emails using Resend
-      const resendKey = Deno.env.get("RESEND_API_KEY");
+      const resendKey = Deno.env.get("RESEND_API_KEY") || Deno.env.get("Resend_API_Key");
       if (resendKey) {
 
         const bookingDetailsHtml = `
