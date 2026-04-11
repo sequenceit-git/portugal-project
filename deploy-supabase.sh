@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Note: You need SUPABASE_DB_PASSWORD to push."
-export SUPABASE_ACCESS_TOKEN=sbp_e80864bcae20614b794bdcd2379b0ff9428b09f3
+export SUPABASE_ACCESS_TOKEN=sbp_f8d143d4953d2339d93628f83d1ef1da98613acb
 npx supabase link --project-ref zgwtpnrggmmvuukcikha
 npx supabase db push
 npx supabase functions deploy create-checkout
