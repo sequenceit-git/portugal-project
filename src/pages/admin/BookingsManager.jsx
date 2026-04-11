@@ -62,17 +62,33 @@ const BookingsManager = () => {
   };
 
   const setStatus = async (id, status) => {
-    const { error } = await supabase
-      .from("bookings")
-      .update({ status })
-      .eq("id", id);
-    if (error) {
-      alert("Update failed: " + error.message);
-      return;
+    setLoading(true);
+    // If setting to confirmed, use the edge function to also send emails
+    if (status === "confirmed") {
+      const { data, error } = await supabase.functions.invoke("admin-confirm-booking", {
+        body: { bookingId: id }
+      });
+      if (error) {
+        alert("Confirmation failed: " + error.message);
+        setLoading(false);
+        return;
+      }
+    } else {
+      const { error } = await supabase
+        .from("bookings")
+        .update({ status })
+        .eq("id", id);
+      if (error) {
+        alert("Update failed: " + error.message);
+        setLoading(false);
+        return;
+      }
     }
+    
     setBookings((prev) =>
       prev.map((b) => (b.id === id ? { ...b, status } : b)),
     );
+    setLoading(false);
   };
 
   const counts = {
