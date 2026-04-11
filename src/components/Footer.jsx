@@ -90,6 +90,14 @@ const Footer = () => {
               <li>
                 <a
                   className="hover:text-primary transition-colors"
+                  href="/blog"
+                >
+                  Blog
+                </a>
+              </li>
+              <li>
+                <a
+                  className="hover:text-primary transition-colors"
                   href="/insurance-policy"
                 >
                   Insurance Policy

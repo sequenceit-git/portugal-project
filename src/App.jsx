@@ -20,6 +20,8 @@ const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard.jsx"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.jsx"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService.jsx"));
 const InsurancePolicy = lazy(() => import("./pages/InsurancePolicy.jsx"));
+const Blog = lazy(() => import("./pages/Blog.jsx"));
+const BlogPost = lazy(() => import("./pages/BlogPost.jsx"));
 
 const SplashScreen = ({ onDone }) => {
   const [slideOut, setSlideOut] = useState(false);
@@ -160,6 +162,8 @@ const App = () => {
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/insurance-policy" element={<InsurancePolicy />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
