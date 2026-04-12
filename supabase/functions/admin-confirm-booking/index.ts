@@ -180,7 +180,7 @@ Deno.serve(async (req: Request) => {
         const customerHtmlEmail = `
           <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 30px; border-radius: 12px;">
             <div style="text-align: center; margin-bottom: 20px;">
-              <img src="${Deno.env.get("SITE_URL") || "https://tukinlisbon.com"}/assets/logo/logo.png" alt="Tuk in Lisbon" style="max-height: 50px; display: inline-block;" onerror="this.style.display='none'" />
+              <img src="${Deno.env.get("SITE_URL") || "https://tukinlisbon.com"}/assets/logo/lisbonlogo.png" alt="Tuk in Lisbon" style="max-height: 50px; display: inline-block;" onerror="this.style.display='none'" />
             </div>
             
             <div style="background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
@@ -213,7 +213,7 @@ Deno.serve(async (req: Request) => {
         const adminHtmlEmail = `
           <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 30px; border-radius: 12px;">
             <div style="text-align: center; margin-bottom: 20px;">
-              <img src="${Deno.env.get("SITE_URL") || "https://tukinlisbon.com"}/assets/logo/logo.png" alt="Tuk in Lisbon" style="max-height: 50px; display: inline-block;" onerror="this.style.display='none'" />
+              <img src="${Deno.env.get("SITE_URL") || "https://tukinlisbon.com"}/assets/logo/lisbonlogo.png" alt="Tuk in Lisbon" style="max-height: 50px; display: inline-block;" onerror="this.style.display='none'" />
             </div>
             
             <div style="background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 4px solid #ea580c;">

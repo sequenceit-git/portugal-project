@@ -118,7 +118,7 @@ const GuideMap = () => {
         <div className="p-6 border-b border-slate-100 bg-white">
           <div className="flex items-center gap-3 mb-6">
             <img
-              src="/assets/logo/logo.png"
+              src="/assets/logo/lisbonlogo.png"
               alt="Tukinlisbon"
               className="h-12 w-auto object-contain"
               width="48"
