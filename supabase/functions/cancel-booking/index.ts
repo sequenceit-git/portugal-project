@@ -111,10 +111,17 @@ Deno.serve(async (req: Request) => {
           console.log(`Refund issued for booking ${bookingId}, payment_intent ${paymentIntentId}`);
         } catch (stripeErr) {
           console.error("Stripe refund error:", stripeErr);
-          return new Response(JSON.stringify({ error: "Failed to process refund: " + (stripeErr?.message || "Unknown Stripe error") }), {
-            status: 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          const errorMsg = stripeErr?.message || "";
+          
+          if (errorMsg.includes("has already been refunded") || errorMsg.includes("already refunded")) {
+            console.log(`Booking ${bookingId} was already refunded on Stripe. Proceeding with cancellation.`);
+            refunded = true;
+          } else {
+            return new Response(JSON.stringify({ error: "Failed to process refund: " + errorMsg }), {
+              status: 500,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+          }
         }
       } else {
         console.warn(`Booking ${bookingId} is paid but no payment_intent found — skipping refund`);
