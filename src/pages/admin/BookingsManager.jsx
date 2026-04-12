@@ -45,21 +45,7 @@ const BookingsManager = () => {
     }
   };
 
-  const cleanupBookings = async () => {
-    if (!window.confirm('Are you sure you want to permanently delete ALL pending and cancelled bookings? This cannot be undone.')) return;
-    setLoading(true);
-    console.log("Cleaning up pending and cancelled bookings...");
-    const { error: err1 } = await supabase.from('bookings').delete().eq('status', 'cancelled');
-    const { error: err2 } = await supabase.from('bookings').delete().eq('status', 'pending');
-    setLoading(false);
-    if (err1 || err2) {
-      console.error('Error during cleanup:', err1, err2);
-      alert('Failed to cleanup some bookings.');
-    } else {
-      alert('Cleanup successful! All pending and cancelled bookings have been removed.\n\nRefreshing list...');
-      fetchBookings();
-    }
-  };
+
 
   const setStatus = async (id, status) => {
     setLoading(true);
@@ -132,14 +118,19 @@ const BookingsManager = () => {
         <div className="space-y-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-black text-gray-900">Manage Bookings</h2>
-        <button
-          onClick={cleanupBookings}
-          title="Delete all unused bookings"
-          className="px-4 flex items-center justify-center gap-2 py-2 bg-red-600 text-white rounded-xl shadow-lg hover:bg-red-700 font-bold transition"
-        >
-          <span className="material-icons">delete_sweep</span>
-          Wipe Pending/Cancelled
-        </button>
+      </div>
+
+      {/* Automation info banner */}
+      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-start gap-3 mb-2">
+        <span className="material-icons text-blue-500 mt-0.5 shrink-0">smart_toy</span>
+        <div className="text-sm text-blue-800">
+          <p className="font-bold mb-1">Fully Automated System</p>
+          <p className="text-blue-700 leading-relaxed">
+            Bookings are <strong>automatically confirmed</strong> when payment is completed via Stripe.
+            Pending bookings that remain unpaid for <strong>30 minutes</strong> are automatically cancelled.
+            Customers can cancel for a full refund up to <strong>24 hours</strong> before the tour start time.
+          </p>
+        </div>
       </div>
       {/* Summary strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -336,15 +327,7 @@ const BookingsManager = () => {
                         </td>
                         <td className="px-4 py-4 align-top">
                           <div className="flex flex-col gap-1.5 w-[110px]">
-                            {b.status !== "confirmed" && (
-                              <button
-                                onClick={() => setStatus(b.id, "confirmed")}
-                                className="flex items-center justify-center gap-1.5 text-xs bg-green-500 hover:bg-green-600 text-white font-bold px-3 py-1.5 rounded-lg transition shadow-sm"
-                              >
-                                <span className="material-icons text-[14px]">check</span>
-                                Approve
-                              </button>
-                            )}
+
                             {b.status !== "cancelled" && (
                               <button
                                 onClick={() => setStatus(b.id, "cancelled")}
@@ -539,15 +522,7 @@ const BookingsManager = () => {
                   </div>
                   {/* Row 3: actions */}
                   <div className="flex gap-2 flex-wrap">
-                    {b.status !== "confirmed" && (
-                      <button
-                        onClick={() => setStatus(b.id, "confirmed")}
-                        className="flex items-center gap-1 text-xs bg-green-500 hover:bg-green-600 text-white font-bold px-3 py-2 rounded-lg transition"
-                      >
-                        <span className="material-icons text-xs">check</span>
-                        Approve
-                      </button>
-                    )}
+
                     {b.status !== "cancelled" && (
                       <button
                         onClick={() => setStatus(b.id, "cancelled")}

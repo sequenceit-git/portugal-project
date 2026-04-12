@@ -166,7 +166,7 @@ Deno.serve(async (req: Request) => {
             currency: "eur",
             product_data: {
               name: tourName,
-              description: `${paxCount} guest(s) × $${perPersonRate}/person · ${bookingDate || ""} · ${bookingTime || ""} · Free cancellation up to 24h before`,
+              description: `${paxCount} guest(s) × €${perPersonRate}/person · ${bookingDate || ""} · ${bookingTime || ""} · Free cancellation up to 24h before`,
             },
             unit_amount: Math.round(serverTotal * 100), // Stripe uses cents
           },

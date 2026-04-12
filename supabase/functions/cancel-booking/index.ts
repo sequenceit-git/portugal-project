@@ -30,7 +30,7 @@ Deno.serve(async (req: Request) => {
     // Fetch booking details
     const { data: booking, error: bookingErr } = await supabase
       .from("bookings")
-      .select("*, stripe_payment_intent, payment_status")
+      .select("*, stripe_payment_intent, stripe_session_id, payment_status")
       .eq("id", bookingId)
       .single();
 
@@ -65,36 +65,53 @@ Deno.serve(async (req: Request) => {
 
     // Now issue refund if paid
     let refunded = false;
-  if (booking.stripe_payment_intent && booking.payment_status === "paid") {
+    if (booking.payment_status === "paid") {
       const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
       if (!stripeSecretKey) {
-          throw new Error("Payment service unavailable - missing API key");
+        throw new Error("Payment service unavailable - missing API key");
       }
       const stripe = new Stripe(stripeSecretKey, {
         apiVersion: "2024-04-10",
         httpClient: Stripe.createFetchHttpClient(),
       });
 
-      try {
-        await stripe.refunds.create({
-          payment_intent: booking.stripe_payment_intent,
-        });
-        refunded = true;
-      } catch (stripeErr) {
-        console.error("Stripe refund error:", stripeErr);
-        return new Response(JSON.stringify({ error: "Failed to process refund: " + stripeErr.message }), {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+      // Resolve payment_intent — prefer stored value, fallback to Stripe session lookup
+      let paymentIntentId = booking.stripe_payment_intent;
+      if (!paymentIntentId && booking.stripe_session_id) {
+        try {
+          const session = await stripe.checkout.sessions.retrieve(booking.stripe_session_id);
+          paymentIntentId = typeof session.payment_intent === "string"
+            ? session.payment_intent
+            : session.payment_intent?.id;
+        } catch (e) {
+          console.error("Could not retrieve session for refund:", e);
+        }
+      }
+
+      if (paymentIntentId) {
+        try {
+          await stripe.refunds.create({
+            payment_intent: paymentIntentId,
+          });
+          refunded = true;
+        } catch (stripeErr) {
+          console.error("Stripe refund error:", stripeErr);
+          return new Response(JSON.stringify({ error: "Failed to process refund: " + stripeErr.message }), {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      } else {
+        console.warn(`Booking ${bookingId} is paid but no payment_intent found — skipping refund`);
       }
     }
 
-    // Update booking to add cancellation reason / date
-    // The webhook might update status, but let's do it here preemptively as well
+    // Update booking to add cancellation reason / date and refund status
     await supabase
       .from("bookings")
       .update({
         status: "cancelled",
+        payment_status: refunded ? "refunded" : "failed",
         cancellation_reason: reason,
         cancelled_at: new Date().toISOString(),
       })
@@ -103,27 +120,124 @@ Deno.serve(async (req: Request) => {
     // Send Cancellation Email via Resend
     const resendKey = Deno.env.get("RESEND_API_KEY") || Deno.env.get("Resend_API_Key");
     if (resendKey && booking.email) {
-      const htmlEmail = `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #374151;">
-          <h2 style="color: #ef4444;">Booking Cancelled</h2>
-          <p>Hi ${booking.first_name},</p>
-          <p>We're writing to confirm that your booking for <strong>${booking.tour_name}</strong> on <strong>${booking.booking_date}</strong> at <strong>${booking.booking_time}</strong> has been successfully cancelled.</p>
-          ${refunded ? `<p>A full refund has been issued to your original payment method. Please allow 5-10 business days for the funds to appear on your statement.</p>` : ''}
-          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #f3f4f6;">
-            <p style="margin: 0 0 10px 0;"><strong>Booking ID:</strong> #${booking.id}</p>
-            <p style="margin: 0;"><strong>Reason:</strong> ${reason}</p>
+      const customerName = `${booking.first_name} ${booking.last_name || ""}`.trim();
+      const tourName = booking.tour_name || "Tour";
+      const adminEmail = "tukinlisbon2@gmail.com";
+      const siteUrl = Deno.env.get("SITE_URL") || "https://tukinlisbon.com";
+
+      const bookingDetailsHtml = `
+        <div style="background-color: #ffffff; border-radius: 12px; margin: 20px 0; padding: 25px; border: 1px solid #f0f0f0; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+          <h3 style="margin-top: 0; color: #ef4444; font-size: 18px; border-bottom: 2px solid #fef2f2; padding-bottom: 10px;">Cancelled Booking Details</h3>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
+            <tr>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #6b7280; width: 40%;"><strong>Name:</strong></td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #111827;">${customerName}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #6b7280;"><strong>Email:</strong></td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #111827;">${booking.email}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #6b7280;"><strong>Phone:</strong></td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #111827;">${booking.phone || "Not provided"}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #6b7280;"><strong>Travelers:</strong></td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #111827;">${booking.total_guests} Guest(s)</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #6b7280;"><strong>Amount:</strong></td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: ${refunded ? '#10b981' : '#6b7280'}; font-weight: bold;">€${Number(booking.total_amount || 0).toFixed(2)} ${refunded ? '(Refunded)' : ''}</td>
+            </tr>
+          </table>
+
+          <h3 style="margin-top: 0; color: #ef4444; font-size: 18px; border-bottom: 2px solid #fef2f2; padding-bottom: 10px;">Tour Information</h3>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
+            <tr>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #6b7280; width: 40%;"><strong>Tour Name:</strong></td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #111827; font-weight: bold;">${tourName}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #6b7280;"><strong>Date:</strong></td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #111827;">${booking.booking_date}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #6b7280;"><strong>Time:</strong></td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #111827;">${booking.booking_time}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #6b7280;"><strong>Cancellation Reason:</strong></td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #111827;">${reason}</td>
+            </tr>
+          </table>
+
+          ${refunded ? `
+          <div style="background-color: #f0fdf4; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 15px;">
+            <p style="margin: 0 0 5px 0; color: #111827; font-weight: bold;">Refund Issued</p>
+            <p style="margin: 0; color: #4b5563; font-size: 14px;">A full refund of €${Number(booking.total_amount || 0).toFixed(2)} has been issued to your original payment method. Please allow 5–10 business days for the funds to appear on your statement.</p>
           </div>
-          <p>We're sorry to see you go! If your plans change, we'd love to show you the best of Lisbon on a future trip.</p>
-          <div style="margin-top: 30px; text-align: center;">
-            <a href="${Deno.env.get("SITE_URL") || "https://tukinlisbon.com"}/tours" style="background-color: #ea580c; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Browse Our Tours</a>
+          ` : ''}
+        </div>
+      `;
+
+      const customerHtmlEmail = `
+        <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 30px; border-radius: 12px;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <img src="${siteUrl}/assets/logo/lisbonlogo.png" alt="Tuk in Lisbon" style="max-height: 50px; display: inline-block;" onerror="this.style.display='none'" />
           </div>
-          <br/>
-          <p style="color: #9ca3af; font-size: 12px; margin-top: 30px;">The Tuk in Lisbon Team</p>
+          
+          <div style="background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="display: inline-block; background-color: #ef4444; color: #ffffff; width: 60px; height: 60px; border-radius: 50%; line-height: 60px; font-size: 30px; margin-bottom: 15px;">✕</div>
+              <h1 style="color: #111827; margin: 0 0 10px 0; font-size: 24px;">Booking Cancelled</h1>
+              <p style="color: #6b7280; margin: 0; font-size: 15px;">Hi ${booking.first_name}, your booking has been cancelled.</p>
+              <p style="background-color: #fef2f2; display: inline-block; padding: 6px 12px; border-radius: 6px; margin-top: 15px; font-weight: bold; color: #991b1b;">Booking ID: #${booking.id}</p>
+            </div>
+            
+            ${bookingDetailsHtml}
+
+            <div style="text-align: center; margin-top: 30px;">
+              <p style="color: #4b5563; font-size: 15px; margin-bottom: 20px;">We're sorry to see you go! If your plans change, we'd love to show you the best of Lisbon on a future trip.</p>
+              <a href="${siteUrl}/tours" style="display: inline-block; background-color: #ea580c; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">Browse Our Tours</a>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; font-size: 14px;"><strong>Need support?</strong> Contact us at ${adminEmail}</p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; color: #9ca3af; font-size: 12px;">
+            <p>&copy; ${new Date().getFullYear()} Tuk in Lisbon. All rights reserved.</p>
+          </div>
+        </div>
+      `;
+
+      const adminHtmlEmail = `
+        <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 30px; border-radius: 12px;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <img src="${siteUrl}/assets/logo/lisbonlogo.png" alt="Tuk in Lisbon" style="max-height: 50px; display: inline-block;" onerror="this.style.display='none'" />
+          </div>
+          
+          <div style="background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 4px solid #ef4444;">
+            <h2 style="color: #111827; margin-top: 0;">Booking Cancellation Alert</h2>
+            <p style="color: #6b7280;">A booking has been cancelled ${isAdmin ? 'by an Admin' : 'by the Customer'}.</p>
+            <p style="background-color: #fef2f2; color: #ef4444; display: inline-block; padding: 6px 12px; border-radius: 6px; font-weight: bold; margin-bottom: 20px;">Booking ID: #${booking.id}</p>
+            
+            ${bookingDetailsHtml}
+            
+            <div style="text-align: center; margin-top: 30px;">
+              <a href="${siteUrl}/admin" style="background-color: #111827; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Go to Admin Dashboard</a>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; color: #9ca3af; font-size: 12px;">
+            <p>&copy; ${new Date().getFullYear()} Tuk in Lisbon. All rights reserved.</p>
+          </div>
         </div>
       `;
 
       try {
-        const emailReq = await fetch("https://api.resend.com/emails", {
+        const customerEmailReq = fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -132,38 +246,12 @@ Deno.serve(async (req: Request) => {
           body: JSON.stringify({
             from: "Tuk in Lisbon <bookings@tukinlisbon.com>",
             to: [booking.email],
-            subject: `Cancellation Confirmed - ${booking.tour_name || "Tour"}`,
-            html: htmlEmail,
+            subject: `Cancellation Confirmed - ${tourName} - #${booking.id}`,
+            html: customerHtmlEmail,
           })
         });
 
-        if (!emailReq.ok) {
-          console.error("Failed to send cancellation email:", await emailReq.text());
-        } else {
-          console.log(`Successfully sent cancellation email to ${booking.email}`);
-        }
-
-        // Notify Admin as well
-        const adminEmail = "tukinlisbon2@gmail.com";
-        const adminHtmlEmail = `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #374151;">
-            <h2 style="color: #ef4444;">Booking Cancelled Alert</h2>
-            <p>A booking has been cancelled ${isAdmin ? 'by an Admin' : 'by the Customer'}.</p>
-            <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #f3f4f6;">
-              <p style="margin: 0 0 10px 0;"><strong>Booking ID:</strong> #${booking.id}</p>
-              <p style="margin: 0 0 10px 0;"><strong>Customer:</strong> ${booking.first_name} ${booking.last_name || ''} (${booking.email})</p>
-              <p style="margin: 0 0 10px 0;"><strong>Tour:</strong> ${booking.tour_name}</p>
-              <p style="margin: 0 0 10px 0;"><strong>Date & Time:</strong> ${booking.booking_date} at ${booking.booking_time}</p>
-              <p style="margin: 0 0 10px 0;"><strong>Reason:</strong> ${reason}</p>
-              <p style="margin: 0;"><strong>Refund Issued:</strong> ${refunded ? 'Yes' : 'No / N/A'}</p>
-            </div>
-            <div style="margin-top: 30px; text-align: center;">
-              <a href="${Deno.env.get("SITE_URL") || "https://tukinlisbon.com"}/admin" style="background-color: #111827; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Go to Admin Dashboard</a>
-            </div>
-          </div>
-        `;
-        
-        await fetch("https://api.resend.com/emails", {
+        const adminEmailReq = fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -172,13 +260,27 @@ Deno.serve(async (req: Request) => {
           body: JSON.stringify({
             from: "Tuk in Lisbon <bookings@tukinlisbon.com>",
             to: [adminEmail],
-            subject: `ALERT: Cancellation - ${booking.tour_name || "Tour"} - #${booking.id}`,
+            subject: `ALERT: Cancellation - ${tourName} - #${booking.id}`,
             html: adminHtmlEmail,
           })
         });
 
+        const [customerRes, adminRes] = await Promise.all([customerEmailReq, adminEmailReq]);
+
+        if (!customerRes.ok) {
+          console.error("Failed to send customer cancellation email:", await customerRes.text());
+        } else {
+          console.log(`Successfully sent cancellation email to ${booking.email}`);
+        }
+
+        if (!adminRes.ok) {
+          console.error("Failed to send admin cancellation email:", await adminRes.text());
+        } else {
+          console.log(`Successfully sent admin cancellation alert to ${adminEmail}`);
+        }
+
       } catch (mailError) {
-        console.error("Error sending cancellation email:", mailError);
+        console.error("Error sending cancellation emails:", mailError);
       }
     }
 

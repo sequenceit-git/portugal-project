@@ -60,13 +60,51 @@ Deno.serve(async (req: Request) => {
 
     console.log(`Received Stripe event: ${event.type}`);
 
-    // Handle checkout.session.completed
-    if (event.type === "checkout.session.completed") {
+    // Handle immediate and async successful checkout completion
+    if (
+      event.type === "checkout.session.completed" ||
+      event.type === "checkout.session.async_payment_succeeded"
+    ) {
       const session = event.data.object as Stripe.Checkout.Session;
       const bookingId = session.metadata?.booking_id;
       const sessionId = session.id;
+      const isFullyPaid = session.payment_status === "paid";
 
-      console.log(`Checkout completed for booking ${bookingId}, session ${sessionId}`);
+      console.log(
+        `Checkout completed for booking ${bookingId}, session ${sessionId}, payment_status=${session.payment_status}`,
+      );
+
+      if (!isFullyPaid) {
+        // Fully automated flow: if checkout completed without payment, cancel the booking.
+        const cancelUpdate = {
+          payment_status: "failed",
+          status: "cancelled",
+        };
+
+        if (sessionId) {
+          await supabase
+            .from("bookings")
+            .update(cancelUpdate)
+            .eq("stripe_session_id", sessionId)
+            .neq("status", "cancelled");
+        }
+
+        if (bookingId) {
+          await supabase
+            .from("bookings")
+            .update(cancelUpdate)
+            .eq("id", parseInt(bookingId))
+            .neq("status", "cancelled");
+        }
+
+        console.log(
+          `Auto-cancelled booking ${bookingId || "(session lookup)"}: checkout completed but payment not received`,
+        );
+
+        return new Response(JSON.stringify({ received: true, autoCancelled: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
 
       // Update booking status using stripe_session_id
       const { error: sessionUpdateError } = await supabase
@@ -75,8 +113,9 @@ Deno.serve(async (req: Request) => {
           payment_status: "paid",
           status: "confirmed",
         })
-        .eq("stripe_session_id", sessionId);
-      
+        .eq("stripe_session_id", sessionId)
+        .neq("status", "cancelled");
+
       if (sessionUpdateError) {
         console.error("Failed to update booking via session_id:", sessionUpdateError);
       }
@@ -89,7 +128,8 @@ Deno.serve(async (req: Request) => {
             status: "confirmed",
             payment_status: "paid",
           })
-          .eq("id", parseInt(bookingId));
+          .eq("id", parseInt(bookingId))
+          .neq("status", "cancelled");
         if (idUpdateError) {
           console.error("Failed to update booking via bookingId:", idUpdateError);
         }
@@ -380,19 +420,28 @@ Deno.serve(async (req: Request) => {
 
       console.log(`Checkout expired for booking ${bookingId}, session ${sessionId}`);
 
-      // Update payment record (if it exists)
-      // Payment failure is handled below in booking update
+      // Cancel via stripe_session_id
+      if (sessionId) {
+        await supabase
+          .from("bookings")
+          .update({
+            status: "cancelled",
+            payment_status: "expired",
+          })
+          .eq("stripe_session_id", sessionId)
+          .in("status", ["pending"]);
+      }
 
-      // Update booking — cancel it and free the capacity
+      // Cancel via bookingId (fallback)
       if (bookingId) {
         await supabase
           .from("bookings")
           .update({
             status: "cancelled",
-            payment_status: "failed",
+            payment_status: "expired",
           })
           .eq("id", parseInt(bookingId))
-          .in("status", ["pending"]); // Don't cancel if already confirmed
+          .in("status", ["pending"]);
       }
     }
 
