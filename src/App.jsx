@@ -12,13 +12,17 @@ const GuestStories = lazy(() => import("./pages/GuestStories.jsx"));
 const Booking = lazy(() => import("./pages/Booking.jsx"));
 const BookingSuccess = lazy(() => import("./pages/BookingSuccess.jsx"));
 const BookingCancel = lazy(() => import("./pages/BookingCancel.jsx"));
+const CancelTour = lazy(() => import("./pages/CancelTour.jsx"));
 const GuideMap = lazy(() => import("./pages/GuideMap.jsx"));
 const Gallery = lazy(() => import("./pages/Gallery.jsx"));
 const Contact = lazy(() => import("./pages/Contact.jsx"));
 const Feedback = lazy(() => import("./pages/Feedback.jsx"));
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard.jsx"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard.jsx"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.jsx"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService.jsx"));
+const InsurancePolicy = lazy(() => import("./pages/InsurancePolicy.jsx"));
+const Blog = lazy(() => import("./pages/Blog.jsx"));
+const BlogPost = lazy(() => import("./pages/BlogPost.jsx"));
 
 const SplashScreen = ({ onDone }) => {
   const [slideOut, setSlideOut] = useState(false);
@@ -150,6 +154,7 @@ const App = () => {
               <Route path="/booking" element={<Booking />} />
               <Route path="/booking/success" element={<BookingSuccess />} />
               <Route path="/booking/cancel" element={<BookingCancel />} />
+              <Route path="/cancel-tour" element={<CancelTour />} />
               <Route path="/map" element={<GuideMap />} />
               <Route path="/gallery" element={<Gallery />} />
               <Route path="/contact" element={<Contact />} />
@@ -157,6 +162,9 @@ const App = () => {
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
+              <Route path="/insurance-policy" element={<InsurancePolicy />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>

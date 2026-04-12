@@ -13,6 +13,7 @@ import { STATIC_ITINERARY_CONFIG } from "../components/StaticItineraryConfig";
 const TourDetails = () => {
   const { id } = useParams();
   const [tour, setTour] = useState(null);
+  const [galleryImages, setGalleryImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showFullDescription, setShowFullDescription] = useState(false);
 
@@ -24,7 +25,20 @@ const TourDetails = () => {
         .eq("id", id)
         .single();
       if (error) console.error("error loading tour", error);
-      else setTour(data);
+      else {
+        setTour(data);
+        // Fetch gallery images tagged with this tour's name
+        if (data && data.name) {
+          const { data: galleryData, error: galleryError } = await supabase
+            .from("gallery")
+            .select("image_url")
+            .eq("tour_name", data.name)
+            .order("created_at", { ascending: false });
+          if (!galleryError && galleryData) {
+            setGalleryImages(galleryData.map((img) => img.image_url));
+          }
+        }
+      }
       setLoading(false);
     };
     load();
@@ -53,21 +67,6 @@ const TourDetails = () => {
   for (let i = 0; i < fullStars; i++) stars.push(<span key={i}>★</span>);
   if (halfStar) stars.push(<span key="half">☆</span>);
 
-  const parsedGallery = Array.isArray(tour.gallery)
-    ? tour.gallery
-    : typeof tour.gallery === "string" && tour.gallery.trim()
-      ? (() => {
-          try {
-            const parsed = JSON.parse(tour.gallery);
-            return Array.isArray(parsed)
-              ? parsed
-              : tour.gallery.split(",").map((item) => item.trim());
-          } catch {
-            return tour.gallery.split(",").map((item) => item.trim());
-          }
-        })()
-      : [];
-
   /* ─────────────────────────────────────────────────────────────
      DYNAMIC ITINERARY (Commented Out) — Kept for future use
      
@@ -92,10 +91,28 @@ const TourDetails = () => {
   const defaultItinerarySteps = [];
   const itineraryByTourId = {};
 
-  const galleryImages = [tour.title_image, ...parsedGallery].filter(
-    (img, index, arr) => img && arr.indexOf(img) === index,
-  );
-  const heroImage = galleryImages[0] || "";
+  const parsedGallery = Array.isArray(tour.gallery)
+    ? tour.gallery
+    : typeof tour.gallery === "string" && tour.gallery.trim()
+      ? (() => {
+          try {
+            const parsed = JSON.parse(tour.gallery);
+            return Array.isArray(parsed)
+              ? parsed
+              : tour.gallery.split(",").map((item) => item.trim());
+          } catch {
+            return tour.gallery.split(",").map((item) => item.trim());
+          }
+        })()
+      : [];
+
+  // Combine title image + hardcoded gallery + gallery table images, remove duplicates
+  const allImages = [
+    tour.title_image,
+    ...parsedGallery,
+    ...galleryImages,
+  ].filter((img, index, arr) => img && arr.indexOf(img) === index);
+  const heroImage = allImages[0] || "";
 
   return (
     <div className="scroll-smooth bg-background-light text-slate-900 font-display antialiased">
@@ -210,7 +227,7 @@ const TourDetails = () => {
                 </div>
               </div>
 
-              <div className="lg:hidden bg-surface-light rounded-2xl shadow-xl border border-primary/10 overflow-hidden">
+              <div className="lg:hidden bg-surface-light rounded-2xl shadow-xl border border-primary/10 overflow-hidden hidden">
                 <div className="bg-primary/5 p-3 sm:p-4 flex justify-between items-center border-b border-primary/10">
                   <div>
                     <div className="flex flex-wrap items-baseline gap-1">
@@ -218,7 +235,7 @@ const TourDetails = () => {
                         From
                       </span>
                       <span className="text-2xl font-bold text-slate-900">
-                        ${tour.price_1_person || "—"}
+                        €{tour.price_1_person || "—"}
                       </span>
                       <span className="text-sm font-medium text-slate-500">
                         / person
@@ -245,14 +262,13 @@ const TourDetails = () => {
                     <div className="flex justify-between items-center py-2 border-b border-slate-100">
                       <span className="text-sm text-slate-600">Guide</span>
                       <span className="font-bold text-slate-900">
-                        Entertainment Mama
+                        Lisbon Guide
                       </span>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-slate-100">
                       <span className="text-sm text-slate-600">Language</span>
-                      <span className="font-bold text-slate-900">
-                        English, Portuguese, Italian, French, Spanish, Audio
-                        Guides.
+                      <span className="font-bold text-slate-900 text-sm sm:text-base">
+                        English, Portuguese, Etc.
                       </span>
                     </div>
                   </div>
@@ -466,8 +482,72 @@ const TourDetails = () => {
                 </div>
               </section>
 
+              <section className="lg:hidden">
+                <div className="bg-surface-light rounded-2xl shadow-xl border border-primary/10 overflow-hidden">
+                  <div className="bg-primary/5 p-3 sm:p-4 flex justify-between items-center border-b border-primary/10">
+                    <div>
+                      <div className="flex flex-wrap items-baseline gap-1">
+                        <span className="text-sm font-medium text-slate-500">
+                          From
+                        </span>
+                        <span className="text-2xl font-bold text-slate-900">
+                          €{tour.price_1_person || "—"}
+                        </span>
+                        <span className="text-sm font-medium text-slate-500">
+                          / person
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-500 mt-0.5">
+                        Pricing varies by group size
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className="bg-green-100 text-green-700 text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-bold mb-1">
+                        Flexible Booking
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-4 sm:p-5">
+                    <div className="space-y-3 sm:space-y-4">
+                      <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                        <span className="text-sm text-slate-600">Duration</span>
+                        <span className="font-bold text-slate-900">
+                          {tour.duration} Hours
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                        <span className="text-sm text-slate-600">Guide</span>
+                        <span className="font-bold text-slate-900">
+                          Lisbon Guide
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                        <span className="text-sm text-slate-600">Language</span>
+                        <span className="font-bold text-slate-900 text-sm sm:text-base">
+                          English, Portuguese, Etc.
+                        </span>
+                      </div>
+                    </div>
+                    <div className="mt-5 sm:mt-6">
+                      <Link
+                        className="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm sm:text-base shadow-xl shadow-primary/30 hover:bg-orange-600 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group"
+                        to={`/booking?tourId=${id}`}
+                      >
+                        Proceed to Booking
+                      </Link>
+                      <p className="text-center text-xs text-slate-500 mt-3 flex items-center justify-center gap-1">
+                        <span className="material-icons text-sm text-green-500">
+                          verified_user
+                        </span>
+                        Free cancellation up to 24h before
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
               <section>
-                <GalleryScroller images={galleryImages} />
+                <GalleryScroller images={allImages} />
               </section>
 
               <RecommendedTours currentTourId={id} limit={3} />
@@ -647,7 +727,7 @@ const TourDetails = () => {
                           From
                         </span>
                         <span className="text-2xl font-bold text-slate-900">
-                          ${tour.price_1_person || "—"}
+                          €{tour.price_1_person || "—"}
                         </span>
                         <span className="text-sm font-medium text-slate-500">
                           / person
@@ -692,12 +772,12 @@ const TourDetails = () => {
                       <div className="flex justify-between items-center py-2 border-b border-slate-100">
                         <span className="text-sm text-slate-600">Guide</span>
                         <span className="font-bold text-slate-900">
-                          Entertainment Mama
+                          Lisbon Guide
                         </span>
                       </div>
-                      <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 border-b border-slate-100 gap-2 sm:gap-0">
                         <span className="text-sm text-slate-600">Language</span>
-                        <span className="font-sm text-slate-900">
+                        <span className="font-bold text-slate-900 text-right sm:text-right text-sm sm:text-base">
                           English, Portuguese, Etc.
                         </span>
                       </div>

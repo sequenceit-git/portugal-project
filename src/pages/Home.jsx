@@ -17,6 +17,7 @@ const BADGE_COLOR = {
 const Home = () => {
   const [tours, setTours] = useState([]);
   const [toursLoading, setToursLoading] = useState(true);
+  const [heroImages, setHeroImages] = useState({ main: null, sub: null });
 
   useEffect(() => {
     const load = async () => {
@@ -30,7 +31,22 @@ const Home = () => {
       setTours(data || []);
       setToursLoading(false);
     };
+
+    const loadHeroImages = async () => {
+      const { data } = await supabase
+        .from("gallery")
+        .select("image_url, tour_name")
+        .in("tour_name", ["Hero Main", "Hero Sub"])
+        .order("created_at", { ascending: false });
+      if (data) {
+        const main = data.find((img) => img.tour_name === "Hero Main")?.image_url;
+        const sub = data.find((img) => img.tour_name === "Hero Sub")?.image_url;
+        setHeroImages({ main, sub });
+      }
+    };
+
     load();
+    loadHeroImages();
   }, []);
 
   const [reviews, setReviews] = useState([]);
@@ -291,7 +307,7 @@ const Home = () => {
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuASX5uH6Zpnj-PoHiliVRUoefOIug-qIttn3s9XO3VcLq49CTcOjk9MbS1k-ZbRIf-N2fxiWCZvoEvneuJtFBgVu9z39uYhZ_ywH_aI7kUzGE-c-wWLbO_BTbdy4ny9dlXrj0gE_3PI7SbG8ZvODTne0D1nlAuYiEfqct70dQ85ZUZqBISmr-KJLHQKe2kWzgFL3UD4a7qtd8RvdXX15g9dc9X7i92RfWmtjNEhI-wY2r-eOSg_IW8FjjWpfEVp_wHl3V28pIFv1A"
                 />
                 <div className="w-10 h-10 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-xs font-bold">
-                  +2k
+                  1k+
                 </div>
               </div>
               <p>Happy travelers guided this year.</p>
@@ -307,13 +323,11 @@ const Home = () => {
                 fetchpriority="high"
                 width="600"
                 height="750"
-                src="https://zgwtpnrggmmvuukcikha.supabase.co/storage/v1/object/sign/test/eduardo-goody-0Iu7mKa1sPw-unsplash.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV80ZDkzZTdkMi1jYmUyLTRjNDYtYWQwYS1lMjk0YzRlNDhiZTEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ0ZXN0L2VkdWFyZG8tZ29vZHktMEl1N21LYTFzUHctdW5zcGxhc2guanBnIiwiaWF0IjoxNzcyNjQ2NzcxLCJleHAiOjM3NDUwMTA0ODM1NzF9.ordlTYzFyd_R0XKnqkcHWZCOM1ggR7DbtyBO7qClhgQ"
+                src={heroImages.main || "https://zgwtpnrggmmvuukcikha.supabase.co/storage/v1/object/sign/test/eduardo-goody-0Iu7mKa1sPw-unsplash.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV80ZDkzZTdkMi1jYmUyLTRjNDYtYWQwYS1lMjk0YzRlNDhiZTEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ0ZXN0L2VkdWFyZG8tZ29vZHktMEl1N21LYTFzUHctdW5zcGxhc2guanBnIiwiaWF0IjoxNzcyNjQ2NzcxLCJleHAiOjM3NDUwMTA0ODM1NzF9.ordlTYzFyd_R0XKnqkcHWZCOM1ggR7DbtyBO7qClhgQ"}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-              <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 text-white">
-                <p className="font-bold text-xl sm:text-xl ">
-                  Entertainment Mama
-                </p>
+              <div className="absolute bottom-4 sm:bottom-6 right-4 sm:right-6 text-white">
+                <p className="font-bold text-xl sm:text-xl ">Lisbon Guide</p>
                 <p className="text-xs sm:text-sm opacity-90">
                   Your Lisbon Insider
                 </p>
@@ -328,7 +342,7 @@ const Home = () => {
                 decoding="async"
                 width="240"
                 height="300"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDG8MZRRl65lMXOr8Cl3IG5L6Nop4FqesAQXVdBktlQPHvbWOtdj_DH9eLENOGslOvyh9j40yuS1FTb7sUScSys-zp9Y26M8SfTceaK5iPPwLdVqZbTJlHEJc4cD0z4ij004dcXZa980MUOpixZzgG6gZskN7fOZ1QodxYm38Ib-52adugqCiBq2o1I4YR-7bsXKOL-Z2mJohGGs66gJOD6gE7G6761YIcdCMka9ZSeBEr93SKUC781fejxYLWgbGVjc_wzlr1hnw"
+                src={heroImages.sub || "https://lh3.googleusercontent.com/aida-public/AB6AXuDG8MZRRl65lMXOr8Cl3IG5L6Nop4FqesAQXVdBktlQPHvbWOtdj_DH9eLENOGslOvyh9j40yuS1FTb7sUScSys-zp9Y26M8SfTceaK5iPPwLdVqZbTJlHEJc4cD0z4ij004dcXZa980MUOpixZzgG6gZskN7fOZ1QodxYm38Ib-52adugqCiBq2o1I4YR-7bsXKOL-Z2mJohGGs66gJOD6gE7G6761YIcdCMka9ZSeBEr93SKUC781fejxYLWgbGVjc_wzlr1hnw"}
               />
             </div>
             <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-primary rounded-full blur-2xl opacity-20 z-0"></div>
@@ -336,7 +350,10 @@ const Home = () => {
         </div>
       </header>
 
-      <section className="py-12 sm:py-16 lg:py-24 bg-white" id="about">
+      <section
+        className="py-12 sm:py-16 lg:py-24 bg-white scroll-mt-24 px-3 sm:px-0"
+        id="about"
+      >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="text-primary font-bold tracking-wider uppercase text-[11px] sm:text-sm">
             Bem-vindo a Lisboa
@@ -385,7 +402,7 @@ const Home = () => {
       </section>
 
       <section
-        className="py-14 sm:py-20 pb-4 sm:pb-6 bg-background-light"
+        className="py-14 sm:py-20 pb-4 sm:pb-6 bg-background-light scroll-mt-24"
         id="tours"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -395,10 +412,8 @@ const Home = () => {
               <span className="text-primary font-bold tracking-wider uppercase text-[10px] sm:text-sm">
                 Tuk-Tuk Experiences
               </span>
-              <h2 className="mt-1.5 sm:mt-2 text-2xl sm:text-3xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">
-                <h2 className="mt-2 sm:mt-3 text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-1 leading-snug">
-                  Choose Your Adventure
-                </h2>
+              <h2 className="mt-2 sm:mt-3 text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-1 leading-snug">
+                Choose Your Adventure
               </h2>
               <p className="text-[10px] sm:text-[16px] text-gray-600 max-w-xl">
                 Four handcrafted routes through the soul of Lisbon — each one
@@ -459,7 +474,7 @@ const Home = () => {
               </button>
               <div
                 ref={tourCarouselRef}
-                className="flex gap-4 sm:gap-6 lg:gap-8 overflow-x-auto scroll-smooth snap-x snap-mandatory select-none scrollbar-hide"
+                className="flex gap-4 sm:gap-6 lg:gap-8 overflow-x-auto scroll-smooth snap-x snap-mandatory select-none scrollbar-hide pb-4 sm:pb-8"
                 style={{
                   WebkitOverflowScrolling: "touch",
                   cursor: "grab",
@@ -555,7 +570,7 @@ const Home = () => {
                           <p className="text-xs sm:text-sm font-bold text-gray-900 mb-2.5 sm:mb-3">
                             From{" "}
                             <span className="text-primary text-base sm:text-lg">
-                              ${Number(tour.price_1_person).toFixed(0)}
+                              €{Number(tour.price_1_person).toFixed(0)}
                             </span>
                             <span className="text-gray-400 font-normal text-xs sm:text-sm ml-1">
                               /person

@@ -20,39 +20,20 @@ const BookingSuccess = () => {
 
       // Helper: try loading payment data (may need retries while Stripe syncs)
       const fetchPayment = async () => {
-        // 1) Try the Stripe Sync Engine view (most accurate, real-time Stripe data)
-        const { data: stripeData } = await supabase
-          .from("stripe_transactions")
-          .select("*")
-          .eq("session_id", sessionId)
-          .maybeSingle();
-
-        if (stripeData && stripeData.payment_status === "paid") {
-          return {
-            amount: Number(stripeData.amount || 0),
-            status: "paid",
-            customer_email: stripeData.customer_email,
-            customer_name: stripeData.customer_name,
-            booking_id: stripeData.booking_id,
-            tour_name: stripeData.tour_name,
-          };
-        }
-
-        // 2) Fall back to local payments table (written by create-checkout)
-        const { data: paymentData } = await supabase
-          .from("payments")
+        const { data: bookingData } = await supabase
+          .from("bookings")
           .select("*")
           .eq("stripe_session_id", sessionId)
           .maybeSingle();
 
-        if (paymentData) {
+        if (bookingData) {
           return {
-            amount: Number(paymentData.amount || 0),
-            status: paymentData.status,
-            customer_email: paymentData.customer_email,
-            customer_name: paymentData.customer_name,
-            booking_id: paymentData.booking_id,
-            tour_name: paymentData.tour_name,
+            amount: Number(bookingData.total_amount || 0),
+            status: bookingData.payment_status === 'paid' ? 'paid' : bookingData.payment_status === 'failed' ? 'failed' : 'pending',
+            customer_email: bookingData.email,
+            customer_name: bookingData.first_name + (bookingData.last_name ? ' ' + bookingData.last_name : ''),
+            booking_id: bookingData.id,
+            tour_name: bookingData.tour_name,
           };
         }
 
@@ -168,6 +149,12 @@ const BookingSuccess = () => {
 
         {session && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 w-full max-w-sm space-y-3">
+            <div className="flex justify-between text-sm border-b border-gray-100 pb-3">
+              <span className="text-gray-400">Booking ID</span>
+              <span className="font-bold text-gray-900">
+                #{session.metadata.booking_id}
+              </span>
+            </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">Amount Paid</span>
               <span className="font-bold text-gray-900">

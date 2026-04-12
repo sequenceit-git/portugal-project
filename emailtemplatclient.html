@@ -1,0 +1,32 @@
+
+                <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 30px; border-radius: 12px;">
+  <div style="text-align: center; margin-bottom: 20px;">
+    <img src="${Deno.env.get("SITE_URL") || "https://tukinlisbon.com"}/assets/logo/logo.png" alt="Tuk in Lisbon" style="max-height: 50px; display: inline-block;" onerror="this.style.display='none'" />
+  </div>
+  
+  <div style="background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+    <div style="text-align: center; margin-bottom: 30px;">
+      <div style="display: inline-block; background-color: #10b981; color: #ffffff; width: 60px; height: 60px; border-radius: 50%; line-height: 60px; font-size: 30px; margin-bottom: 15px;">✓</div>
+      <h1 style="color: #111827; margin: 0 0 10px 0; font-size: 24px;">Booking Confirmed!</h1>
+      <p style="color: #6b7280; margin: 0; font-size: 15px;">Hi ${b.first_name}, your tour is fully confirmed.</p>
+      <p style="background-color: #f3f4f6; display: inline-block; padding: 6px 12px; border-radius: 6px; margin-top: 15px; font-weight: bold; color: #374151;">Booking ID: #${b.id}</p>
+    </div>
+    
+    ${bookingDetailsHtml}
+
+    <div style="text-align: center; margin-top: 30px;">
+      <p style="color: #4b5563; font-size: 15px; margin-bottom: 20px;">We've attached your official invoice as a PDF to this email.<br>We look forward to seeing you soon!</p>
+      <p style="color: #9ca3af; font-size: 14px;"><strong>Need support?</strong> Contact us at ${adminEmail}</p>
+    </div>
+  </div>
+  
+  <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+    <p style="color: #6b7280; font-size: 14px; margin-bottom: 15px;">Need to cancel? You can cancel for free up to 24 hours before your tour starts.</p>
+    <a href="${Deno.env.get("SITE_URL") || "https://tukinlisbon.com"}/cancel-tour?booking_id=${b.id}" style="color: #ef4444; font-size: 14px; font-weight: bold; text-decoration: underline;">Cancel your tour here</a>
+  </div>
+  
+  <div style="text-align: center; margin-top: 30px; color: #9ca3af; font-size: 12px;">
+    <p>&copy; ${new Date().getFullYear()} Tuk in Lisbon. All rights reserved.</p>
+  </div>
+</div>
+              
