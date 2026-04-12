@@ -17,6 +17,7 @@ const BADGE_COLOR = {
 const Home = () => {
   const [tours, setTours] = useState([]);
   const [toursLoading, setToursLoading] = useState(true);
+  const [heroImages, setHeroImages] = useState({ main: null, sub: null });
 
   useEffect(() => {
     const load = async () => {
@@ -30,7 +31,22 @@ const Home = () => {
       setTours(data || []);
       setToursLoading(false);
     };
+
+    const loadHeroImages = async () => {
+      const { data } = await supabase
+        .from("gallery")
+        .select("image_url, tour_name")
+        .in("tour_name", ["Hero Main", "Hero Sub"])
+        .order("created_at", { ascending: false });
+      if (data) {
+        const main = data.find((img) => img.tour_name === "Hero Main")?.image_url;
+        const sub = data.find((img) => img.tour_name === "Hero Sub")?.image_url;
+        setHeroImages({ main, sub });
+      }
+    };
+
     load();
+    loadHeroImages();
   }, []);
 
   const [reviews, setReviews] = useState([]);
@@ -307,7 +323,7 @@ const Home = () => {
                 fetchpriority="high"
                 width="600"
                 height="750"
-                src="https://zgwtpnrggmmvuukcikha.supabase.co/storage/v1/object/sign/test/eduardo-goody-0Iu7mKa1sPw-unsplash.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV80ZDkzZTdkMi1jYmUyLTRjNDYtYWQwYS1lMjk0YzRlNDhiZTEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ0ZXN0L2VkdWFyZG8tZ29vZHktMEl1N21LYTFzUHctdW5zcGxhc2guanBnIiwiaWF0IjoxNzcyNjQ2NzcxLCJleHAiOjM3NDUwMTA0ODM1NzF9.ordlTYzFyd_R0XKnqkcHWZCOM1ggR7DbtyBO7qClhgQ"
+                src={heroImages.main || "https://zgwtpnrggmmvuukcikha.supabase.co/storage/v1/object/sign/test/eduardo-goody-0Iu7mKa1sPw-unsplash.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV80ZDkzZTdkMi1jYmUyLTRjNDYtYWQwYS1lMjk0YzRlNDhiZTEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ0ZXN0L2VkdWFyZG8tZ29vZHktMEl1N21LYTFzUHctdW5zcGxhc2guanBnIiwiaWF0IjoxNzcyNjQ2NzcxLCJleHAiOjM3NDUwMTA0ODM1NzF9.ordlTYzFyd_R0XKnqkcHWZCOM1ggR7DbtyBO7qClhgQ"}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
               <div className="absolute bottom-4 sm:bottom-6 right-4 sm:right-6 text-white">
@@ -326,7 +342,7 @@ const Home = () => {
                 decoding="async"
                 width="240"
                 height="300"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDG8MZRRl65lMXOr8Cl3IG5L6Nop4FqesAQXVdBktlQPHvbWOtdj_DH9eLENOGslOvyh9j40yuS1FTb7sUScSys-zp9Y26M8SfTceaK5iPPwLdVqZbTJlHEJc4cD0z4ij004dcXZa980MUOpixZzgG6gZskN7fOZ1QodxYm38Ib-52adugqCiBq2o1I4YR-7bsXKOL-Z2mJohGGs66gJOD6gE7G6761YIcdCMka9ZSeBEr93SKUC781fejxYLWgbGVjc_wzlr1hnw"
+                src={heroImages.sub || "https://lh3.googleusercontent.com/aida-public/AB6AXuDG8MZRRl65lMXOr8Cl3IG5L6Nop4FqesAQXVdBktlQPHvbWOtdj_DH9eLENOGslOvyh9j40yuS1FTb7sUScSys-zp9Y26M8SfTceaK5iPPwLdVqZbTJlHEJc4cD0z4ij004dcXZa980MUOpixZzgG6gZskN7fOZ1QodxYm38Ib-52adugqCiBq2o1I4YR-7bsXKOL-Z2mJohGGs66gJOD6gE7G6761YIcdCMka9ZSeBEr93SKUC781fejxYLWgbGVjc_wzlr1hnw"}
               />
             </div>
             <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-primary rounded-full blur-2xl opacity-20 z-0"></div>

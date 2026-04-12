@@ -7,6 +7,7 @@ import DeleteConfirm from "./DeleteConfirm";
 import BookingsManager from "./BookingsManager";
 import ReviewsManager from "./ReviewsManager";
 import GalleryManager from "./GalleryManager";
+import HeroManager from "./HeroManager";
 
 /* ─────────────────────────────────────────────────────────────
    Badge chip helper
@@ -115,6 +116,7 @@ const AdminDashboard = () => {
                 { key: "tours", icon: "map", label: "Tours" },
                 { key: "reviews", icon: "rate_review", label: "Reviews" },
                 { key: "gallery", icon: "photo_library", label: "Gallery" },
+                { key: "hero", icon: "web", label: "Hero" },
               ].map((t) => (
                 <button
                   key={t.key}
@@ -184,6 +186,7 @@ const AdminDashboard = () => {
           { key: "tours", icon: "map", label: "Tours" },
           { key: "reviews", icon: "rate_review", label: "Reviews" },
           { key: "gallery", icon: "photo_library", label: "Gallery" },
+          { key: "hero", icon: "web", label: "Hero" },
         ].map((t) => (
           <button
             key={t.key}
@@ -473,6 +476,12 @@ const AdminDashboard = () => {
       {activeTab === "gallery" && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <GalleryManager />
+        </div>
+      )}
+      {/* ── Hero Tab */}
+      {activeTab === "hero" && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <HeroManager />
         </div>
       )}
       {/* ── Modals */}
