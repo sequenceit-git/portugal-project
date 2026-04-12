@@ -1,7 +1,7 @@
 // supabase/functions/stripe-webhook/index.ts
 // Deno Edge Function — handles Stripe webhook events
 
-import Stripe from "https://esm.sh/stripe@14.14.0?target=deno";
+import Stripe from "https://esm.sh/stripe@14.25.0?target=denonext";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { PDFDocument, StandardFonts, rgb } from "https://esm.sh/pdf-lib@1.17.1?target=deno";
 import { encodeBase64 } from "https://deno.land/std@0.224.0/encoding/base64.ts";
@@ -123,13 +123,19 @@ Deno.serve(async (req: Request) => {
       }
 
       // Fetch full booking details to generate invoice PDF and send email
-      if (bookingId) {
-        try {
-          const { data: b } = await supabase
-            .from("bookings")
-            .select("*, tours(duration)")
-            .eq("id", parseInt(bookingId))
-            .single();
+      try {
+        const bookingLookupId = bookingId ? parseInt(bookingId) : NaN;
+        let bookingQuery = supabase
+          .from("bookings")
+          .select("*, tours(duration)");
+
+        if (Number.isFinite(bookingLookupId)) {
+          bookingQuery = bookingQuery.eq("id", bookingLookupId);
+        } else {
+          bookingQuery = bookingQuery.eq("stripe_session_id", sessionId);
+        }
+
+        const { data: b } = await bookingQuery.single();
 
           if (b && b.email) {
             // Initialize MEETING POINTS
@@ -365,7 +371,6 @@ Deno.serve(async (req: Request) => {
           console.error("Error generating invoice / sending email:", mailError);
         }
       }
-    }
 
     // Handle checkout.session.expired (mark as failed)
     if (event.type === "checkout.session.expired") {

@@ -1,5 +1,5 @@
 // supabase/functions/cancel-booking/index.ts
-import Stripe from "https://esm.sh/stripe@14.14.0?target=deno";
+import Stripe from "https://esm.sh/stripe@14.25.0?target=denonext";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {

@@ -2,7 +2,7 @@
 // Deno Edge Function — creates a Stripe Checkout Session
 // Security: server-side price validation, restricted CORS, sanitised errors
 
-import Stripe from "https://esm.sh/stripe@14.14.0?target=deno";
+import Stripe from "https://esm.sh/stripe@14.25.0?target=denonext";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 // ── Allowed origins ──────────────────────────────────────────
@@ -66,11 +66,15 @@ Deno.serve(async (req: Request) => {
     const authHeader = req.headers.get("Authorization");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const supabase = createClient(supabaseUrl, supabaseKey, {
       global: {
         headers: { Authorization: authHeader || "" },
       },
     });
+    const supabaseService = supabaseServiceKey
+      ? createClient(supabaseUrl, supabaseServiceKey)
+      : supabase;
 
     const body = await req.json();
     const {
@@ -178,11 +182,14 @@ Deno.serve(async (req: Request) => {
       cancel_url: `${redirectBase}/booking/cancel?booking_id=${bookingId}`,
     });
 
-    // Update booking with stripe session id
-    await supabase
+    // Persist session id for stronger webhook correlation.
+    const { error: sessionLinkError } = await supabaseService
       .from("bookings")
       .update({ stripe_session_id: session.id })
       .eq("id", bookingId);
+    if (sessionLinkError) {
+      console.error("Failed to persist stripe_session_id:", sessionLinkError);
+    }
 
     return new Response(
       JSON.stringify({ sessionId: session.id, url: session.url }),
