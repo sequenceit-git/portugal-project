@@ -14,6 +14,7 @@ const GalleryManager = () => {
   const [uploadError, setUploadError] = useState("");
   const [toast, setToast] = useState(null); // { type: 'success'|'error', message }
   const [form, setForm] = useState({ tour_name: "", description: "" });
+  const [customTag, setCustomTag] = useState("");
   const [files, setFiles] = useState([]); // array of File objects
   const [tourOptions, setTourOptions] = useState([]);
   const [tourDropdownOpen, setTourDropdownOpen] = useState(false);
@@ -83,7 +84,11 @@ const GalleryManager = () => {
       setUploadError("Please select at least one image.");
       return;
     }
-    if (!form.tour_name.trim()) {
+    let finalTourName = form.tour_name.trim();
+    if (finalTourName === "Other") {
+      finalTourName = customTag.trim();
+    }
+    if (!finalTourName) {
       setUploadError("Tour / tag name is required.");
       return;
     }
@@ -115,7 +120,7 @@ const GalleryManager = () => {
       const { error: dbErr } = await supabase.from("gallery").insert([
         {
           image_url: urlData.publicUrl,
-          tour_name: form.tour_name.trim(),
+          tour_name: finalTourName,
           description: form.description.trim() || null,
         },
       ]);
@@ -146,6 +151,7 @@ const GalleryManager = () => {
     // Reset
     setFiles([]);
     setForm({ tour_name: "", description: "" });
+    setCustomTag("");
     if (fileInputRef.current) fileInputRef.current.value = "";
     setUploading(false);
     setUploadProgress({ done: 0, total: 0 });
@@ -339,6 +345,21 @@ const GalleryManager = () => {
               />
             </div>
           </div>
+
+          {form.tour_name === "Other" && (
+            <div className="animate-fade-in">
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                Custom Tag Name <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="text"
+                value={customTag}
+                onChange={(e) => setCustomTag(e.target.value)}
+                placeholder="e.g. Hero Section, About Us"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+              />
+            </div>
+          )}
 
           {uploadError && (
             <p className="text-red-500 text-sm flex items-center gap-1.5">
