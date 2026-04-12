@@ -247,7 +247,8 @@ const Booking = () => {
       const bookingStatus = "pending";
       const paymentStatus = "unpaid";
 
-      const { data: bookingData, error } = await supabase
+      let bookingData;
+      const { data: insertedBooking, error } = await supabase
         .from("bookings")
         .insert({
           tour_id: tourId ? Number(tourId) : null,
@@ -275,17 +276,58 @@ const Booking = () => {
         })
         .select("id")
         .single();
+        
+      bookingData = insertedBooking;
 
       if (error) {
         // Handle duplicate booking (unique index violation)
         if (error.code === "23505") {
-          alert(
-            "You already have an active booking for this tour at this date and time. Please check your email for the existing booking details.",
-          );
-          setSubmitting(false);
-          return;
+          // Check if existing booking is pending
+          const { data: existingBooking, error: fetchError } = await supabase
+            .from("bookings")
+            .select("id, status, payment_status")
+            .eq("tour_id", Number(tourId))
+            .eq("booking_date", selDate)
+            .eq("booking_time", selTime)
+            .eq("email", form.email)
+            .not("status", "in", '("cancelled","failed")')
+            .single();
+
+          if (!fetchError && existingBooking?.status === "pending" && existingBooking?.payment_status === "unpaid") {
+            // Update the existing pending booking and proceed
+            const { data: updatedBooking, error: updateError } = await supabase
+              .from("bookings")
+              .update({
+                language: selectedLanguages.join(", "),
+                total_guests: travelerCount,
+                first_name: form.firstName,
+                last_name: form.lastName || null,
+                phone: form.phone || null,
+                special_requests: form.specialReq || null,
+                meeting_point: (
+                  MEETING_POINTS.find((m) => m.id === meetingPointId) ||
+                  MEETING_POINTS[0]
+                ).name,
+                subtotal: parseFloat(subtotal.toFixed(2)),
+                total_amount: parseFloat(total.toFixed(2)),
+                per_person_rate: perPersonRate,
+              })
+              .eq("id", existingBooking.id)
+              .select("id")
+              .single();
+
+            if (updateError) throw updateError;
+            bookingData = updatedBooking;
+          } else {
+            alert(
+              "You already have an active booking for this tour at this date and time. Please check your email for the existing booking details.",
+            );
+            setSubmitting(false);
+            return;
+          }
+        } else {
+          throw error;
         }
-        throw error;
       }
 
       // 2. Create Stripe Checkout Session via Supabase Edge Function
