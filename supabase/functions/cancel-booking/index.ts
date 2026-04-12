@@ -27,14 +27,15 @@ Deno.serve(async (req: Request) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch booking details
+    // Fetch booking details (use * to get all columns)
     const { data: booking, error: bookingErr } = await supabase
       .from("bookings")
-      .select("*, stripe_payment_intent, stripe_session_id, payment_status")
+      .select("*")
       .eq("id", bookingId)
       .single();
 
     if (bookingErr || !booking) {
+      console.error("Booking fetch error:", bookingErr);
       return new Response(JSON.stringify({ error: "Booking not found" }), {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -51,10 +52,17 @@ Deno.serve(async (req: Request) => {
     // Parse tour date and time to check 24h window
     // booking.booking_date is YYYY-MM-DD
     // booking.booking_time is like "09:00" or "14:30"
-    const tourDateTime = new Date(`${booking.booking_date}T${booking.booking_time}:00`);
-    const now = new Date();
-    
-    const hoursDifference = (tourDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+    let hoursDifference = Infinity; // default: allow cancellation
+    try {
+      const timeStr = (booking.booking_time || "00:00").replace(/\s*(AM|PM)/i, "");
+      const tourDateTime = new Date(`${booking.booking_date}T${timeStr}:00`);
+      if (!isNaN(tourDateTime.getTime())) {
+        const now = new Date();
+        hoursDifference = (tourDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+      }
+    } catch (dateErr) {
+      console.error("Date parsing error:", dateErr);
+    }
 
     if (!isAdmin && hoursDifference < 24) {
       return new Response(JSON.stringify({ error: "Cancellations are only allowed up to 24 hours before the tour start time." }), {
@@ -68,7 +76,11 @@ Deno.serve(async (req: Request) => {
     if (booking.payment_status === "paid") {
       const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
       if (!stripeSecretKey) {
-        throw new Error("Payment service unavailable - missing API key");
+        console.error("STRIPE_SECRET_KEY not set — cannot process refund");
+        return new Response(JSON.stringify({ error: "Payment service unavailable" }), {
+          status: 503,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
       const stripe = new Stripe(stripeSecretKey, {
         apiVersion: "2024-04-10",
@@ -76,13 +88,15 @@ Deno.serve(async (req: Request) => {
       });
 
       // Resolve payment_intent — prefer stored value, fallback to Stripe session lookup
-      let paymentIntentId = booking.stripe_payment_intent;
+      let paymentIntentId = booking.stripe_payment_intent || null;
       if (!paymentIntentId && booking.stripe_session_id) {
         try {
           const session = await stripe.checkout.sessions.retrieve(booking.stripe_session_id);
-          paymentIntentId = typeof session.payment_intent === "string"
-            ? session.payment_intent
-            : session.payment_intent?.id;
+          if (session.payment_intent) {
+            paymentIntentId = typeof session.payment_intent === "string"
+              ? session.payment_intent
+              : session.payment_intent.id;
+          }
         } catch (e) {
           console.error("Could not retrieve session for refund:", e);
         }
@@ -94,9 +108,10 @@ Deno.serve(async (req: Request) => {
             payment_intent: paymentIntentId,
           });
           refunded = true;
+          console.log(`Refund issued for booking ${bookingId}, payment_intent ${paymentIntentId}`);
         } catch (stripeErr) {
           console.error("Stripe refund error:", stripeErr);
-          return new Response(JSON.stringify({ error: "Failed to process refund: " + stripeErr.message }), {
+          return new Response(JSON.stringify({ error: "Failed to process refund: " + (stripeErr?.message || "Unknown Stripe error") }), {
             status: 500,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
@@ -107,15 +122,19 @@ Deno.serve(async (req: Request) => {
     }
 
     // Update booking to add cancellation reason / date and refund status
-    await supabase
+    const { error: updateErr } = await supabase
       .from("bookings")
       .update({
         status: "cancelled",
-        payment_status: refunded ? "refunded" : "failed",
+        payment_status: refunded ? "refunded" : (booking.payment_status === "paid" ? "paid" : booking.payment_status),
         cancellation_reason: reason,
         cancelled_at: new Date().toISOString(),
       })
       .eq("id", bookingId);
+
+    if (updateErr) {
+      console.error("Failed to update booking:", updateErr);
+    }
 
     // Send Cancellation Email via Resend
     const resendKey = Deno.env.get("RESEND_API_KEY") || Deno.env.get("Resend_API_Key");
@@ -143,11 +162,11 @@ Deno.serve(async (req: Request) => {
             </tr>
             <tr>
               <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #6b7280;"><strong>Travelers:</strong></td>
-              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #111827;">${booking.total_guests} Guest(s)</td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #111827;">${booking.total_guests || 0} Guest(s)</td>
             </tr>
             <tr>
               <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #6b7280;"><strong>Amount:</strong></td>
-              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: ${refunded ? '#10b981' : '#6b7280'}; font-weight: bold;">€${Number(booking.total_amount || 0).toFixed(2)} ${refunded ? '(Refunded)' : ''}</td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: ${refunded ? '#10b981' : '#6b7280'}; font-weight: bold;">&euro;${Number(booking.total_amount || 0).toFixed(2)} ${refunded ? '(Refunded)' : ''}</td>
             </tr>
           </table>
 
@@ -159,11 +178,11 @@ Deno.serve(async (req: Request) => {
             </tr>
             <tr>
               <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #6b7280;"><strong>Date:</strong></td>
-              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #111827;">${booking.booking_date}</td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #111827;">${booking.booking_date || "N/A"}</td>
             </tr>
             <tr>
               <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #6b7280;"><strong>Time:</strong></td>
-              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #111827;">${booking.booking_time}</td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #111827;">${booking.booking_time || "N/A"}</td>
             </tr>
             <tr>
               <td style="padding: 8px 0; border-bottom: 1px solid #f9fafb; color: #6b7280;"><strong>Cancellation Reason:</strong></td>
@@ -171,12 +190,7 @@ Deno.serve(async (req: Request) => {
             </tr>
           </table>
 
-          ${refunded ? `
-          <div style="background-color: #f0fdf4; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 15px;">
-            <p style="margin: 0 0 5px 0; color: #111827; font-weight: bold;">Refund Issued</p>
-            <p style="margin: 0; color: #4b5563; font-size: 14px;">A full refund of €${Number(booking.total_amount || 0).toFixed(2)} has been issued to your original payment method. Please allow 5–10 business days for the funds to appear on your statement.</p>
-          </div>
-          ` : ''}
+          ${refunded ? '<div style="background-color: #f0fdf4; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 15px;"><p style="margin: 0 0 5px 0; color: #111827; font-weight: bold;">Refund Issued</p><p style="margin: 0; color: #4b5563; font-size: 14px;">A full refund of &euro;' + Number(booking.total_amount || 0).toFixed(2) + ' has been issued to your original payment method. Please allow 5-10 business days for the funds to appear on your statement.</p></div>' : ''}
         </div>
       `;
 
@@ -188,9 +202,9 @@ Deno.serve(async (req: Request) => {
           
           <div style="background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
             <div style="text-align: center; margin-bottom: 30px;">
-              <div style="display: inline-block; background-color: #ef4444; color: #ffffff; width: 60px; height: 60px; border-radius: 50%; line-height: 60px; font-size: 30px; margin-bottom: 15px;">✕</div>
+              <div style="display: inline-block; background-color: #ef4444; color: #ffffff; width: 60px; height: 60px; border-radius: 50%; line-height: 60px; font-size: 30px; margin-bottom: 15px;">X</div>
               <h1 style="color: #111827; margin: 0 0 10px 0; font-size: 24px;">Booking Cancelled</h1>
-              <p style="color: #6b7280; margin: 0; font-size: 15px;">Hi ${booking.first_name}, your booking has been cancelled.</p>
+              <p style="color: #6b7280; margin: 0; font-size: 15px;">Hi ${booking.first_name || "Guest"}, your booking has been cancelled.</p>
               <p style="background-color: #fef2f2; display: inline-block; padding: 6px 12px; border-radius: 6px; margin-top: 15px; font-weight: bold; color: #991b1b;">Booking ID: #${booking.id}</p>
             </div>
             
@@ -281,6 +295,7 @@ Deno.serve(async (req: Request) => {
 
       } catch (mailError) {
         console.error("Error sending cancellation emails:", mailError);
+        // Don't fail the whole request because of email errors
       }
     }
 
@@ -290,9 +305,9 @@ Deno.serve(async (req: Request) => {
     });
 
   } catch (err) {
-    console.error("cancel-booking error:", err);
+    console.error("cancel-booking critical error:", err?.message || err, err?.stack || "");
     return new Response(
-      JSON.stringify({ error: "Internal server error" }),
+      JSON.stringify({ error: err?.message || "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
