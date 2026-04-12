@@ -1,6 +1,6 @@
 import { lazy, Suspense, useState, useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { SpeedInsights } from "@vercel/speed-insights/react";
+import { Analytics } from "@vercel/analytics/react";
 import Navbar from "./components/Navbar.jsx";
 
 // Route-level code splitting — each page loads only when navigated to
@@ -171,7 +171,7 @@ const App = () => {
         </main>
         {showWhatsApp && <WhatsAppButton />}
       </div>
-      <SpeedInsights />
+      <Analytics />
     </>
   );
 };
