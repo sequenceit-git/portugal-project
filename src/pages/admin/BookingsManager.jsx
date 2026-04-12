@@ -49,17 +49,7 @@ const BookingsManager = () => {
 
   const setStatus = async (id, status) => {
     setLoading(true);
-    // If setting to confirmed, use the edge function to also send emails
-    if (status === "confirmed") {
-      const { data, error } = await supabase.functions.invoke("admin-confirm-booking", {
-        body: { bookingId: id }
-      });
-      if (error) {
-        alert("Confirmation failed: " + error.message);
-        setLoading(false);
-        return;
-      }
-    } else if (status === "cancelled") {
+    if (status === "cancelled") {
       const reason = window.prompt("Please provide a reason for cancelling this booking:");
       if (!reason || reason.trim() === "") {
         setLoading(false);
