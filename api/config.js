@@ -1,4 +1,4 @@
-import { get } from '@vercel/edge-config';
+import { createClient } from '@vercel/edge-config';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -6,10 +6,11 @@ export default async function handler(req, res) {
   }
 
   try {
+    const configClient = createClient(process.env.EDGE_CONFIG);
     // You can fetch a specific key like 'maintenance_mode' or grab everything.
     // For this example, fetching a boolean flag:
-    const maintenanceMode = await get('maintenance_mode');
-    const promotionalBanner = await get('promo_banner');
+    const maintenanceMode = await configClient.get('maintenance_mode');
+    const promotionalBanner = await configClient.get('promo_banner');
 
     res.status(200).json({
       maintenance_mode: maintenanceMode || false,

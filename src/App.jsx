@@ -134,14 +134,49 @@ const App = () => {
     () => !sessionStorage.getItem("splashShown"),
   );
 
+  const [edgeConfig, setEdgeConfig] = useState({ maintenance: false, banner: null });
+
+  useEffect(() => {
+    // Fetch global configuration from Vercel Edge Config
+    fetch('/api/config')
+      .then(res => {
+        if (!res.ok) throw new Error('Config fetch failed');
+        return res.json();
+      })
+      .then(data => {
+        setEdgeConfig({
+          maintenance: data.maintenance_mode,
+          banner: data.promo_banner
+        });
+      })
+      .catch(err => console.log('Edge config not available locally or failed to fetch', err));
+  }, []);
+
   const handleSplashDone = () => {
     sessionStorage.setItem("splashShown", "1");
     setShowSplash(false);
   };
 
+  if (edgeConfig.maintenance) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 text-center p-6">
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">Under Maintenance</h1>
+        <p className="text-lg text-gray-600 max-w-md">
+          We are currently updating our systems to provide you with a better experience. 
+          Please check back soon.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <>
       {showSplash && <SplashScreen onDone={handleSplashDone} />}
+      {edgeConfig.banner && !isAdmin && (
+        <div className="bg-primary text-white text-center py-2 px-4 text-sm font-medium sticky top-0 z-[60]">
+          {edgeConfig.banner}
+        </div>
+      )}
       <div className="min-h-screen text-slate-900">
         {!isAdmin && <Navbar />}
         <main className={isAdmin ? "" : "pt-16"}>

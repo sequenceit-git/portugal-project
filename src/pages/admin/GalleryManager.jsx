@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "../../lib/supabaseClient";
+import { upload } from '@vercel/blob/client';
 
 /* ─────────────────────────────────────────────────────────────
    Gallery Manager  (upload / delete gallery images)
@@ -103,29 +104,25 @@ const GalleryManager = () => {
       const ext = f.name.split(".").pop();
       const fileName = `gallery_${Date.now()}_${i}.${ext}`;
 
-      const { error: storageErr } = await supabase.storage
-        .from("gallery")
-        .upload(fileName, f, { cacheControl: "3600", upsert: false });
+      try {
+        const newBlob = await upload(fileName, f, {
+          access: 'public',
+          handleUploadUrl: '/api/upload-token', // securely signs uploads on Vercel
+        });
 
-      if (storageErr) {
+        const { error: dbErr } = await supabase.from("gallery").insert([
+          {
+            image_url: newBlob.url,
+            tour_name: finalTourName,
+            description: form.description.trim() || null,
+          }
+        ]);
+
+        if (dbErr) errors.push(`${f.name}: ${dbErr.message}`);
+      } catch (storageErr) {
         errors.push(`${f.name}: ${storageErr.message}`);
-        setUploadProgress((p) => ({ ...p, done: p.done + 1 }));
-        continue;
       }
-
-      const { data: urlData } = supabase.storage
-        .from("gallery")
-        .getPublicUrl(fileName);
-
-      const { error: dbErr } = await supabase.from("gallery").insert([
-        {
-          image_url: urlData.publicUrl,
-          tour_name: finalTourName,
-          description: form.description.trim() || null,
-        },
-      ]);
-
-      if (dbErr) errors.push(`${f.name}: ${dbErr.message}`);
+      
       setUploadProgress((p) => ({ ...p, done: p.done + 1 }));
     }
 
@@ -162,12 +159,13 @@ const GalleryManager = () => {
     if (!deleteTarget) return;
     setDeleting(true);
 
-    // Extract filename from URL to delete from storage
+    // Delete image from Vercel Blob using our proxy backend
     try {
-      const url = new URL(deleteTarget.image_url);
-      const parts = url.pathname.split("/");
-      const fileName = parts[parts.length - 1];
-      await supabase.storage.from("gallery").remove([fileName]);
+      await fetch('/api/delete-blob', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: deleteTarget.image_url })
+      });
     } catch (_) {
       /* storage delete is best-effort */
     }
