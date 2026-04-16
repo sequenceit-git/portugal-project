@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "../../lib/supabaseClient";
-import { upload } from '@vercel/blob/client';
 
 /* ─────────────────────────────────────────────────────────────
    Gallery Manager  (upload / delete gallery images)
@@ -105,14 +104,24 @@ const GalleryManager = () => {
       const fileName = `gallery_${Date.now()}_${i}.${ext}`;
 
       try {
-        const newBlob = await upload(fileName, f, {
-          access: 'public',
-          handleUploadUrl: '/api/upload-token', // securely signs uploads on Vercel
-        });
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("gallery")
+          .upload(fileName, f, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from("gallery")
+          .getPublicUrl(uploadData.path);
 
         const { error: dbErr } = await supabase.from("gallery").insert([
           {
-            image_url: newBlob.url,
+            image_url: publicUrl,
             tour_name: finalTourName,
             description: form.description.trim() || null,
           }
@@ -159,13 +168,10 @@ const GalleryManager = () => {
     if (!deleteTarget) return;
     setDeleting(true);
 
-    // Delete image from Vercel Blob using our proxy backend
+    // Delete image from Supabase Storage
     try {
-      await fetch('/api/delete-blob', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: deleteTarget.image_url })
-      });
+      const fileName = deleteTarget.image_url.split('/').pop();
+      await supabase.storage.from("gallery").remove([fileName]);
     } catch (_) {
       /* storage delete is best-effort */
     }

@@ -587,9 +587,9 @@ const BookingsManager = () => {
                           <p className="font-bold text-gray-400 uppercase tracking-wider text-[10px]">
                             {label}
                           </p>
-                          <p className="text-gray-800 font-semibold mt-0.5">
+                          <div className="text-gray-800 font-semibold mt-0.5">
                             {value}
-                          </p>
+                          </div>
                         </div>
                       ))}
                       {b.special_requests && (
