@@ -9,6 +9,7 @@ import MeetingPoints from "../components/MeetingPoints";
 import TourItinerary from "../components/TourItinerary";
 import RecommendedTours from "../components/RecommendedTours";
 import { STATIC_ITINERARY_CONFIG } from "../components/StaticItineraryConfig";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const TourDetails = () => {
   const { id } = useParams();
@@ -45,11 +46,7 @@ const TourDetails = () => {
   }, [id]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-base">Loading tour...</p>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!tour) {

@@ -3,6 +3,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import Footer from "../components/Footer";
 import SEO from "../components/SEO";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const BookingSuccess = () => {
   const [searchParams] = useSearchParams();
@@ -89,13 +90,7 @@ const BookingSuccess = () => {
   }, [sessionId]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background-light flex items-center justify-center">
-        <span className="material-icons animate-spin text-primary text-4xl">
-          sync
-        </span>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (

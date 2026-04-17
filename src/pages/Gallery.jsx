@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 import Footer from "../components/Footer";
 import SEO from "../components/SEO";
+import GalleryImageCard from "./GalleryImageCard";
 
 const Gallery = () => {
   const [galleryItems, setGalleryItems] = useState([]);
@@ -98,8 +99,33 @@ const Gallery = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background-light flex items-center justify-center pt-24">
-        <p className="text-lg text-slate-600">Loading gallery...</p>
+      <div className="min-h-screen bg-background-light text-slate-900 font-display antialiased">
+        <SEO
+          title="Photo Gallery — Lisbon Tour Highlights"
+          description="Browse photos from Tukinlisbon tours — Alfama streets, Sintra palaces, Belém monuments and the hidden corners of Lisbon captured on our guided tours."
+          canonical="/gallery"
+        />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-14 lg:py-16">
+          <div className="mb-16">
+            <h1 className="mt-2 sm:mt-3 text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-1 leading-snug">
+              Guest Moments Gallery
+            </h1>
+            <p className="text-[10px] sm:text-[20px] text-gray-600 max-w-xl">
+              Explore beautiful moments captured during our tours across Portugal.
+              Real moments from real travelers.
+            </p>
+          </div>
+          {/* Skeleton Masonry Grid */}
+          <div className="columns-2 sm:columns-3 lg:columns-4 gap-3 sm:gap-4">
+            {Array.from({ length: 8 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="rounded-xl overflow-hidden shadow-md mb-3 sm:mb-4 break-inside-avoid animate-pulse bg-gray-200 h-64"
+                style={{ minHeight: 180 }}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -127,45 +153,7 @@ const Gallery = () => {
         {validGalleryItems.length > 0 ? (
           <div className="columns-2 sm:columns-3 lg:columns-4 gap-3 sm:gap-4">
             {validGalleryItems.map((item) => (
-              <div
-                key={item.id}
-                className="relative group cursor-pointer rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 mb-3 sm:mb-4 break-inside-avoid"
-                onClick={() => handleImageClick(item)}
-              >
-                {/* Image */}
-                <img
-                  src={item.image_url}
-                  alt={item.description || item.tour_name}
-                  className="w-full h-auto object-cover group-hover:scale-110 transition-transform duration-500 block"
-                  loading="lazy"
-                  decoding="async"
-                  width="400"
-                  height="300"
-                  onError={() => handleImageError(item.id)}
-                />
-
-                {/* Tag Badge */}
-                <div className="absolute top-3 left-3 z-10">
-                  <span className="inline-block bg-orange-100 text-orange-700 border border-orange-200 text-[9px] sm:text-[10px] font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full uppercase tracking-wide shadow-md">
-                    {truncateTourName(item.tour_name)}
-                  </span>
-                </div>
-
-                {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-end justify-end p-4">
-                  <div className="text-white text-right">
-                    {item.description && (
-                      <p className="text-xs sm:text-sm leading-relaxed sm:leading-relaxed mb-3 text-white/90">
-                        {item.description}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-2 text-white/80 text-xs">
-                      <span className="material-icons text-sm">zoom_in</span>
-                      <span>Click to view</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <GalleryImageCard key={item.id} item={item} onClick={() => handleImageClick(item)} onError={() => handleImageError(item.id)} />
             ))}
           </div>
         ) : (

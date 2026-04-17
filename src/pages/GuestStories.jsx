@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import Footer from "../components/Footer";
 import { supabase } from "../lib/supabaseClient";
 import SEO from "../components/SEO";
+import ReviewCard from "./ReviewCard";
+import FeaturedStoryCard from "./FeaturedStoryCard";
 
 const GuestStories = () => {
   const [reviews, setReviews] = useState([]);
@@ -267,51 +269,7 @@ const GuestStories = () => {
             <div key={story.id} className="break-inside-avoid">
               {/* Featured Card */}
               {story.type === "featured" && (
-                <div className="group relative bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
-                  <div className="relative h-56 sm:h-64 overflow-hidden">
-                    <img
-                      alt="Guest story"
-                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
-                      src={story.image}
-                      loading="lazy"
-                      decoding="async"
-                      width="480"
-                      height="256"
-                    />
-                    <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/80 to-transparent">
-                      <span className="text-white text-xs font-bold bg-primary px-2 py-1 rounded mb-2 inline-block">
-                        {story.category}
-                      </span>
-                      <h3 className="text-white font-bold text-sm sm:text-base">
-                        {story.quote}
-                      </h3>
-                    </div>
-                  </div>
-                  <div className="p-3 sm:p-4">
-                    <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-3">
-                      {story.review}
-                    </p>
-                    <div className="flex items-center justify-between border-t border-gray-100 pt-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-[10px]">
-                          {story.author
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-gray-900">
-                            {story.author}
-                          </p>
-                          <p className="text-[10px] text-gray-500 uppercase tracking-wide">
-                            {story.location}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex">{renderStars(story.rating)}</div>
-                    </div>
-                  </div>
-                </div>
+                <FeaturedStoryCard story={story} renderStars={renderStars} />
               )}
 
               {/* Quote Card */}
@@ -519,26 +477,36 @@ const GuestStories = () => {
 
         {/* Dynamic Reviews from Supabase */}
         {reviewsLoading && (
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-8">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="bg-white rounded-2xl p-3 sm:p-4 shadow-md border border-gray-100 animate-pulse"
-              >
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-14 h-14 rounded-full bg-gray-200 flex-shrink-0" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-gray-200 rounded w-1/2" />
-                    <div className="h-3 bg-gray-200 rounded w-1/3" />
+          <div className="mt-10">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-5">
+              Guest Reviews
+            </h2>
+            <div className="columns-2 gap-3 sm:gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="break-inside-avoid mb-3 sm:mb-4 bg-white rounded-2xl p-3 sm:p-4 shadow-md border border-gray-100 animate-pulse"
+                >
+                  <div className="flex items-center gap-2.5 sm:gap-3 mb-3 sm:mb-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-orange-100 bg-gray-200 flex-shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-3 bg-gray-200 rounded w-1/2" />
+                      <div className="h-2.5 bg-gray-200 rounded w-1/3" />
+                    </div>
+                  </div>
+                  <div className="space-y-2 mb-3">
+                    <div className="h-2.5 bg-gray-200 rounded" />
+                    <div className="h-2.5 bg-gray-200 rounded" />
+                    <div className="h-2.5 bg-gray-200 rounded w-3/4" />
+                  </div>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((j) => (
+                      <div key={j} className="w-4 h-4 bg-gray-200 rounded-full" />
+                    ))}
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <div className="h-3 bg-gray-200 rounded" />
-                  <div className="h-3 bg-gray-200 rounded" />
-                  <div className="h-3 bg-gray-200 rounded w-3/4" />
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
 
@@ -549,64 +517,7 @@ const GuestStories = () => {
             </h2>
             <div className="columns-2 gap-3 sm:gap-4">
               {reviews.map((review) => (
-                <div
-                  key={review.id}
-                  className="break-inside-avoid mb-3 sm:mb-4"
-                >
-                  <div className="bg-white rounded-2xl p-3 sm:p-4 shadow-md hover:shadow-lg transition-all border border-gray-100 flex flex-col">
-                    <div className="mb-3 sm:mb-4">
-                      <div className="flex items-center gap-2.5 sm:gap-3">
-                        {review.photo_url ? (
-                          <img
-                            alt={review.name}
-                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-orange-100 flex-shrink-0"
-                            src={review.photo_url}
-                            loading="lazy"
-                            decoding="async"
-                            width="48"
-                            height="48"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 border-2 border-orange-100 flex items-center justify-center text-primary font-bold text-sm sm:text-lg flex-shrink-0">
-                            {review.name.charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-xs sm:text-sm text-gray-900 truncate">
-                            {review.name}
-                          </h4>
-                          <p className="text-[11px] text-gray-500 truncate">
-                            {review.country}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex mt-2">
-                        {Array.from({ length: 5 }, (_, i) => (
-                          <span
-                            key={i}
-                            className={`material-icons text-sm sm:text-base ${
-                              i < review.rating
-                                ? "text-yellow-400"
-                                : "text-gray-200"
-                            }`}
-                          >
-                            star
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <p className="text-xs sm:text-sm text-gray-600 italic mb-3 sm:mb-4 flex-grow leading-relaxed">
-                      &ldquo;{review.review_text}&rdquo;
-                    </p>
-                    {review.tour_name && (
-                      <div className="pt-4 border-t border-gray-100 mt-auto">
-                        <span className="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded">
-                          Tour: {review.tour_name}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <ReviewCard key={review.id} review={review} />
               ))}
             </div>
           </div>

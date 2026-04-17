@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 import Footer from "../components/Footer";
 import SEO from "../components/SEO";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const cancellationReasons = [
   "Schedule conflict",
@@ -116,13 +117,7 @@ const CancelTour = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background-light flex flex-col pt-16">
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-        </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (

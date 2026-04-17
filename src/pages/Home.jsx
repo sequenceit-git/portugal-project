@@ -52,6 +52,13 @@ const Home = () => {
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [canScrollReviews, setCanScrollReviews] = useState(false);
+  
+  // Traveler portrait images loading state
+  const [travelerImagesLoaded, setTravelerImagesLoaded] = useState({
+    img1: false,
+    img2: false,
+    img3: false
+  });
 
   // Tours carousel ref and drag logic
   const tourCarouselRef = useRef(null);
@@ -276,36 +283,57 @@ const Home = () => {
             </div>
             <div className="mt-7 sm:mt-10 flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-gray-500">
               <div className="flex -space-x-3">
-                <img
-                  alt="Happy traveler portrait"
-                  className="w-10 h-10 rounded-full border-2 border-white object-cover"
-                  data-alt="Portrait of a smiling young woman traveler"
-                  loading="lazy"
-                  decoding="async"
-                  width="40"
-                  height="40"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJctZ2ALBWAEgWkihBhR_FUmpwmHJxLxZ6h9VOdqudXkzZKgeg_08WA0Zasco4o8w0BwD5LgHorIzQKmUNokI3FSGla5W4l22OUjw1znz_zr6IFWMFfcx_fW8hof_LYudG6zz0qfRXlUzuLjunzxcLRewDFmjWDgDcwsljk0SSlGl1UM-uNoqkuTRKFJuCUUUmqwCOL-1RqOS69YdH03zS-K4FFo_woQp9x6RIqfZanDvC9Ih1nINB6ouN72EaJ471Oi781J6m0Q"
-                />
-                <img
-                  alt="Happy traveler portrait"
-                  className="w-10 h-10 rounded-full border-2 border-white object-cover"
-                  data-alt="Portrait of a smiling man traveler"
-                  loading="lazy"
-                  decoding="async"
-                  width="40"
-                  height="40"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDT7clSp0dZ45DgfaQ-zeGQ_lZ9vYQUA-mpuWs_bIMTioUTZYda0X18uOe8xVT736CkNflBHwismtHvJd00-t7wx0JrJ3aGxXQULqhMVvXwYgzhod9QjmwLUAp7yBBiHF5m7iYzV_LMXZwQKeKW0jdTRrytz_JGTgrdEOODHXzszmuKXn4ESId3Ty6oj0B3EMA0SLh1RiN9lzlFEdVwUMsBYnxttYfivccfwWFn4zvS4v1E_94WDo2qcEuI5J0hTTMq8IFetCRtHg"
-                />
-                <img
-                  alt="Happy traveler portrait"
-                  className="w-10 h-10 rounded-full border-2 border-white object-cover"
-                  data-alt="Portrait of a smiling man with glasses"
-                  loading="lazy"
-                  decoding="async"
-                  width="40"
-                  height="40"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuASX5uH6Zpnj-PoHiliVRUoefOIug-qIttn3s9XO3VcLq49CTcOjk9MbS1k-ZbRIf-N2fxiWCZvoEvneuJtFBgVu9z39uYhZ_ywH_aI7kUzGE-c-wWLbO_BTbdy4ny9dlXrj0gE_3PI7SbG8ZvODTne0D1nlAuYiEfqct70dQ85ZUZqBISmr-KJLHQKe2kWzgFL3UD4a7qtd8RvdXX15g9dc9X7i92RfWmtjNEhI-wY2r-eOSg_IW8FjjWpfEVp_wHl3V28pIFv1A"
-                />
+                {/* Traveler Image 1 */}
+                <div className="relative w-10 h-10">
+                  {!travelerImagesLoaded.img1 && (
+                    <div className="absolute inset-0 w-10 h-10 rounded-full border-2 border-white bg-gray-200 animate-pulse" />
+                  )}
+                  <img
+                    alt="Happy traveler portrait"
+                    className={`w-10 h-10 rounded-full border-2 border-white object-cover ${travelerImagesLoaded.img1 ? "" : "invisible"}`}
+                    data-alt="Portrait of a smiling young woman traveler"
+                    loading="lazy"
+                    decoding="async"
+                    width="40"
+                    height="40"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJctZ2ALBWAEgWkihBhR_FUmpwmHJxLxZ6h9VOdqudXkzZKgeg_08WA0Zasco4o8w0BwD5LgHorIzQKmUNokI3FSGla5W4l22OUjw1znz_zr6IFWMFfcx_fW8hof_LYudG6zz0qfRXlUzuLjunzxcLRewDFmjWDgDcwsljk0SSlGl1UM-uNoqkuTRKFJuCUUUmqwCOL-1RqOS69YdH03zS-K4FFo_woQp9x6RIqfZanDvC9Ih1nINB6ouN72EaJ471Oi781J6m0Q"
+                    onLoad={() => setTravelerImagesLoaded(prev => ({ ...prev, img1: true }))}
+                  />
+                </div>
+                {/* Traveler Image 2 */}
+                <div className="relative w-10 h-10">
+                  {!travelerImagesLoaded.img2 && (
+                    <div className="absolute inset-0 w-10 h-10 rounded-full border-2 border-white bg-gray-200 animate-pulse" />
+                  )}
+                  <img
+                    alt="Happy traveler portrait"
+                    className={`w-10 h-10 rounded-full border-2 border-white object-cover ${travelerImagesLoaded.img2 ? "" : "invisible"}`}
+                    data-alt="Portrait of a smiling man traveler"
+                    loading="lazy"
+                    decoding="async"
+                    width="40"
+                    height="40"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDT7clSp0dZ45DgfaQ-zeGQ_lZ9vYQUA-mpuWs_bIMTioUTZYda0X18uOe8xVT736CkNflBHwismtHvJd00-t7wx0JrJ3aGxXQULqhMVvXwYgzhod9QjmwLUAp7yBBiHF5m7iYzV_LMXZwQKeKW0jdTRrytz_JGTgrdEOODHXzszmuKXn4ESId3Ty6oj0B3EMA0SLh1RiN9lzlFEdVwUMsBYnxttYfivccfwWFn4zvS4v1E_94WDo2qcEuI5J0hTTMq8IFetCRtHg"
+                    onLoad={() => setTravelerImagesLoaded(prev => ({ ...prev, img2: true }))}
+                  />
+                </div>
+                {/* Traveler Image 3 */}
+                <div className="relative w-10 h-10">
+                  {!travelerImagesLoaded.img3 && (
+                    <div className="absolute inset-0 w-10 h-10 rounded-full border-2 border-white bg-gray-200 animate-pulse" />
+                  )}
+                  <img
+                    alt="Happy traveler portrait"
+                    className={`w-10 h-10 rounded-full border-2 border-white object-cover ${travelerImagesLoaded.img3 ? "" : "invisible"}`}
+                    data-alt="Portrait of a smiling man with glasses"
+                    loading="lazy"
+                    decoding="async"
+                    width="40"
+                    height="40"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuASX5uH6Zpnj-PoHiliVRUoefOIug-qIttn3s9XO3VcLq49CTcOjk9MbS1k-ZbRIf-N2fxiWCZvoEvneuJtFBgVu9z39uYhZ_ywH_aI7kUzGE-c-wWLbO_BTbdy4ny9dlXrj0gE_3PI7SbG8ZvODTne0D1nlAuYiEfqct70dQ85ZUZqBISmr-KJLHQKe2kWzgFL3UD4a7qtd8RvdXX15g9dc9X7i92RfWmtjNEhI-wY2r-eOSg_IW8FjjWpfEVp_wHl3V28pIFv1A"
+                    onLoad={() => setTravelerImagesLoaded(prev => ({ ...prev, img3: true }))}
+                  />
+                </div>
                 <div className="w-10 h-10 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-xs font-bold">
                   1k+
                 </div>
@@ -316,15 +344,19 @@ const Home = () => {
 
           <div className="lg:col-span-7 order-1 lg:order-2 relative h-[310px] sm:h-[380px] lg:h-[700px]">
             <div className="absolute right-0 top-0 sm:top-10 lg:top-0 w-[86%] sm:w-4/5 h-[92%] sm:h-full rounded-2xl overflow-hidden shadow-2xl z-10">
-              <img
-                alt="Friendly male tour guide in Lisbon"
-                className="w-full h-full object-cover"
-                data-alt="Portrait of a friendly tour guide smiling outdoors"
-                fetchpriority="high"
-                width="600"
-                height="750"
-                src={heroImages.main || "https://zgwtpnrggmmvuukcikha.supabase.co/storage/v1/object/sign/test/eduardo-goody-0Iu7mKa1sPw-unsplash.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV80ZDkzZTdkMi1jYmUyLTRjNDYtYWQwYS1lMjk0YzRlNDhiZTEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ0ZXN0L2VkdWFyZG8tZ29vZHktMEl1N21LYTFzUHctdW5zcGxhc2guanBnIiwiaWF0IjoxNzcyNjQ2NzcxLCJleHAiOjM3NDUwMTA0ODM1NzF9.ordlTYzFyd_R0XKnqkcHWZCOM1ggR7DbtyBO7qClhgQ"}
-              />
+              {heroImages.main ? (
+                <img
+                  alt="Friendly male tour guide in Lisbon"
+                  className="w-full h-full object-cover"
+                  data-alt="Portrait of a friendly tour guide smiling outdoors"
+                  fetchpriority="high"
+                  width="600"
+                  height="750"
+                  src={heroImages.main}
+                />
+              ) : (
+                <div className="w-full h-full animate-pulse bg-gray-200" style={{ minHeight: 300 }}></div>
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
               <div className="absolute bottom-4 sm:bottom-6 right-4 sm:right-6 text-white">
                 <p className="font-bold text-xl sm:text-xl ">Lisbon Guide</p>
@@ -334,16 +366,20 @@ const Home = () => {
               </div>
             </div>
             <div className="absolute left-2 sm:left-0 bottom-3 sm:bottom-20 w-24 sm:w-2/5 aspect-[4/5] rounded-xl overflow-hidden shadow-xl border-4 border-white transform -rotate-3 z-20">
-              <img
-                alt="Yellow tram in Lisbon street"
-                className="w-full h-full object-cover"
-                data-alt="Classic yellow tram climbing a narrow street in Lisbon"
-                loading="lazy"
-                decoding="async"
-                width="240"
-                height="300"
-                src={heroImages.sub || "https://lh3.googleusercontent.com/aida-public/AB6AXuDG8MZRRl65lMXOr8Cl3IG5L6Nop4FqesAQXVdBktlQPHvbWOtdj_DH9eLENOGslOvyh9j40yuS1FTb7sUScSys-zp9Y26M8SfTceaK5iPPwLdVqZbTJlHEJc4cD0z4ij004dcXZa980MUOpixZzgG6gZskN7fOZ1QodxYm38Ib-52adugqCiBq2o1I4YR-7bsXKOL-Z2mJohGGs66gJOD6gE7G6761YIcdCMka9ZSeBEr93SKUC781fejxYLWgbGVjc_wzlr1hnw"}
-              />
+              {heroImages.sub ? (
+                <img
+                  alt="Yellow tram in Lisbon street"
+                  className="w-full h-full object-cover"
+                  data-alt="Classic yellow tram climbing a narrow street in Lisbon"
+                  loading="lazy"
+                  decoding="async"
+                  width="240"
+                  height="300"
+                  src={heroImages.sub}
+                />
+              ) : (
+                <div className="w-full h-full animate-pulse bg-gray-200" style={{ minHeight: 120 }}></div>
+              )}
             </div>
             <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-primary rounded-full blur-2xl opacity-20 z-0"></div>
           </div>

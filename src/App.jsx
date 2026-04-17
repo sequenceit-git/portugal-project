@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import Navbar from "./components/Navbar.jsx";
+import LoadingSpinner from "./components/LoadingSpinner.jsx";
 
 // Route-level code splitting — each page loads only when navigated to
 const Home = lazy(() => import("./pages/Home.jsx"));
@@ -53,7 +54,7 @@ const SplashScreen = ({ onDone }) => {
       <img
         src="/assets/logo/lisbonlogo.png"
         alt="Lisbon Private Tours"
-        className="w-16 h-auto mb-8 select-none opacity-80"
+        className="w-32 h-auto mb-12 select-none opacity-100"
         draggable={false}
       />
 
@@ -91,11 +92,7 @@ const SplashScreen = ({ onDone }) => {
   );
 };
 
-const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-[60vh]">
-    <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-  </div>
-);
+const PageLoader = () => <LoadingSpinner />;
 
 const WHATSAPP_PAGES = ["/", "/tours", "/booking"];
 
