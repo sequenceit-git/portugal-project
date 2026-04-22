@@ -134,7 +134,7 @@ const App = () => {
   const [edgeConfig, setEdgeConfig] = useState({ maintenance: false, banner: null });
 
   
-  const [maintenanceMode] = useState(true); // Set to true to show maintenance page-----------------------------maintainence set it false to show the website-----------------------------
+  const [maintenanceMode] = useState(false); // Set to true to show maintenance page-----------------------------maintainence set it false to show the website-----------------------------
 
   useEffect(() => {
     // Fetch global configuration from Vercel Edge Config
