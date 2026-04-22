@@ -132,6 +132,8 @@ const App = () => {
   );
 
   const [edgeConfig, setEdgeConfig] = useState({ maintenance: false, banner: null });
+
+  
   const [maintenanceMode] = useState(true); // Set to true to show maintenance page-----------------------------maintainence set it false to show the website-----------------------------
 
   useEffect(() => {
@@ -187,7 +189,22 @@ const App = () => {
           <p className="text-xs sm:text-sm md:text-base text-gray-700 mb-6 sm:mb-8">
             Thank you for your patience. We'll be back online very soon!
           </p>
-          <div className="text-sm sm:text-base text-orange-500 font-semibold">
+          <div className="flex flex-col items-center gap-2 mt-6">
+            <div className="text-base font-semibold text-black mb-2">For any emergency, please contact:</div>
+            <div className="flex items-center gap-2">
+              <span className="material-icons text-green-600">chat</span>
+              <a href="https://wa.me/351920377914" target="_blank" rel="noopener noreferrer" className="text-orange-600 font-bold underline hover:text-orange-800">
+                WhatsApp
+              </a>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="material-icons text-orange-600">email</span>
+              <a href="mailto:tukinlisbon2@gmail.com" className="text-orange-600 font-bold underline hover:text-orange-800">
+                tukinlisbon2@gmail.com
+              </a>
+            </div>
+          </div>
+          <div className="text-sm sm:text-base text-orange-500 font-semibold mt-6">
             ✓ We appreciate your understanding
           </div>
         </div>
