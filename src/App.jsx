@@ -132,6 +132,7 @@ const App = () => {
   );
 
   const [edgeConfig, setEdgeConfig] = useState({ maintenance: false, banner: null });
+  const [maintenanceMode] = useState(true); // Set to true to show maintenance page-----------------------------maintainence set it false to show the website-----------------------------
 
   useEffect(() => {
     // Fetch global configuration from Vercel Edge Config
@@ -165,6 +166,37 @@ const App = () => {
       </div>
     );
   }
+
+// if it needs to be under maintainence//
+
+  if (maintenanceMode) {
+    return (
+      <div className="fixed inset-0 w-full h-full bg-white flex flex-col items-center justify-center text-center p-4 sm:p-6 z-[9999]">
+        <div className="max-w-2xl px-2 sm:px-4">
+          <div className="text-5xl sm:text-6xl lg:text-7xl mb-6 sm:mb-8">🚧</div>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-2 sm:mb-4" style={{ fontFamily: 'Georgia, serif' }}>
+            Under Maintenance
+          </h1>
+          <div className="w-16 sm:w-20 md:w-24 h-1 bg-orange-500 mx-auto mb-6 sm:mb-8"></div>
+          <p className="text-lg sm:text-xl md:text-2xl font-semibold text-orange-600 mb-4 sm:mb-6">
+            We're Currently Updating Our Systems
+          </p>
+          <p className="text-sm sm:text-base md:text-lg text-black mb-4 sm:mb-6 leading-relaxed">
+            Our site is temporarily unavailable due to maintenance. We are extremely sorry for any inconvenience this may cause. We're working hard to restore full service as quickly as possible.
+          </p>
+          <p className="text-xs sm:text-sm md:text-base text-gray-700 mb-6 sm:mb-8">
+            Thank you for your patience. We'll be back online very soon!
+          </p>
+          <div className="text-sm sm:text-base text-orange-500 font-semibold">
+            ✓ We appreciate your understanding
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+
+  // ------------------------------------------------------------------
 
   return (
     <>
