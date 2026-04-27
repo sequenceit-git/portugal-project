@@ -85,7 +85,7 @@ const getTourPerPersonRate = (tour, travelerCount) => {
 const MEETING_POINTS = [
   {
     id: 1,
-    name: "Vinhos de Lisboa Wine Shop",
+    name: "Vinhos de Lisboa Time Out Market",
     note: "Please stay next to Vinhos de Lisboa wine shop. Our tour guide will contact you 5–10 min before the tour start.",
     url: "https://maps.app.goo.gl/zLty5GXPme8Lk5Gn7?g_st=awb",
     icon: "wine_bar",
@@ -99,7 +99,7 @@ const MEETING_POINTS = [
   },
   {
     id: 3,
-    name: "Train Station",
+    name: "Rossio Square (train station)",
     note: "Stay in front of the train station.",
     url: "https://maps.app.goo.gl/jxk9ztDvuZBMwRVdA?g_st=awb",
     icon: "train",
